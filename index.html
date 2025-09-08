@@ -187,6 +187,18 @@
         </div>
     </div>
 
+    <script>
+        // Forward messages from vinyl-player to settings
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'EXPORT_COMPLETE' || event.data.type === 'EXPORT_PROGRESS' || event.data.type === 'EXPORT_ERROR') {
+                // Forward to settings iframe
+                const settingsFrame = document.querySelector('iframe[src*="settings.html"]');
+                if (settingsFrame) {
+                    settingsFrame.contentWindow.postMessage(event.data, '*');
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>

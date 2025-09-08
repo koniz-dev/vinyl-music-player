@@ -331,7 +331,97 @@
             font-weight: 500;
         }
 
+        .export-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
 
+        .export-btn:hover:not(:disabled) {
+            background: linear-gradient(45deg, #5a67d8, #6b46c1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .export-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .export-icon {
+            font-size: 20px;
+        }
+
+        .debug-btn {
+            width: 100%;
+            background: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .debug-btn:hover {
+            background: #2d3748;
+            transform: translateY(-1px);
+        }
+
+        .debug-icon {
+            font-size: 16px;
+        }
+
+        .export-progress {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: #4a5568;
+            font-weight: 500;
+        }
 
         /* Hide scrollbar but keep scroll functionality */
         ::-webkit-scrollbar {
@@ -422,10 +512,24 @@
                     <!-- Lyrics items will be added here dynamically -->
                 </div>
                 <button type="button" class="add-lyrics-btn" id="addLyricsBtn">
-                    <span class="add-icon">+</span> Thêm lyrics
+                    <span class="add-icon">+</span> Add Lyrics
                 </button>
             </div>
 
+            <div class="form-group">
+                <button type="button" class="export-btn" id="exportBtn" disabled>
+                    <span class="export-icon">🎬</span> Export MP4 Video
+                </button>
+                <button type="button" class="debug-btn" id="debugBtn" style="margin-top: 8px; display: none;">
+                    <span class="debug-icon">🔧</span> Check Browser Support
+                </button>
+                <div class="export-progress" id="exportProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Preparing export...</div>
+                </div>
+            </div>
 
         </form>
     </div>
@@ -451,16 +555,16 @@
                 </div>
                 <div class="lyrics-inputs">
                     <div>
-                        <div class="time-label">Thời gian bắt đầu (mm:ss)</div>
+                        <div class="time-label">Start Time (mm:ss)</div>
                         <input type="text" class="time-input" placeholder="00:00" pattern="[0-9]{1,2}:[0-9]{2}" oninput="updateLyricsData()">
                     </div>
                     <div>
-                        <div class="time-label">Thời gian kết thúc (mm:ss)</div>
+                        <div class="time-label">End Time (mm:ss)</div>
                         <input type="text" class="time-input" placeholder="00:05" pattern="[0-9]{1,2}:[0-9]{2}" oninput="updateLyricsData()">
                     </div>
                     <div>
-                        <div class="lyrics-label">Nội dung lyrics</div>
-                        <input type="text" class="lyrics-text-input" placeholder="Nhập lyrics..." oninput="updateLyricsData()">
+                        <div class="lyrics-label">Lyrics Content</div>
+                        <input type="text" class="lyrics-text-input" placeholder="Enter lyrics..." oninput="updateLyricsData()">
                     </div>
                 </div>
             `;
@@ -511,7 +615,7 @@
                     let endTime;
                     
                     if (endTimeString === '') {
-                        // Nếu không nhập thời gian kết thúc, mặc định +5 giây
+                        // If no end time entered, default to +5 seconds
                         endTime = startTime + 5;
                     } else {
                         endTime = timeToSeconds(endTimeString);
@@ -799,6 +903,140 @@
                 }, '*');
             }
         }
+
+        // Export MP4 functionality
+        const exportBtn = document.getElementById('exportBtn');
+        const debugBtn = document.getElementById('debugBtn');
+        const exportProgress = document.getElementById('exportProgress');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        // Enable export button when audio file is loaded
+        function updateExportButtonState() {
+            const audioFile = document.getElementById('audioFile').files[0];
+            const songTitle = document.getElementById('songTitle').value.trim();
+            
+            if (audioFile && songTitle) {
+                exportBtn.disabled = false;
+            } else {
+                exportBtn.disabled = true;
+            }
+        }
+
+        // Update export button state on input changes
+        document.getElementById('audioFile').addEventListener('change', updateExportButtonState);
+        document.getElementById('songTitle').addEventListener('input', updateExportButtonState);
+
+        // Debug button click handler
+        debugBtn.addEventListener('click', function() {
+            const vinylPlayerFrame = window.parent.document.querySelector('iframe[src*="vinyl-player.html"]');
+            if (vinylPlayerFrame) {
+                vinylPlayerFrame.contentWindow.postMessage({
+                    type: 'DEBUG_BROWSER_SUPPORT'
+                }, '*');
+            }
+        });
+
+        // Export button click handler
+        exportBtn.addEventListener('click', async function() {
+            const audioFile = document.getElementById('audioFile').files[0];
+            const songTitle = document.getElementById('songTitle').value.trim();
+            const artistName = document.getElementById('artistName').value.trim();
+            const albumArtFile = document.getElementById('albumArt').files[0];
+            
+            if (!audioFile || !songTitle) {
+                alert('Please upload an audio file and enter a song title before exporting.');
+                return;
+            }
+
+            // Show progress
+            exportProgress.style.display = 'block';
+            exportBtn.disabled = true;
+            
+            try {
+                // Send export request to vinyl player
+                const vinylPlayerFrame = window.parent.document.querySelector('iframe[src*="vinyl-player.html"]');
+                if (vinylPlayerFrame) {
+                    const exportData = {
+                        type: 'EXPORT_MP4',
+                        audioFile: audioFile,
+                        songTitle: songTitle,
+                        artistName: artistName,
+                        albumArtFile: albumArtFile
+                    };
+                    
+                    vinylPlayerFrame.contentWindow.postMessage(exportData, '*');
+                }
+            } catch (error) {
+                console.error('Export failed:', error);
+                alert('Export failed. Please try again.');
+                exportProgress.style.display = 'none';
+                exportBtn.disabled = false;
+            }
+        });
+
+        // Flag to prevent duplicate downloads
+        let isExportCompleted = false;
+        
+        // Function to handle export completion
+        function handleExportComplete(videoBlob, fileName) {
+            // Prevent duplicate downloads
+            if (isExportCompleted) {
+                return;
+            }
+            isExportCompleted = true;
+            
+            // Download the video
+            const url = URL.createObjectURL(videoBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Reset UI
+            exportProgress.style.display = 'none';
+            exportBtn.disabled = false;
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Preparing export...';
+            
+            alert('Video exported successfully!');
+            
+            // Reset flag after a delay
+            setTimeout(() => {
+                isExportCompleted = false;
+            }, 2000);
+        }
+
+        // Listen for export progress updates from vinyl player (only once)
+        if (!window.exportMessageListenerAdded) {
+            window.exportMessageListenerAdded = true;
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'EXPORT_PROGRESS') {
+                    const progress = event.data.progress;
+                    const message = event.data.message;
+                    
+                    progressFill.style.width = progress + '%';
+                    progressText.textContent = message;
+                } else if (event.data.type === 'EXPORT_COMPLETE') {
+                    const videoBlob = event.data.videoBlob;
+                    const fileName = event.data.fileName;
+                    handleExportComplete(videoBlob, fileName);
+                } else if (event.data.type === 'EXPORT_ERROR') {
+                    const error = event.data.error;
+                    alert('Export failed: ' + error);
+                    
+                    // Reset UI
+                    exportProgress.style.display = 'none';
+                    exportBtn.disabled = false;
+                    progressFill.style.width = '0%';
+                    progressText.textContent = 'Preparing export...';
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
