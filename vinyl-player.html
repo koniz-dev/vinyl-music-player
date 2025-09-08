@@ -1460,11 +1460,55 @@
             }
             isExporting = true;
             
+            // Store current audio state and pause main audio to prevent conflicts
+            let wasMainAudioPlaying = false;
+            if (audioElement && !audioElement.paused) {
+                wasMainAudioPlaying = true;
+                audioElement.pause();
+                
+                // Update UI to reflect paused state
+                isPlaying = false;
+                updatePlayerState();
+                stopProgressTimer();
+                stopLyricsTimer();
+            }
+            
+            // Disable all control buttons during export
+            const controls = document.querySelectorAll('.control-btn');
+            controls.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            });
+            
             let exportTimeout = null;
             
             try {
                 // Set overall timeout (5 minutes)
                 exportTimeout = setTimeout(() => {
+                    // Restore main audio playback state
+                    if (wasMainAudioPlaying && audioElement) {
+                        audioElement.play().then(() => {
+                            isPlaying = true;
+                            updatePlayerState();
+                            startProgressTimer();
+                            startLyricsTimer();
+                        }).catch(error => {
+                            console.log('Could not resume main audio:', error);
+                        });
+                    }
+                    
+                    // Re-enable all control buttons
+                    const controls = document.querySelectorAll('.control-btn');
+                    controls.forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                    });
+                    
+                    // Reset export flag
+                    isExporting = false;
+                    
                     window.parent.postMessage({
                         type: 'EXPORT_ERROR',
                         error: 'Export timeout. Please try again with a shorter audio file.'
@@ -1525,7 +1569,7 @@
                 const source = audioContext.createMediaElementSource(exportAudio);
                 const destination = audioContext.createMediaStreamDestination();
                 source.connect(destination);
-                source.connect(audioContext.destination);
+                // Remove connection to audioContext.destination to prevent audio output to speakers
                 
                 // Combine video and audio streams
                 const combinedStream = new MediaStream([
@@ -1600,6 +1644,29 @@
                     } catch (e) {
                         console.error('Error sending completion message:', e);
                     }
+                    
+                    // Restore main audio playback state
+                    if (wasMainAudioPlaying && audioElement) {
+                        audioElement.play().then(() => {
+                            isPlaying = true;
+                            updatePlayerState();
+                            startProgressTimer();
+                            startLyricsTimer();
+                        }).catch(error => {
+                            console.log('Could not resume main audio:', error);
+                        });
+                    }
+                    
+                    // Re-enable all control buttons
+                    const controls = document.querySelectorAll('.control-btn');
+                    controls.forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                    });
+                    
+                    // Reset export flag
+                    isExporting = false;
                 };
 
                 // Start recording
@@ -1660,6 +1727,26 @@
                     cancelAnimationFrame(exportAnimationId);
                     exportAnimationId = null;
                 }
+                
+                // Restore main audio playback state
+                if (wasMainAudioPlaying && audioElement) {
+                    audioElement.play().then(() => {
+                        isPlaying = true;
+                        updatePlayerState();
+                        startProgressTimer();
+                        startLyricsTimer();
+                    }).catch(error => {
+                        console.log('Could not resume main audio:', error);
+                    });
+                }
+                
+                // Re-enable all control buttons
+                const controls = document.querySelectorAll('.control-btn');
+                controls.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                });
                 
                 // Reset export flag
                 isExporting = false;
