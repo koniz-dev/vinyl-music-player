@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Patrick Hand', cursive;
+            background: rgba(0, 0, 0, 0.5);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .music-player {
+            width: 350px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+
+        .vinyl-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .vinyl-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin-bottom: 30px;
+        }
+
+        .vinyl-record {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #1a1a1a 30%, #000 70%);
+            position: relative;
+            animation: none;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            will-change: transform;
+        }
+
+        .vinyl-record.paused {
+            animation-play-state: paused;
+        }
+
+        .vinyl-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .album-art {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b6b"/><stop offset="100%" style="stop-color:%234ecdc4"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23g)"/><path d="M30 40 Q35 35 40 40 L45 50 Q50 45 55 50 L60 60 Q55 65 50 60 L45 50 Q40 55 35 50 Z" fill="white" opacity="0.8"/></svg>') center/cover;
+            object-fit: cover;
+        }
+
+        .vinyl-grooves {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .groove-1 { width: 200px; height: 200px; top: 25px; left: 25px; }
+        .groove-2 { width: 170px; height: 170px; top: 40px; left: 40px; }
+        .groove-3 { width: 140px; height: 140px; top: 55px; left: 55px; }
+
+        .tonearm {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 3px;
+            height: 120px;
+            background: linear-gradient(to bottom, #fff, #ccc);
+            transform-origin: top center;
+            transform: rotate(25deg);
+            border-radius: 2px;
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+
+        .tonearm::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -4px;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .tonearm::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: -2px;
+            width: 6px;
+            height: 10px;
+            background: #666;
+            border-radius: 3px;
+        }
+
+        .tonearm.playing {
+            transform: rotate(15deg);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .song-info {
+            text-align: center;
+            color: white;
+        }
+
+        .song-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 16px;
+            letter-spacing: 2px;
+        }
+
+        .artist-name {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .lyrics-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-top: 10px;
+            display: block;
+            transition: opacity 0.3s ease-in-out;
+            min-height: 20px;
+        }
+
+        .progress-container {
+            width: 100%;
+            padding: 0 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .progress-time {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 30px 30px;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            will-change: transform;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .play-pause-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 32px;
+        }
+
+        .play-pause-btn:hover {
+            transform: scale(1.1);
+        }
+
+
+        /* Particle effects */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); opacity: 0; }
+            50% { transform: translateY(-20px); opacity: 1; }
+        }
+
+        /* Audio visualizer bars */
+        .visualizer {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 4px;
+            height: 30px;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 3px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 1px;
+            animation: pulse 0.8s ease-in-out infinite alternate;
+            will-change: transform;
+        }
+
+        .bar:nth-child(1) { animation-delay: 0s; height: 20%; }
+        .bar:nth-child(2) { animation-delay: 0.1s; height: 60%; }
+        .bar:nth-child(3) { animation-delay: 0.2s; height: 40%; }
+        .bar:nth-child(4) { animation-delay: 0.3s; height: 80%; }
+        .bar:nth-child(5) { animation-delay: 0.4s; height: 30%; }
+
+        @keyframes pulse {
+            to { transform: scaleY(1.5); }
+        }
+
+        .visualizer.paused .bar {
+            animation-play-state: paused;
+        }
+
+        @media (max-width: 400px) {
+            .music-player {
+                width: 320px;
+                height: 550px;
+            }
+            
+            .vinyl-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .vinyl-record {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="music-player">
+
+        <div class="vinyl-section">
+            <div class="vinyl-container">
+                <div class="vinyl-record" id="vinyl">
+                    <div class="vinyl-grooves groove-1"></div>
+                    <div class="vinyl-grooves groove-2"></div>
+                    <div class="vinyl-grooves groove-3"></div>
+                    <div class="vinyl-center">
+                        <div class="album-art" id="albumArt"></div>
+                    </div>
+                </div>
+                <div class="tonearm" id="tonearm"></div>
+            </div>
+
+            <div class="visualizer" id="visualizer">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+
+            <div class="song-info">
+                <div class="song-title" id="songTitle"></div>
+                <div class="artist-name" id="artistName"></div>
+                <div class="lyrics-text" id="lyricsText"></div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <div class="progress-time">
+                <span id="currentTime">00:00</span>
+                <span id="totalTime">00:00</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="muteBtn" disabled style="opacity: 0.5; cursor: not-allowed;">🔊</button>
+            <button class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏮</button>
+            <button class="control-btn play-pause-btn" id="playPauseBtn" disabled style="opacity: 0.5; cursor: not-allowed;">▶</button>
+            <button class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏭</button>
+            <button class="control-btn" id="repeatBtn" disabled style="opacity: 0.5; cursor: not-allowed;">↻</button>
+        </div>
+    </div>
+
+    <script>
+        let isPlaying = false;
+        let currentTime = 0; // seconds
+        let totalTime = 0; // seconds
+        let progressInterval;
+        let lyricsInterval;
+        // Không còn cần currentLyricIndex vì lyrics được quản lý theo timestamp
+        let audioElement = null;
+        let isMuted = false;
+        let isRepeat = false;
+
+        // Mảng lyrics sẽ được cập nhật từ settings
+        let lyrics = [];
+
+        const vinyl = document.getElementById('vinyl');
+        const tonearm = document.getElementById('tonearm');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('currentTime');
+        const visualizer = document.getElementById('visualizer');
+        const progressBar = document.getElementById('progressBar');
+        const lyricsText = document.getElementById('lyricsText');
+        const muteBtn = document.getElementById('muteBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+
+        // Initialize player
+        function init() {
+            updateProgress();
+            updateTonearm();
+            updateLyrics(); // Sẽ hiển thị "Đang tải lyrics..." nếu không phát nhạc
+            updateVisualizerPosition(); // Set initial visualizer position
+            if (isPlaying) {
+                startProgressTimer();
+                startLyricsTimer();
+            }
+        }
+
+        // Hàm cập nhật lyrics dựa trên thời gian hiện tại
+        function updateLyrics() {
+            // Chỉ hiển thị lyrics khi có bản nhạc được load và đang phát
+            if (!audioElement || !isPlaying) {
+                lyricsText.textContent = '';
+                updateVisualizerPosition(); // Cập nhật vị trí visualizer
+                return;
+            }
+
+            // Tìm lyrics phù hợp với thời gian hiện tại
+            const currentLyric = getCurrentLyric(currentTime);
+            
+            if (currentLyric) {
+                // Có lyrics phù hợp với thời gian hiện tại
+                if (currentLyric.text !== lyricsText.textContent) {
+                    // Thêm hiệu ứng fade out/in khi thay đổi lyrics
+                    lyricsText.style.opacity = '0.5';
+                    setTimeout(() => {
+                        lyricsText.textContent = currentLyric.text;
+                        lyricsText.style.opacity = '1';
+                        updateVisualizerPosition(); // Cập nhật vị trí visualizer
+                    }, 150);
+                }
+            } else {
+                // Không có lyrics phù hợp với thời gian hiện tại
+                if (lyricsText.textContent !== '') {
+                    lyricsText.textContent = '';
+                    updateVisualizerPosition(); // Cập nhật vị trí visualizer
+                }
+            }
+        }
+
+        // Hàm tìm lyrics hiện tại dựa trên thời gian
+        function getCurrentLyric(time) {
+            // Kiểm tra nếu mảng lyrics rỗng
+            if (!lyrics || lyrics.length === 0) {
+                return null;
+            }
+            
+            for (let i = 0; i < lyrics.length; i++) {
+                // Kiểm tra nếu phần tử lyrics[i] tồn tại và có thuộc tính start, end
+                if (lyrics[i] && typeof lyrics[i].start !== 'undefined' && typeof lyrics[i].end !== 'undefined') {
+                    // Chỉ hiển thị lyrics trong khoảng thời gian chính xác [start, end)
+                    if (time >= lyrics[i].start && time < lyrics[i].end) {
+                        return lyrics[i];
+                    }
+                }
+            }
+            
+            // Nếu không tìm thấy lyrics phù hợp (trước start, trong khoảng trống, sau end), trả về null
+            return null;
+        }
+
+        // Hàm bắt đầu timer cho lyrics (không còn cần thiết vì đã tích hợp với timeupdate)
+        function startLyricsTimer() {
+            // Lyrics giờ được cập nhật thông qua timeupdate event
+        }
+
+        // Hàm dừng timer cho lyrics (không còn cần thiết)
+        function stopLyricsTimer() {
+            // Lyrics giờ được cập nhật thông qua timeupdate event
+        }
+
+        function restartAudio() {
+            if (!audioElement) return;
+            
+            audioElement.currentTime = 0;
+            currentTime = 0;
+            updateProgress();
+            
+            // Small delay to ensure reset is complete
+            setTimeout(() => {
+                audioElement.play().then(() => {
+                    isPlaying = true;
+                    updatePlayerState();
+                    startProgressTimer();
+                    startLyricsTimer();
+                }).catch(error => {
+                    isPlaying = false;
+                    updatePlayerState();
+                });
+            }, 100);
+        }
+
+        function togglePlayPause() {
+            if (!audioElement) return;
+            
+            if (isPlaying) {
+                // Currently playing, so pause
+                audioElement.pause();
+                isPlaying = false;
+                updatePlayerState();
+                stopProgressTimer();
+                stopLyricsTimer();
+            } else {
+                // Currently paused, so play
+                if (audioElement.ended) {
+                    restartAudio();
+                } else {
+                    // Use promise to handle play properly
+                    audioElement.play().then(() => {
+                        isPlaying = true;
+                        updatePlayerState();
+                        startProgressTimer();
+                        startLyricsTimer();
+                    }).catch(error => {
+                        isPlaying = false;
+                        updatePlayerState();
+                    });
+                }
+            }
+        }
+
+        function startProgressTimer() {
+            // Progress is now handled by audio timeupdate event
+            // This function is kept for compatibility
+        }
+
+        function stopProgressTimer() {
+            clearInterval(progressInterval);
+        }
+
+        function updateProgress() {
+            if (totalTime > 0) {
+                const progressPercent = (currentTime / totalTime) * 100;
+                progress.style.width = `${progressPercent}%`;
+            }
+            currentTimeEl.textContent = formatTime(currentTime);
+        }
+
+        function updateTonearm() {
+            if (isPlaying) {
+                tonearm.classList.add('playing');
+            } else {
+                tonearm.classList.remove('playing');
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Progress bar click (optimized with throttling)
+        let isProgressUpdating = false;
+        progressBar.addEventListener('click', (e) => {
+            if (isProgressUpdating || !audioElement) return;
+            isProgressUpdating = true;
+            
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            const newTime = Math.floor(percent * totalTime);
+            
+            // Cập nhật cả currentTime và audioElement.currentTime
+            currentTime = newTime;
+            audioElement.currentTime = newTime;
+            updateProgress();
+            
+            setTimeout(() => {
+                isProgressUpdating = false;
+            }, 100);
+        });
+
+        function previousTrack() {
+            currentTime = 0;
+            updateProgress();
+            updateLyrics(); // Sẽ hiển thị "Đang tải lyrics..." nếu không phát nhạc
+            // Add track switching logic here
+            // createParticles();
+        }
+
+        function nextTrack() {
+            currentTime = 0;
+            updateProgress();
+            updateLyrics(); // Sẽ hiển thị "Đang tải lyrics..." nếu không phát nhạc
+            // Add track switching logic here
+            // createParticles();
+        }
+
+
+        // Create floating particles effect (optimized)
+        function createParticles() {
+            const vinylSection = document.querySelector('.vinyl-section');
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 0; i < 6; i++) { // Reduced from 10 to 6 particles
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                fragment.appendChild(particle);
+            }
+            
+            vinylSection.appendChild(fragment);
+            
+            // Clean up particles after animation
+            setTimeout(() => {
+                const particles = vinylSection.querySelectorAll('.particle');
+                particles.forEach(particle => particle.remove());
+            }, 3000);
+        }
+
+        // Message listener for auto play and real-time updates
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'START_PLAY') {
+                startPlaying(event.data);
+            } else if (event.data.type === 'UPDATE_SONG_TITLE') {
+                updateSongTitle(event.data.songTitle);
+            } else if (event.data.type === 'UPDATE_ARTIST_NAME') {
+                updateArtistName(event.data.artistName);
+            } else if (event.data.type === 'UPDATE_ALBUM_ART') {
+                updateAlbumArt(event.data.imageUrl);
+            } else if (event.data.type === 'REMOVE_ALBUM_ART') {
+                removeAlbumArt();
+            } else if (event.data.type === 'UPDATE_LYRICS') {
+                updateLyricsFromSettings(event.data.lyrics);
+            }
+        });
+
+        // Function to update song title in real-time
+        function updateSongTitle(title) {
+            const songTitleElement = document.getElementById('songTitle');
+            if (songTitleElement) {
+                songTitleElement.textContent = title || ''; // Show empty string if title is empty
+            }
+            // Update visualizer position after title change
+            updateVisualizerPosition();
+        }
+
+        // Function to update artist name in real-time
+        function updateArtistName(artist) {
+            const artistNameElement = document.getElementById('artistName');
+            if (artistNameElement) {
+                artistNameElement.textContent = artist || ''; // Show empty string if artist is empty
+            }
+            // Update visualizer position after artist change
+            updateVisualizerPosition();
+        }
+
+        // Function to update lyrics from settings
+        function updateLyricsFromSettings(newLyrics) {
+            if (newLyrics && newLyrics.length > 0) {
+                // Update the global lyrics array
+                lyrics.length = 0; // Clear existing lyrics
+                
+                // Chỉ thêm lyrics hợp lệ (có start, end, text)
+                newLyrics.forEach(lyric => {
+                    if (lyric && 
+                        typeof lyric.start !== 'undefined' && 
+                        typeof lyric.end !== 'undefined' && 
+                        typeof lyric.text !== 'undefined' && 
+                        lyric.text.trim() !== '') {
+                        lyrics.push(lyric);
+                    }
+                });
+                
+                
+                // Cập nhật lyrics display nếu có bản nhạc được load
+                if (audioElement) {
+                    // Chỉ hiển thị lyrics nếu đang phát nhạc và có lyrics phù hợp với thời gian hiện tại
+                    if (isPlaying) {
+                        updateLyrics();
+                    } else {
+                        // Nếu không phát nhạc, lyrics trống nhưng vẫn chiếm vị trí
+                        lyricsText.textContent = '';
+                        updateVisualizerPosition();
+                    }
+                } else {
+                    // Nếu không có bản nhạc, lyrics trống nhưng vẫn chiếm vị trí
+                    lyricsText.textContent = '';
+                }
+            }
+        }
+
+        // Function to update visualizer position based on content
+        function updateVisualizerPosition() {
+            const songTitleElement = document.getElementById('songTitle');
+            const artistNameElement = document.getElementById('artistName');
+            const lyricsTextElement = document.getElementById('lyricsText');
+            const visualizer = document.getElementById('visualizer');
+            
+            if (songTitleElement && artistNameElement && lyricsTextElement && visualizer) {
+                const hasTitle = songTitleElement.textContent.trim() !== '';
+                const hasArtist = artistNameElement.textContent.trim() !== '';
+                const hasLyrics = lyricsTextElement.textContent.trim() !== '';
+                
+                let bottomValue;
+                if (hasTitle && hasArtist) {
+                    bottomValue = '136px'; // Title and artist present
+                } else if (hasTitle || hasArtist) {
+                    bottomValue = '120px'; // Either title or artist present
+                } else {
+                    bottomValue = '88px'; // Neither present
+                }
+                
+                visualizer.style.bottom = bottomValue;
+            }
+        }
+
+        // Function to update album art
+        function updateAlbumArt(imageUrl) {
+            const musicPlayer = document.querySelector('.music-player');
+            const albumArt = document.getElementById('albumArt');
+            
+            if (musicPlayer && imageUrl) {
+                // Set background image for music player with beautiful effects
+                musicPlayer.style.backgroundImage = `url(${imageUrl})`;
+                musicPlayer.style.backgroundSize = 'cover';
+                musicPlayer.style.backgroundPosition = 'center';
+                musicPlayer.style.backgroundRepeat = 'no-repeat';
+                
+                // Add beautiful overlay effects
+                musicPlayer.style.position = 'relative';
+                
+                // Create or update overlay
+                let overlay = musicPlayer.querySelector('.album-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'album-overlay';
+                    overlay.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: linear-gradient(135deg, 
+                            rgba(0, 0, 0, 0.4) 0%, 
+                            rgba(0, 0, 0, 0.6) 50%, 
+                            rgba(0, 0, 0, 0.4) 100%);
+                        backdrop-filter: blur(2px);
+                        border-radius: 30px;
+                        pointer-events: none;
+                        z-index: 1;
+                    `;
+                    musicPlayer.appendChild(overlay);
+                }
+                
+                // Ensure content is above overlay
+                const vinylSection = musicPlayer.querySelector('.vinyl-section');
+                const progressContainer = musicPlayer.querySelector('.progress-container');
+                const controls = musicPlayer.querySelector('.controls');
+                
+                if (vinylSection) vinylSection.style.position = 'relative';
+                if (vinylSection) vinylSection.style.zIndex = '2';
+                if (progressContainer) progressContainer.style.position = 'relative';
+                if (progressContainer) progressContainer.style.zIndex = '2';
+                if (controls) controls.style.position = 'relative';
+                if (controls) controls.style.zIndex = '2';
+            }
+            
+            if (albumArt && imageUrl) {
+                // Set background image for album art with subtle effects
+                albumArt.style.backgroundImage = `url(${imageUrl})`;
+                albumArt.style.backgroundSize = 'cover';
+                albumArt.style.backgroundPosition = 'center';
+                albumArt.style.backgroundRepeat = 'no-repeat';
+                albumArt.style.borderRadius = '50%';
+                albumArt.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1)';
+            }
+        }
+
+        // Function to remove album art
+        function removeAlbumArt() {
+            const musicPlayer = document.querySelector('.music-player');
+            const albumArt = document.getElementById('albumArt');
+            
+            if (musicPlayer) {
+                // Remove background image from music player
+                musicPlayer.style.backgroundImage = '';
+                musicPlayer.style.backgroundSize = '';
+                musicPlayer.style.backgroundPosition = '';
+                musicPlayer.style.backgroundRepeat = '';
+                
+                // Remove overlay
+                const overlay = musicPlayer.querySelector('.album-overlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+                
+                // Reset z-index for content
+                const vinylSection = musicPlayer.querySelector('.vinyl-section');
+                const progressContainer = musicPlayer.querySelector('.progress-container');
+                const controls = musicPlayer.querySelector('.controls');
+                
+                if (vinylSection) vinylSection.style.position = '';
+                if (vinylSection) vinylSection.style.zIndex = '';
+                if (progressContainer) progressContainer.style.position = '';
+                if (progressContainer) progressContainer.style.zIndex = '';
+                if (controls) controls.style.position = '';
+                if (controls) controls.style.zIndex = '';
+            }
+            
+            if (albumArt) {
+                // Remove background image and effects from album art
+                albumArt.style.backgroundImage = '';
+                albumArt.style.backgroundSize = '';
+                albumArt.style.backgroundPosition = '';
+                albumArt.style.backgroundRepeat = '';
+                albumArt.style.borderRadius = '';
+                albumArt.style.boxShadow = '';
+            }
+        }
+
+        function startPlaying(data) {
+            // Create audio element
+            audioElement = new Audio(data.audioUrl);
+            
+            // Update song title and artist name if provided
+            if (data.songTitle !== undefined) {
+                updateSongTitle(data.songTitle);
+            }
+            if (data.artistName !== undefined) {
+                updateArtistName(data.artistName);
+            }
+            
+            // Update album art if provided
+            if (data.albumArtUrl) {
+                updateAlbumArt(data.albumArtUrl);
+            }
+            
+            // Update visualizer position after all updates
+            updateVisualizerPosition();
+            
+            // Enable controls
+            enableControls();
+            
+            // Set up audio events
+            audioElement.addEventListener('loadedmetadata', function() {
+                totalTime = Math.floor(audioElement.duration);
+                document.getElementById('totalTime').textContent = formatTime(totalTime);
+            });
+            
+            audioElement.addEventListener('timeupdate', function() {
+                currentTime = Math.floor(audioElement.currentTime);
+                updateProgress();
+                updateLyrics(); // Cập nhật lyrics theo thời gian thực
+            });
+            
+            audioElement.addEventListener('ended', function() {
+                if (isRepeat) {
+                    // Repeat current track
+                    audioElement.currentTime = 0;
+                    audioElement.play();
+                } else {
+                    // Stop completely when song ends
+                    isPlaying = false;
+                    updatePlayerState();
+                    stopProgressTimer();
+                    stopLyricsTimer();
+                    updateTonearm();
+                    // Reset current time for next play
+                    currentTime = 0;
+                    updateProgress();
+                }
+            });
+            
+            // Start playing
+            audioElement.play().then(() => {
+                isPlaying = true;
+                updatePlayerState();
+                startProgressTimer();
+                startLyricsTimer();
+            });
+            
+            // Cập nhật lyrics ngay khi có bản nhạc được load
+            updateLyrics();
+        }
+
+        function enableControls() {
+            const controls = document.querySelectorAll('.control-btn');
+            controls.forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            });
+            
+            // Reset button states
+            muteBtn.textContent = '🔊';
+            muteBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            repeatBtn.style.color = 'white';
+            isRepeat = false;
+        }
+
+        function updatePlayerState() {
+            const vinyl = document.getElementById('vinyl');
+            const tonearm = document.getElementById('tonearm');
+            const visualizer = document.getElementById('visualizer');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            
+            if (isPlaying) {
+                vinyl.style.animation = 'spin 8s linear infinite';
+                tonearm.classList.add('playing');
+                visualizer.style.display = 'flex';
+                playPauseBtn.textContent = '⏸';
+            } else {
+                vinyl.style.animation = 'none';
+                tonearm.classList.remove('playing');
+                visualizer.style.display = 'none';
+                playPauseBtn.textContent = '▶';
+            }
+            
+            // Cập nhật lyrics khi thay đổi trạng thái phát
+            updateLyrics();
+        }
+
+        // Event listeners for buttons
+        playPauseBtn.addEventListener('click', function() {
+            togglePlayPause();
+        });
+
+        muteBtn.addEventListener('click', function() {
+            if (!audioElement) return;
+            
+            isMuted = !isMuted;
+            audioElement.muted = isMuted;
+            
+            if (isMuted) {
+                muteBtn.textContent = '🔇';
+                muteBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            } else {
+                muteBtn.textContent = '🔊';
+                muteBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            }
+        });
+
+        repeatBtn.addEventListener('click', function() {
+            if (!audioElement) return;
+            
+            isRepeat = !isRepeat;
+            
+            if (isRepeat) {
+                repeatBtn.style.background = 'rgba(102, 126, 234, 0.3)';
+                repeatBtn.style.color = '#667eea';
+            } else {
+                repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                repeatBtn.style.color = 'white';
+            }
+        });
+
+        // Initialize the player
+        init();
+
+        // Add some visual effects on load
+        // setTimeout(createParticles, 1000);
+    </script>
+</body>
+</html>

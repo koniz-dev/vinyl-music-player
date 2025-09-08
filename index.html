@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Music Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Patrick Hand', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .main-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .main-icon {
+            font-size: 32px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+            gap: 0;
+        }
+
+        .left-panel {
+            width: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            width: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .right-panel .panel-title {
+            color: #ffffff;
+        }
+
+        .panel-icon {
+            font-size: 28px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .right-panel .panel-icon {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .panel-content {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+        }
+
+
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 24px;
+            }
+            
+            .main-icon {
+                font-size: 28px;
+            }
+            
+            .container {
+                flex-direction: column;
+                min-height: calc(100vh - 100px);
+            }
+            
+            .left-panel,
+            .right-panel {
+                width: 100%;
+                height: 50%;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-header">
+        <h1 class="main-title">
+            <span class="main-icon">🎵</span>
+            Vinyl Music Player
+        </h1>
+    </div>
+    
+    <div class="container">
+        <div class="left-panel">
+            <div class="panel-content">
+                <div class="iframe-container">
+                    <iframe src="settings.html" title="Settings Panel"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="panel-content">
+                <div class="iframe-container">
+                    <iframe src="vinyl-player.html" title="Vinyl Player"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
