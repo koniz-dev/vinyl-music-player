@@ -124,11 +124,26 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ```
 vinyl-music-player/
 ├── index.html              # Main application entry point
-├── vinyl-player.html       # Vinyl player interface
-├── settings.html           # Settings and controls panel
 ├── package.json            # Project configuration
+├── package-lock.json       # Dependency lock file
 ├── README.md              # This file
-└── .gitignore             # Git ignore rules
+├── favicon/               # Favicon and PWA icons
+│   ├── favicon.ico
+│   ├── favicon-16x16.png
+│   ├── favicon-32x32.png
+│   ├── android-chrome-192x192.png
+│   ├── android-chrome-512x512.png
+│   └── site.webmanifest   # PWA manifest
+├── js/                    # JavaScript files
+│   ├── index.js           # Main application logic
+│   ├── settings.js        # Settings panel functionality
+│   ├── vinyl-player.js    # Vinyl player controls
+│   └── vinyl-player-export.js # Video export functionality
+└── styles/                # CSS stylesheets
+    ├── common.css         # Shared styles and utilities
+    ├── index.css          # Main page styles
+    ├── settings.css       # Settings panel styles
+    └── vinyl-player.css   # Vinyl player styles
 ```
 
 ## 🎨 Customization

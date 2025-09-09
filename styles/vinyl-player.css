@@ -1,0 +1,286 @@
+/* Vinyl player styles for merged layout */
+
+.music-player {
+    width: 350px;
+    height: 600px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 30px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+.vinyl-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.vinyl-container {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    margin-bottom: 30px;
+}
+
+.vinyl-record {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #1a1a1a 30%, #000 70%);
+    position: relative;
+    animation: none;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    will-change: transform;
+}
+
+.vinyl-record.paused {
+    animation-play-state: paused;
+}
+
+.vinyl-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.album-art, .vinyl-album-art {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b6b"/><stop offset="100%" style="stop-color:%234ecdc4"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23g)"/><path d="M30 40 Q35 35 40 40 L45 50 Q50 45 55 50 L60 60 Q55 65 50 60 L45 50 Q40 55 35 50 Z" fill="white" opacity="0.8"/></svg>') center/cover;
+    object-fit: cover;
+}
+
+.vinyl-grooves {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.groove-1 { width: 200px; height: 200px; top: 25px; left: 25px; }
+.groove-2 { width: 170px; height: 170px; top: 40px; left: 40px; }
+.groove-3 { width: 140px; height: 140px; top: 55px; left: 55px; }
+
+.tonearm {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 3px;
+    height: 120px;
+    background: linear-gradient(to bottom, #fff, #ccc);
+    transform-origin: top center;
+    transform: rotate(25deg);
+    border-radius: 2px;
+    transition: transform 0.3s ease;
+    will-change: transform;
+}
+
+.tonearm::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.tonearm::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: -2px;
+    width: 6px;
+    height: 10px;
+    background: #666;
+    border-radius: 3px;
+}
+
+.tonearm.playing {
+    transform: rotate(15deg);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.song-info {
+    text-align: center;
+    color: white;
+}
+
+.song-title, .vinyl-song-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 16px;
+    letter-spacing: 2px;
+}
+
+.artist-name, .vinyl-artist-name {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.lyrics-text, .vinyl-lyrics-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    margin-top: 10px;
+    display: block;
+    transition: opacity 0.3s ease-in-out;
+    min-height: 20px;
+}
+
+.progress-container {
+    width: 100%;
+    padding: 0 30px;
+}
+
+.progress-bar, .vinyl-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.progress, .vinyl-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+.progress-time {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 30px 30px;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.play-pause-btn {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 32px;
+}
+
+.play-pause-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Particle effects */
+.particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); opacity: 0; }
+    50% { transform: translateY(-20px); opacity: 1; }
+}
+
+/* Audio visualizer bars */
+.visualizer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 4px;
+    height: 30px;
+    align-items: flex-end;
+}
+
+.bar {
+    width: 3px;
+    background: linear-gradient(to top, #667eea, #764ba2);
+    border-radius: 1px;
+    animation: pulse 0.8s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+.bar:nth-child(1) { animation-delay: 0s; height: 20%; }
+.bar:nth-child(2) { animation-delay: 0.1s; height: 60%; }
+.bar:nth-child(3) { animation-delay: 0.2s; height: 40%; }
+.bar:nth-child(4) { animation-delay: 0.3s; height: 80%; }
+.bar:nth-child(5) { animation-delay: 0.4s; height: 30%; }
+
+@keyframes pulse {
+    to { transform: scaleY(1.5); }
+}
+
+.visualizer.paused .bar {
+    animation-play-state: paused;
+}
+
+@media (max-width: 400px) {
+    .music-player {
+        width: 320px;
+        height: 550px;
+    }
+    
+    .vinyl-container {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .vinyl-record {
+        width: 200px;
+        height: 200px;
+    }
+}

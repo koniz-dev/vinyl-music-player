@@ -1,13 +1,15 @@
 {
   "name": "vinyl-music-player",
-  "version": "0.0.1",
-  "description": "A beautiful vinyl music player with settings panel",
+  "version": "1.0.0",
+  "description": "A beautiful vinyl music player with synchronized lyrics and video export functionality",
   "main": "index.html",
   "scripts": {
-    "dev": "npx http-server -p 3000 -o",
-    "start": "npx http-server -p 3000",
+    "dev": "npx http-server -p 3000 -o -c-1",
+    "start": "npx http-server -p 3000 -c-1",
     "build": "echo 'No build process needed for static HTML'",
-    "preview": "npx http-server -p 3000"
+    "preview": "npx http-server -p 3000 -c-1",
+    "serve": "npx http-server -p 8080 -c-1",
+    "test": "echo 'No tests configured yet'"
   },
   "keywords": [
     "music",
@@ -15,14 +17,33 @@
     "vinyl",
     "html",
     "css",
-    "javascript"
+    "javascript",
+    "audio",
+    "video",
+    "export",
+    "lyrics",
+    "visualizer",
+    "pwa"
   ],
   "author": "koniz-dev",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koniz-dev/vinyl-music-player.git"
+  },
+  "homepage": "https://github.com/koniz-dev/vinyl-music-player#readme",
+  "bugs": {
+    "url": "https://github.com/koniz-dev/vinyl-music-player/issues"
+  },
   "devDependencies": {
     "http-server": "^14.1.1"
   },
   "engines": {
-    "node": ">=14.0.0"
-  }
+    "node": ">=16.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }

@@ -3,163 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinyl Music Player</title>
+    <title>Vinyl Music Player - Create Beautiful Music Videos with Lyrics</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A beautiful vinyl music player with synchronized lyrics and video export. Create stunning music videos with your favorite songs and share them with the world.">
+    <meta name="keywords" content="music player, vinyl, lyrics, video export, music video, audio player, synchronized lyrics, MP4 export">
+    <meta name="author" content="koniz-dev">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Vinyl Music Player - Create Beautiful Music Videos">
+    <meta property="og:description" content="A beautiful vinyl music player with synchronized lyrics and video export functionality.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/koniz-dev/vinyl-music-player">
+    <meta property="og:image" content="/favicon/android-chrome-512x512.png">
+    <meta property="og:site_name" content="Vinyl Music Player">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vinyl Music Player - Create Beautiful Music Videos">
+    <meta name="twitter:description" content="A beautiful vinyl music player with synchronized lyrics and video export functionality.">
+    <meta name="twitter:image" content="/favicon/android-chrome-512x512.png">
+    
+    <!-- Theme and App Meta Tags -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vinyl Player">
+    <meta name="application-name" content="Vinyl Music Player">
+    <meta name="msapplication-TileColor" content="#1e1b4b">
+    <meta name="msapplication-config" content="/favicon/browserconfig.xml">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Patrick Hand', cursive;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .main-header {
-            text-align: center;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .main-title {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 28px;
-            font-weight: 700;
-            color: #ffffff;
-            margin: 0;
-        }
-
-        .main-icon {
-            font-size: 32px;
-            background: linear-gradient(45deg, #ff6b6b, #feca57);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .container {
-            display: flex;
-            min-height: calc(100vh - 80px);
-            gap: 0;
-        }
-
-        .left-panel {
-            width: 50%;
-            background: rgba(0, 0, 0, 0.3);
-            overflow-y: auto;
-        }
-
-        .right-panel {
-            width: 50%;
-            background: rgba(0, 0, 0, 0.3);
-            overflow-y: auto;
-        }
-
-        .panel-header {
-            padding: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .panel-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 24px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .right-panel .panel-title {
-            color: #ffffff;
-        }
-
-        .panel-icon {
-            font-size: 28px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .right-panel .panel-icon {
-            background: linear-gradient(45deg, #ff6b6b, #feca57);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .panel-content {
-            padding: 20px;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        .iframe-container {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .iframe-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent;
-        }
-
-
-
-        @media (max-width: 768px) {
-            .main-title {
-                font-size: 24px;
-            }
-            
-            .main-icon {
-                font-size: 28px;
-            }
-            
-            .container {
-                flex-direction: column;
-                min-height: calc(100vh - 100px);
-            }
-            
-            .left-panel,
-            .right-panel {
-                width: 100%;
-                height: 50%;
-            }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles/common.css">
+    <link rel="stylesheet" type="text/css" href="styles/index.css">
+    <link rel="stylesheet" type="text/css" href="styles/settings.css">
+    <link rel="stylesheet" type="text/css" href="styles/vinyl-player.css">
 </head>
 <body>
     <div class="main-header">
@@ -170,35 +58,148 @@
     </div>
     
     <div class="container">
+        <!-- Left Panel - Settings -->
         <div class="left-panel">
             <div class="panel-content">
-                <div class="iframe-container">
-                    <iframe src="settings.html" title="Settings Panel"></iframe>
+                <div class="settings-container">
+                    <div class="header">
+                        <h1>
+                            <span class="music-icon">🎵</span>
+                            Music Player Controls
+                        </h1>
+                        <p class="subtitle">Customize your music experience</p>
+                    </div>
+
+                    <form id="musicForm">
+                        <div class="form-group">
+                            <label class="form-label">
+                                🎵 Audio File<span style="color: #e53e3e;">*</span>
+                            </label>
+                            <div class="upload-area audio-upload" id="audio-upload-area">
+                                <input type="file" accept="audio/*" id="audio-file">
+                                <div class="upload-icon">🎵</div>
+                                <div class="upload-text">Upload MP3 File</div>
+                                <div class="upload-hint">Click to browse or drag & drop</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                📝 Song Title<span style="color: #e53e3e;">*</span>
+                            </label>
+                            <input type="text" class="form-input" id="song-title" placeholder="Enter song title" value="">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                🎤 Song Artist
+                            </label>
+                            <input type="text" class="form-input" id="artist-name" placeholder="Enter artist name" value="">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                🎨 Album Art
+                            </label>
+                            <div class="upload-area" id="upload-area">
+                                <input type="file" accept="image/*" id="album-art">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">Upload Album Art</div>
+                                <div class="upload-hint">Click to browse or drag & drop</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                📝 Lyrics
+                            </label>
+                            <div class="lyrics-container" id="lyrics-container">
+                                <!-- Lyrics items will be added here dynamically -->
+                            </div>
+                            <button type="button" class="add-lyrics-btn" id="add-lyrics-btn">
+                                <span class="add-icon">+</span> Add Lyrics
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="button" class="export-btn" id="export-btn" disabled>
+                                <span class="export-icon">🎬</span> Export MP4 Video
+                            </button>
+                            <button type="button" class="debug-btn" id="debug-btn" style="margin-top: 8px; display: none;">
+                                <span class="debug-icon">🔧</span> Check Browser Support
+                            </button>
+                            <div class="export-progress" id="export-progress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <div class="progress-text" id="progress-text">Preparing export...</div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
+        <!-- Right Panel - Vinyl Player -->
         <div class="right-panel">
             <div class="panel-content">
-                <div class="iframe-container">
-                    <iframe src="vinyl-player.html" title="Vinyl Player"></iframe>
+                <div class="vinyl-player-container">
+                    <div class="music-player">
+                        <div class="vinyl-section">
+                            <div class="vinyl-container">
+                                <div class="vinyl-record" id="vinyl">
+                                    <div class="vinyl-grooves groove-1"></div>
+                                    <div class="vinyl-grooves groove-2"></div>
+                                    <div class="vinyl-grooves groove-3"></div>
+                                    <div class="vinyl-center">
+                                        <div class="vinyl-album-art"></div>
+                                    </div>
+                                </div>
+                                <div class="tonearm" id="tonearm"></div>
+                            </div>
+
+                            <div class="visualizer" id="visualizer">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+
+                            <div class="song-info">
+                                <div class="vinyl-song-title"></div>
+                                <div class="vinyl-artist-name"></div>
+                                <div class="vinyl-lyrics-text"></div>
+                            </div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="vinyl-progress-bar">
+                                <div class="vinyl-progress"></div>
+                            </div>
+                            <div class="progress-time">
+                                <span class="vinyl-current-time">00:00</span>
+                                <span class="vinyl-total-time">00:00</span>
+                            </div>
+                        </div>
+
+                        <div class="controls">
+                            <button class="control-btn vinyl-mute-btn" disabled style="opacity: 0.5; cursor: not-allowed;">🔊</button>
+                            <button class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏮</button>
+                            <button class="control-btn vinyl-play-pause-btn" disabled style="opacity: 0.5; cursor: not-allowed;">▶</button>
+                            <button class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏭</button>
+                            <button class="control-btn vinyl-repeat-btn" disabled style="opacity: 0.5; cursor: not-allowed;">↻</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Forward messages from vinyl-player to settings
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'EXPORT_COMPLETE' || event.data.type === 'EXPORT_PROGRESS' || event.data.type === 'EXPORT_ERROR') {
-                // Forward to settings iframe
-                const settingsFrame = document.querySelector('iframe[src*="settings.html"]');
-                if (settingsFrame) {
-                    settingsFrame.contentWindow.postMessage(event.data, '*');
-                }
-            }
-        });
-    </script>
-
+    <!-- Scripts -->
+    <script src="js/index.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/vinyl-player.js"></script>
+    <script src="js/vinyl-player-export.js"></script>
 </body>
 </html>
