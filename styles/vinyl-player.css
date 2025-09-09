@@ -3,7 +3,7 @@
 .music-player {
     width: 350px;
     height: 600px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
     border-radius: 30px;
     position: relative;
     display: flex;
@@ -137,18 +137,22 @@
 }
 
 .artist-name, .vinyl-artist-name {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+    letter-spacing: 1px;
 }
 
 .lyrics-text, .vinyl-lyrics-text {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 18px;
+    color: #ffd700;
     text-align: center;
     margin-top: 10px;
     display: block;
     transition: opacity 0.3s ease-in-out;
-    min-height: 20px;
+    min-height: 24px;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .progress-container {
@@ -209,15 +213,17 @@
     transform: scale(1.1);
 }
 
-.play-pause-btn {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 32px;
+
+.vinyl-play-pause-btn {
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 28px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.play-pause-btn:hover {
-    transform: scale(1.1);
+.vinyl-play-pause-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: scale(1.1) !important;
 }
 
 /* Particle effects */

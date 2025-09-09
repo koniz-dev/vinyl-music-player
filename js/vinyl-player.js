@@ -391,9 +391,9 @@ function updateAlbumArt(imageUrl) {
                 right: 0;
                 bottom: 0;
                 background: linear-gradient(135deg, 
-                    rgba(0, 0, 0, 0.4) 0%, 
-                    rgba(0, 0, 0, 0.6) 50%, 
-                    rgba(0, 0, 0, 0.4) 100%);
+                    rgba(0, 0, 0, 0.2) 0%, 
+                    rgba(0, 0, 0, 0.3) 50%, 
+                    rgba(0, 0, 0, 0.2) 100%);
                 backdrop-filter: blur(2px);
                 border-radius: 30px;
                 pointer-events: none;

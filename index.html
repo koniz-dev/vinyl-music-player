@@ -116,9 +116,14 @@
                             <div class="lyrics-container" id="lyrics-container">
                                 <!-- Lyrics items will be added here dynamically -->
                             </div>
-                            <button type="button" class="add-lyrics-btn" id="add-lyrics-btn">
-                                <span class="add-icon">+</span> Add Lyrics
-                            </button>
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <button type="button" class="add-lyrics-btn" id="add-lyrics-btn">
+                                    <span class="add-icon">+</span> Add Lyrics
+                                </button>
+                                <button type="button" class="dev-lyrics-btn" id="dev-lyrics-btn">
+                                    <span class="dev-icon">⚙️</span> For Dev
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -184,13 +189,46 @@
                         </div>
 
                         <div class="controls">
-                            <button class="control-btn vinyl-mute-btn" disabled style="opacity: 0.5; cursor: not-allowed;">🔊</button>
-                            <button class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏮</button>
-                            <button class="control-btn vinyl-play-pause-btn" disabled style="opacity: 0.5; cursor: not-allowed;">▶</button>
-                            <button class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏭</button>
-                            <button class="control-btn vinyl-repeat-btn" disabled style="opacity: 0.5; cursor: not-allowed;">↻</button>
+                            <button type="button" class="control-btn vinyl-mute-btn" disabled style="opacity: 0.5; cursor: not-allowed;">🔊</button>
+                            <button type="button" class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏮</button>
+                            <button type="button" class="control-btn vinyl-play-pause-btn" disabled style="opacity: 0.5; cursor: not-allowed;">▶</button>
+                            <button type="button" class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏭</button>
+                            <button type="button" class="control-btn vinyl-repeat-btn" disabled style="opacity: 0.5; cursor: not-allowed;">↻</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dev Lyrics Popup Modal -->
+    <div class="modal-overlay" id="dev-lyrics-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>For Dev - Import JSON Lyrics</h3>
+                <button type="button" class="modal-close-btn" id="modal-close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">
+                    Paste your JSON lyrics here. Format should be an array of objects with <code>start</code> (mm:ss), <code>end</code> (mm:ss), and <code>text</code> properties.
+                </p>
+                <div class="json-example">
+                    <strong>Example:</strong>
+                    <pre>[
+  {"start": "00:18", "end": "00:21", "text": "Anh thức giấc trong căn phòng quen"},
+  {"start": "00:22", "end": "00:24", "text": "Nơi bàn tay em từng đặt lên"},
+  {"start": "00:24", "end": "00:26", "text": "Những vết hằn của kỷ niệm"}
+]</pre>
+                </div>
+                <textarea 
+                    class="json-textarea" 
+                    id="json-lyrics-input" 
+                    placeholder="Paste your JSON lyrics here..."
+                    rows="10"
+                ></textarea>
+                <div class="modal-actions">
+                    <button type="button" class="modal-cancel-btn" id="modal-cancel-btn">Cancel</button>
+                    <button type="button" class="modal-import-btn" id="modal-import-btn">Import Lyrics</button>
                 </div>
             </div>
         </div>

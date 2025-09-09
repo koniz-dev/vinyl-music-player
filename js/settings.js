@@ -108,6 +108,133 @@ function sendLyricsToPlayer(lyricsData) {
 // Add lyrics button event listener
 addLyricsBtn.addEventListener('click', addLyricsItem);
 
+// Dev lyrics functionality
+const devLyricsBtn = document.getElementById('dev-lyrics-btn');
+const devLyricsModal = document.getElementById('dev-lyrics-modal');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+const modalImportBtn = document.getElementById('modal-import-btn');
+const jsonLyricsInput = document.getElementById('json-lyrics-input');
+
+// Open dev lyrics modal
+devLyricsBtn.addEventListener('click', function() {
+    devLyricsModal.style.display = 'flex';
+    jsonLyricsInput.focus();
+});
+
+// Close modal functions
+function closeModal() {
+    devLyricsModal.style.display = 'none';
+    jsonLyricsInput.value = '';
+}
+
+modalCloseBtn.addEventListener('click', closeModal);
+modalCancelBtn.addEventListener('click', closeModal);
+
+// Close modal when clicking outside
+devLyricsModal.addEventListener('click', function(e) {
+    if (e.target === devLyricsModal) {
+        closeModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && devLyricsModal.style.display === 'flex') {
+        closeModal();
+    }
+});
+
+// Import JSON lyrics
+modalImportBtn.addEventListener('click', function() {
+    const jsonText = jsonLyricsInput.value.trim();
+    
+    if (!jsonText) {
+        alert('Please paste your JSON lyrics first.');
+        return;
+    }
+    
+    try {
+        const lyricsData = JSON.parse(jsonText);
+        
+        // Validate JSON structure
+        if (!Array.isArray(lyricsData)) {
+            throw new Error('JSON must be an array of objects');
+        }
+        
+        // Validate each object in the array
+        for (let i = 0; i < lyricsData.length; i++) {
+            const item = lyricsData[i];
+            if (typeof item !== 'object' || item === null) {
+                throw new Error(`Item at index ${i} must be an object`);
+            }
+            
+            if (typeof item.start !== 'string' || typeof item.end !== 'string' || typeof item.text !== 'string') {
+                throw new Error(`Item at index ${i} must have 'start' (mm:ss), 'end' (mm:ss), and 'text' (string) properties`);
+            }
+            
+            // Validate mm:ss format
+            const timeRegex = /^[0-9]{1,2}:[0-9]{2}$/;
+            if (!timeRegex.test(item.start) || !timeRegex.test(item.end)) {
+                throw new Error(`Item at index ${i} has invalid time format. Use mm:ss format (e.g., "01:30")`);
+            }
+            
+            // Convert to seconds for comparison
+            const startSeconds = timeToSeconds(item.start);
+            const endSeconds = timeToSeconds(item.end);
+            
+            if (startSeconds < 0 || endSeconds < 0 || startSeconds >= endSeconds) {
+                throw new Error(`Item at index ${i} has invalid time values: start must be >= 00:00, end must be > start`);
+            }
+        }
+        
+        // Clear existing lyrics
+        lyricsContainer.innerHTML = '';
+        lyricsCount = 0;
+        
+        // Create lyrics items from JSON data
+        lyricsData.forEach((item, index) => {
+            lyricsCount++;
+            const lyricsItem = document.createElement('div');
+            lyricsItem.className = 'lyrics-item';
+            lyricsItem.innerHTML = `
+                <div class="lyrics-item-header">
+                    <div class="lyrics-item-title">Lyrics ${lyricsCount}</div>
+                    <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)">×</button>
+                </div>
+                <div class="lyrics-inputs">
+                    <div>
+                        <div class="time-label">Start Time (mm:ss)</div>
+                        <input type="text" class="time-input" placeholder="00:00" pattern="[0-9]{1,2}:[0-9]{2}" value="${item.start}" oninput="updateLyricsData()">
+                    </div>
+                    <div>
+                        <div class="time-label">End Time (mm:ss)</div>
+                        <input type="text" class="time-input" placeholder="00:05" pattern="[0-9]{1,2}:[0-9]{2}" value="${item.end}" oninput="updateLyricsData()">
+                    </div>
+                    <div>
+                        <div class="lyrics-label">Lyrics Content</div>
+                        <input type="text" class="lyrics-text-input" placeholder="Enter lyrics..." value="${item.text}" oninput="updateLyricsData()">
+                    </div>
+                </div>
+            `;
+            lyricsContainer.appendChild(lyricsItem);
+        });
+        
+        // Update lyrics data
+        updateLyricsData();
+        
+        // Close modal
+        closeModal();
+        
+        // Show success message
+        alert(`Successfully imported ${lyricsData.length} lyrics items!`);
+        
+    } catch (error) {
+        alert('Error parsing JSON: ' + error.message);
+        console.error('JSON parsing error:', error);
+    }
+});
+
 // File upload handling
 const uploadArea = document.getElementById('upload-area');
 const fileInput = document.getElementById('album-art');
@@ -186,18 +313,6 @@ function updateUploadDisplay(file) {
     
     // Send album art to vinyl player
     sendAlbumArtToPlayer(file);
-    
-    // Add remove button if not exists
-    if (!uploadArea.querySelector('.remove-btn')) {
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.onclick = function(e) {
-            e.stopPropagation();
-            removeFile('albumArt');
-        };
-        uploadArea.appendChild(removeBtn);
-    }
 }
 
 function updateAudioUploadDisplay(file) {
@@ -208,18 +323,6 @@ function updateAudioUploadDisplay(file) {
     uploadHint.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
     audioUploadArea.style.borderColor = '#38a169';
     audioUploadArea.style.background = 'rgba(56, 161, 105, 0.05)';
-    
-    // Add remove button if not exists
-    if (!audioUploadArea.querySelector('.remove-btn')) {
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.onclick = function(e) {
-            e.stopPropagation();
-            removeFile('audioFile');
-        };
-        audioUploadArea.appendChild(removeBtn);
-    }
     
     // Auto play when file is uploaded
     startAutoPlay(file);
@@ -235,7 +338,6 @@ function removeFile(inputId) {
     // Reset upload area display
     const uploadText = targetUploadArea.querySelector('.upload-text');
     const uploadHint = targetUploadArea.querySelector('.upload-hint');
-    const removeBtn = targetUploadArea.querySelector('.remove-btn');
     
     if (inputId === 'audioFile') {
         uploadText.textContent = 'Upload MP3 File';
@@ -250,11 +352,6 @@ function removeFile(inputId) {
     
     targetUploadArea.style.borderColor = '#cbd5e0';
     targetUploadArea.style.background = '#f7fafc';
-    
-    // Remove remove button
-    if (removeBtn) {
-        removeBtn.remove();
-    }
 }
 
 function startAutoPlay(file) {
