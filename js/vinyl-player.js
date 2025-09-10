@@ -161,7 +161,7 @@ function stopProgressTimer() {
 function updateProgress() {
     if (totalTime > 0) {
         const progressPercent = (currentTime / totalTime) * 100;
-        progress.style.width = `${progressPercent}%`;
+        progress.style.width = `${Math.min(progressPercent, 100)}%`;
     }
     currentTimeEl.textContent = formatTime(currentTime);
 }
@@ -176,7 +176,7 @@ function updateTonearm() {
 
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
@@ -498,7 +498,7 @@ function startPlaying(data) {
     });
     
     audioElement.addEventListener('timeupdate', function() {
-        currentTime = Math.floor(audioElement.currentTime);
+        currentTime = audioElement.currentTime;
         updateProgress();
         updateLyrics(); // Update lyrics in real time
     });

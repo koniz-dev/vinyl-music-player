@@ -39,6 +39,7 @@
     animation: none;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
     will-change: transform;
+    transform-origin: center;
 }
 
 .vinyl-record.paused {
@@ -72,6 +73,7 @@
     position: absolute;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    transform-origin: center;
 }
 
 .groove-1 { width: 200px; height: 200px; top: 25px; left: 25px; }
@@ -167,6 +169,7 @@
     border-radius: 2px;
     position: relative;
     cursor: pointer;
+    box-shadow: none;
 }
 
 .progress, .vinyl-progress {

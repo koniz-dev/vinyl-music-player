@@ -1,30 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vinyl Music Player - Create Beautiful Music Videos with Lyrics</title>
-    
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="A beautiful vinyl music player with synchronized lyrics and video export. Create stunning music videos with your favorite songs and share them with the world.">
-    <meta name="keywords" content="music player, vinyl, lyrics, video export, music video, audio player, synchronized lyrics, MP4 export">
+    <meta name="description"
+        content="A beautiful vinyl music player with synchronized lyrics and video export. Create stunning music videos with your favorite songs and share them with the world.">
+    <meta name="keywords"
+        content="music player, vinyl, lyrics, video export, music video, audio player, synchronized lyrics, MP4 export">
     <meta name="author" content="koniz-dev">
     <meta name="robots" content="index, follow">
-    
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Vinyl Music Player - Create Beautiful Music Videos">
-    <meta property="og:description" content="A beautiful vinyl music player with synchronized lyrics and video export functionality.">
+    <meta property="og:description"
+        content="A beautiful vinyl music player with synchronized lyrics and video export functionality.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://github.com/koniz-dev/vinyl-music-player">
     <meta property="og:image" content="/favicon/android-chrome-512x512.png">
     <meta property="og:site_name" content="Vinyl Music Player">
-    
+
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Vinyl Music Player - Create Beautiful Music Videos">
-    <meta name="twitter:description" content="A beautiful vinyl music player with synchronized lyrics and video export functionality.">
+    <meta name="twitter:description"
+        content="A beautiful vinyl music player with synchronized lyrics and video export functionality.">
     <meta name="twitter:image" content="/favicon/android-chrome-512x512.png">
-    
+
     <!-- Theme and App Meta Tags -->
     <meta name="theme-color" content="#6366f1">
     <meta name="mobile-web-app-capable" content="yes">
@@ -33,14 +38,14 @@
     <meta name="application-name" content="Vinyl Music Player">
     <meta name="msapplication-TileColor" content="#1e1b4b">
     <meta name="msapplication-config" content="/favicon/browserconfig.xml">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="manifest" href="/favicon/site.webmanifest">
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
@@ -49,6 +54,7 @@
     <link rel="stylesheet" type="text/css" href="styles/settings.css">
     <link rel="stylesheet" type="text/css" href="styles/vinyl-player.css">
 </head>
+
 <body>
     <div class="main-header">
         <h1 class="main-title">
@@ -56,7 +62,7 @@
             Vinyl Music Player
         </h1>
     </div>
-    
+
     <div class="container">
         <!-- Left Panel - Settings -->
         <div class="left-panel">
@@ -87,14 +93,16 @@
                             <label class="form-label">
                                 📝 Song Title<span style="color: #e53e3e;">*</span>
                             </label>
-                            <input type="text" class="form-input" id="song-title" placeholder="Enter song title" value="">
+                            <input type="text" class="form-input" id="song-title" placeholder="Enter song title"
+                                value="">
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">
                                 🎤 Song Artist
                             </label>
-                            <input type="text" class="form-input" id="artist-name" placeholder="Enter artist name" value="">
+                            <input type="text" class="form-input" id="artist-name" placeholder="Enter artist name"
+                                value="">
                         </div>
 
                         <div class="form-group">
@@ -130,7 +138,8 @@
                             <button type="button" class="export-btn" id="export-btn" disabled>
                                 <span class="export-icon">🎬</span> Export MP4 Video
                             </button>
-                            <button type="button" class="debug-btn" id="debug-btn" style="margin-top: 8px; display: none;">
+                            <button type="button" class="debug-btn" id="debug-btn"
+                                style="margin-top: 8px; display: none;">
                                 <span class="debug-icon">🔧</span> Check Browser Support
                             </button>
                             <div class="export-progress" id="export-progress" style="display: none;">
@@ -189,11 +198,16 @@
                         </div>
 
                         <div class="controls">
-                            <button type="button" class="control-btn vinyl-mute-btn" disabled style="opacity: 0.5; cursor: not-allowed;">🔊</button>
-                            <button type="button" class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏮</button>
-                            <button type="button" class="control-btn vinyl-play-pause-btn" disabled style="opacity: 0.5; cursor: not-allowed;">▶</button>
-                            <button type="button" class="control-btn" disabled style="opacity: 0.5; cursor: not-allowed;">⏭</button>
-                            <button type="button" class="control-btn vinyl-repeat-btn" disabled style="opacity: 0.5; cursor: not-allowed;">↻</button>
+                            <button type="button" class="control-btn vinyl-mute-btn" disabled
+                                style="opacity: 0.5; cursor: not-allowed;">🔊</button>
+                            <button type="button" class="control-btn" disabled
+                                style="opacity: 0.5; cursor: not-allowed;">⏮</button>
+                            <button type="button" class="control-btn vinyl-play-pause-btn" disabled
+                                style="opacity: 0.5; cursor: not-allowed;">▶</button>
+                            <button type="button" class="control-btn" disabled
+                                style="opacity: 0.5; cursor: not-allowed;">⏭</button>
+                            <button type="button" class="control-btn vinyl-repeat-btn" disabled
+                                style="opacity: 0.5; cursor: not-allowed;">↻</button>
                         </div>
                     </div>
                 </div>
@@ -210,22 +224,19 @@
             </div>
             <div class="modal-body">
                 <p class="modal-description">
-                    Paste your JSON lyrics here. Format should be an array of objects with <code>start</code> (mm:ss), <code>end</code> (mm:ss), and <code>text</code> properties.
+                    Paste your JSON lyrics here. Format should be an array of objects with <code>start</code> (mm:ss),
+                    <code>end</code> (mm:ss), and <code>text</code> properties.
                 </p>
+                <strong>Example:</strong>
                 <div class="json-example">
-                    <strong>Example:</strong>
                     <pre>[
   {"start": "00:18", "end": "00:21", "text": "Anh thức giấc trong căn phòng quen"},
   {"start": "00:22", "end": "00:24", "text": "Nơi bàn tay em từng đặt lên"},
   {"start": "00:24", "end": "00:26", "text": "Những vết hằn của kỷ niệm"}
 ]</pre>
                 </div>
-                <textarea 
-                    class="json-textarea" 
-                    id="json-lyrics-input" 
-                    placeholder="Paste your JSON lyrics here..."
-                    rows="10"
-                ></textarea>
+                <textarea class="json-textarea" id="json-lyrics-input" placeholder="Paste your JSON lyrics here..."
+                    rows="10"></textarea>
                 <div class="modal-actions">
                     <button type="button" class="modal-cancel-btn" id="modal-cancel-btn">Cancel</button>
                     <button type="button" class="modal-import-btn" id="modal-import-btn">Import Lyrics</button>
@@ -240,4 +251,5 @@
     <script src="js/vinyl-player.js"></script>
     <script src="js/vinyl-player-export.js"></script>
 </body>
+
 </html>
