@@ -7,6 +7,7 @@ let vinylRotation = 0;
 let albumArtImage = null;
 let exportAudio = null;
 let exportLyrics = [];
+let exportLyricsColor = '#ffd700'; // Default lyrics color
 function createExportCanvas() {
     exportCanvas = document.createElement('canvas');
     
@@ -155,6 +156,11 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
         exportAudio = new Audio(audioUrl);
         
         exportLyrics = [...lyrics];
+        
+        // Get current lyrics color from settings
+        if (window.lyricsColorManager) {
+            exportLyricsColor = window.lyricsColorManager.getCurrentColor();
+        }
         
         await new Promise((resolve, reject) => {
             exportAudio.addEventListener('loadedmetadata', resolve);
@@ -707,12 +713,12 @@ function renderToCanvas() {
         
         if (currentLyric) {
             exportCtx.font = `20px 'Patrick Hand', Arial, sans-serif`;
-            exportCtx.fillStyle = '#ffd700';
+            exportCtx.fillStyle = exportLyricsColor;
             exportCtx.fillText(currentLyric.text, songInfoX + songInfoWidth / 2, songInfoY + 60);
         }
     } else if (lyricsText) {
         exportCtx.font = `20px 'Patrick Hand', Arial, sans-serif`;
-        exportCtx.fillStyle = '#ffd700';
+        exportCtx.fillStyle = exportLyricsColor;
         exportCtx.fillText(lyricsText, songInfoX + songInfoWidth / 2, songInfoY + 60);
     }
 
@@ -881,3 +887,10 @@ function renderToCanvas() {
         }
     }
 }
+
+// Listen for lyrics color updates from settings
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'UPDATE_LYRICS_COLOR') {
+        exportLyricsColor = event.data.color;
+    }
+});

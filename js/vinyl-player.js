@@ -492,4 +492,11 @@ repeatBtn.addEventListener('click', function() {
     }
 });
 
+// Listen for lyrics color updates from settings
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'UPDATE_LYRICS_COLOR') {
+        lyricsText.style.color = event.data.color;
+    }
+});
+
 init();

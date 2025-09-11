@@ -128,6 +128,27 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label">
+                                🎨 Lyrics Color
+                            </label>
+                            <div class="color-settings-container">
+                                <div class="color-picker-section">
+                                    <input type="color" class="color-picker" id="lyrics-color-picker" value="#ffd700">
+                                    <span class="color-preview" id="color-preview">Current Color</span>
+                                    <button type="button" class="copy-hex-btn" id="copy-hex-btn" title="Copy hex code">
+                                        <span class="copy-icon">📋</span>
+                                    </button>
+                                </div>
+                                <div class="color-history-section">
+                                    <div class="color-history-label">Recent Colors:</div>
+                                    <div class="color-history" id="color-history">
+                                        <!-- Color history items will be added here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
                             <button type="button" class="export-btn" id="export-btn" disabled>
                                 <span class="export-icon">🎬</span> Export MP4 Video
                             </button>

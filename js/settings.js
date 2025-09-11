@@ -483,3 +483,243 @@ if (!window.exportMessageListenerAdded) {
         });
     }
 }
+
+// Lyrics Color Management
+class LyricsColorManager {
+    constructor() {
+        this.colorHistory = this.loadColorHistory();
+        this.currentColor = this.loadCurrentColor();
+        this.maxHistorySize = 5;
+        
+        // Clear any old default colors from localStorage
+        this.cleanupOldDefaultColors();
+        
+        this.initializeElements();
+        this.setupEventListeners();
+        this.updateColorPreview();
+        this.renderColorHistory();
+        // Send initial color to player without adding to history
+        this.sendColorToPlayer();
+    }
+    
+    initializeElements() {
+        this.colorPicker = document.getElementById('lyrics-color-picker');
+        this.colorPreview = document.getElementById('color-preview');
+        this.colorHistoryContainer = document.getElementById('color-history');
+        this.copyHexBtn = document.getElementById('copy-hex-btn');
+    }
+    
+    setupEventListeners() {
+        this.colorPicker.addEventListener('input', (e) => {
+            this.updateColorPreviewOnly(e.target.value);
+        });
+        this.colorPicker.addEventListener('change', (e) => {
+            this.setCurrentColor(e.target.value);
+        });
+        
+        this.copyHexBtn.addEventListener('click', () => {
+            this.copyHexToClipboard();
+        });
+    }
+    
+    setCurrentColor(color, addToHistory = true) {
+        this.currentColor = color;
+        if (addToHistory) {
+            this.addToHistory(color);
+        }
+        this.updateColorPreview();
+        this.renderColorHistory();
+        this.saveCurrentColor();
+        this.sendColorToPlayer();
+    }
+    
+    updateColorPreviewOnly(color) {
+        // Only update preview and send to player, don't save to history
+        this.currentColor = color;
+        this.updateColorPreview();
+        this.sendColorToPlayer();
+    }
+    
+    addToHistory(color) {
+        // Don't add default color to history
+        if (color === '#ffd700') {
+            return;
+        }
+        
+        // Remove if already exists
+        this.colorHistory = this.colorHistory.filter(c => c !== color);
+        
+        // Add to beginning
+        this.colorHistory.unshift(color);
+        
+        // Keep only max history size
+        if (this.colorHistory.length > this.maxHistorySize) {
+            this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
+        }
+        
+        this.saveColorHistory();
+    }
+    
+    updateColorPreview() {
+        this.colorPreview.textContent = this.currentColor.toUpperCase();
+        this.colorPreview.style.backgroundColor = this.currentColor;
+        this.colorPreview.style.color = this.getContrastColor(this.currentColor);
+        this.colorPicker.value = this.currentColor;
+    }
+    
+    getContrastColor(hexColor) {
+        // Convert hex to RGB
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
+        
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        return luminance > 0.5 ? '#000000' : '#ffffff';
+    }
+    
+    renderColorHistory() {
+        this.colorHistoryContainer.innerHTML = '';
+        
+        // Only show color history section if there are colors
+        const colorHistorySection = document.querySelector('.color-history-section');
+        
+        // Debug log
+        console.log('Color history length:', this.colorHistory.length);
+        console.log('Color history:', this.colorHistory);
+        
+        if (this.colorHistory.length === 0) {
+            colorHistorySection.style.display = 'none';
+            console.log('Hiding color history section');
+            return;
+        } else {
+            colorHistorySection.style.display = 'block';
+            console.log('Showing color history section');
+        }
+        
+        // Render existing colors
+        this.colorHistory.forEach(color => {
+            const colorItem = document.createElement('div');
+            colorItem.className = 'color-history-item';
+            colorItem.style.backgroundColor = color;
+            colorItem.title = color.toUpperCase();
+            
+            colorItem.addEventListener('click', () => {
+                this.setCurrentColor(color, false); // Don't add to history when clicking existing color
+            });
+            
+            this.colorHistoryContainer.appendChild(colorItem);
+        });
+    }
+    
+    sendColorToPlayer() {
+        window.postMessage({
+            type: 'UPDATE_LYRICS_COLOR',
+            color: this.currentColor
+        }, '*');
+    }
+    
+    // Local Storage Methods
+    loadColorHistory() {
+        try {
+            const saved = localStorage.getItem('lyricsColorHistory');
+            const history = saved ? JSON.parse(saved) : [];
+            // Filter out any default colors that might have been saved before
+            return history.filter(color => color !== '#ffd700' && color !== '#ffffff');
+        } catch (e) {
+            return [];
+        }
+    }
+    
+    saveColorHistory() {
+        try {
+            localStorage.setItem('lyricsColorHistory', JSON.stringify(this.colorHistory));
+        } catch (e) {
+            console.warn('Could not save color history:', e);
+        }
+    }
+    
+    loadCurrentColor() {
+        try {
+            return localStorage.getItem('lyricsCurrentColor') || '#ffd700';
+        } catch (e) {
+            return '#ffd700';
+        }
+    }
+    
+    saveCurrentColor() {
+        try {
+            localStorage.setItem('lyricsCurrentColor', this.currentColor);
+        } catch (e) {
+            console.warn('Could not save current color:', e);
+        }
+    }
+    
+    getCurrentColor() {
+        return this.currentColor;
+    }
+    
+    cleanupOldDefaultColors() {
+        // Force clear any existing color history to start fresh
+        this.colorHistory = [];
+        this.saveColorHistory();
+        
+        // Also clear any old default colors from localStorage
+        try {
+            localStorage.removeItem('lyricsColorHistory');
+        } catch (e) {
+            console.warn('Could not clear color history:', e);
+        }
+    }
+    
+    async copyHexToClipboard() {
+        try {
+            await navigator.clipboard.writeText(this.currentColor);
+            
+            // Visual feedback
+            const originalIcon = this.copyHexBtn.querySelector('.copy-icon').textContent;
+            this.copyHexBtn.classList.add('copied');
+            this.copyHexBtn.querySelector('.copy-icon').textContent = '✓';
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                this.copyHexBtn.classList.remove('copied');
+                this.copyHexBtn.querySelector('.copy-icon').textContent = originalIcon;
+            }, 2000);
+            
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = this.currentColor;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Visual feedback for fallback
+            const originalIcon = this.copyHexBtn.querySelector('.copy-icon').textContent;
+            this.copyHexBtn.classList.add('copied');
+            this.copyHexBtn.querySelector('.copy-icon').textContent = '✓';
+            
+            setTimeout(() => {
+                this.copyHexBtn.classList.remove('copied');
+                this.copyHexBtn.querySelector('.copy-icon').textContent = originalIcon;
+            }, 2000);
+        }
+    }
+}
+
+// Initialize color manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Force clear localStorage first
+    try {
+        localStorage.removeItem('lyricsColorHistory');
+        localStorage.removeItem('lyricsCurrentColor');
+        console.log('Cleared localStorage for fresh start');
+    } catch (e) {
+        console.warn('Could not clear localStorage:', e);
+    }
+    
+    window.lyricsColorManager = new LyricsColorManager();
+});
