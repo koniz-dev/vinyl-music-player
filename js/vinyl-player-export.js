@@ -440,11 +440,9 @@ function debugBrowserSupport() {
 function renderToCanvas() {
     if (!exportCtx) return;
 
-    // Update vinyl rotation (faster rotation for export)
-    // Always update rotation when audio is loaded, regardless of play state
-    if (exportAudio && exportAudio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
-        vinylRotation += 2.0;
-    }
+    // Update vinyl rotation (slower, more natural vinyl rotation)
+    // Always rotate during export regardless of audio state
+    vinylRotation += 0.3;
 
     // Create body background gradient (exact match with CSS)
     // background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)
@@ -498,50 +496,33 @@ function renderToCanvas() {
     exportCtx.quadraticCurveTo(musicPlayerX, musicPlayerY, musicPlayerX + radius, musicPlayerY);
     exportCtx.clip();
     
+    // Draw album art background if available (exact match with CSS - no blur effects)
+    if (albumArtImage) {
+        // Calculate proper scaling to cover entire music player area
+        const imgAspect = albumArtImage.width / albumArtImage.height;
+        const playerAspect = musicPlayerWidth / musicPlayerHeight;
+        
+        let drawWidth, drawHeight, offsetX, offsetY;
+        
+        if (imgAspect > playerAspect) {
+            drawHeight = musicPlayerHeight;
+            drawWidth = drawHeight * imgAspect;
+            offsetX = musicPlayerX + (musicPlayerWidth - drawWidth) / 2;
+            offsetY = musicPlayerY;
+        } else {
+            drawWidth = musicPlayerWidth;
+            drawHeight = drawWidth / imgAspect;
+            offsetX = musicPlayerX;
+            offsetY = musicPlayerY + (musicPlayerHeight - drawHeight) / 2;
+        }
+        
+        exportCtx.drawImage(albumArtImage, offsetX, offsetY, drawWidth, drawHeight);
+    }
+    
     // Music player background (exact match with CSS)
     // background: rgba(0, 0, 0, 0.4) - removed shadow effects
     exportCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     exportCtx.fillRect(musicPlayerX, musicPlayerY, musicPlayerWidth, musicPlayerHeight);
-    
-    // Draw blurred album art background if available (glassmorphism effect)
-    if (albumArtImage) {
-        exportCtx.save();
-        exportCtx.filter = 'blur(40px) brightness(0.6) saturate(1.3)';
-        
-        // Calculate proper scaling to cover entire canvas
-        const imgAspect = albumArtImage.width / albumArtImage.height;
-        const canvasAspect = exportCanvas.width / exportCanvas.height;
-        
-        let drawWidth, drawHeight, offsetX, offsetY;
-        
-        if (imgAspect > canvasAspect) {
-            drawHeight = exportCanvas.height + 300;
-            drawWidth = drawHeight * imgAspect;
-            offsetX = (exportCanvas.width - drawWidth) / 2;
-            offsetY = -150;
-        } else {
-            drawWidth = exportCanvas.width + 300;
-            drawHeight = drawWidth / imgAspect;
-            offsetX = -150;
-            offsetY = (exportCanvas.height - drawHeight) / 2;
-        }
-        
-        exportCtx.drawImage(albumArtImage, offsetX, offsetY, drawWidth, drawHeight);
-        exportCtx.restore();
-        
-        // Add glassmorphism overlay with gradient
-        const overlayGradient = exportCtx.createLinearGradient(0, 0, exportCanvas.width, exportCanvas.height);
-        overlayGradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)');
-        overlayGradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.2)');
-        overlayGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
-        
-        exportCtx.fillStyle = overlayGradient;
-        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-        
-        // Add subtle white overlay for glassmorphism effect
-        exportCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-    }
     
     exportCtx.restore();
 
@@ -568,14 +549,12 @@ function renderToCanvas() {
     // background: radial-gradient(circle at center, #1a1a1a 30%, #000 70%)
     // removed shadow effects
     
-    // Apply vinyl rotation when audio is loaded and playing
+    // Apply vinyl rotation (always rotate during export)
     // Animation is added via JS when playing: vinyl.style.animation = 'spin 8s linear infinite'
-    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
-        exportCtx.save();
-        exportCtx.translate(centerX, centerY);
-        exportCtx.rotate((vinylRotation * Math.PI) / 180);
-        exportCtx.translate(-centerX, -centerY);
-    }
+    exportCtx.save();
+    exportCtx.translate(centerX, centerY);
+    exportCtx.rotate((vinylRotation * Math.PI) / 180);
+    exportCtx.translate(-centerX, -centerY);
     
     const vinylGradient = exportCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, vinylRadius);
     vinylGradient.addColorStop(0, '#1a1a1a');
@@ -588,22 +567,18 @@ function renderToCanvas() {
     exportCtx.arc(centerX, centerY, vinylRadius, 0, 2 * Math.PI);
     exportCtx.fill();
     
-    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
-        exportCtx.restore();
-    }
+    exportCtx.restore();
     
     // Draw vinyl grooves (exact match with CSS .vinyl-grooves)
     // border: 1px solid rgba(255, 255, 255, 0.1)
     exportCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     exportCtx.lineWidth = 1;
     
-    // Apply same rotation to grooves only when playing
-    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
-        exportCtx.save();
-        exportCtx.translate(centerX, centerY);
-        exportCtx.rotate((vinylRotation * Math.PI) / 180);
-        exportCtx.translate(-centerX, -centerY);
-    }
+    // Apply same rotation to grooves (always rotate during export)
+    exportCtx.save();
+    exportCtx.translate(centerX, centerY);
+    exportCtx.rotate((vinylRotation * Math.PI) / 180);
+    exportCtx.translate(-centerX, -centerY);
     
     // Groove 1: width: 200px; height: 200px; top: 25px; left: 25px;
     const groove1Radius = vinylRadius * 0.8;
@@ -623,9 +598,7 @@ function renderToCanvas() {
     exportCtx.arc(centerX, centerY, groove3Radius, 0, 2 * Math.PI);
     exportCtx.stroke();
     
-    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
-        exportCtx.restore();
-    }
+    exportCtx.restore();
 
 
     // Vinyl center with CSS styling (like CSS .vinyl-center)
@@ -655,36 +628,28 @@ function renderToCanvas() {
     exportCtx.arc(centerX, centerY, centerRadius, 0, 2 * Math.PI);
     exportCtx.fill();
     
-    // Album art with realistic styling (like CSS .album-art)
+    // Album art with exact CSS styling (like CSS .album-art)
     const albumArtRadius = centerRadius * 0.83; // 100px for 120px center (like CSS width: 100px)
     if (albumArtImage) {
-        // Album art - removed shadow effects
+        // Album art - exact match with CSS: width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
         
         exportCtx.save();
         exportCtx.beginPath();
         exportCtx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);
         exportCtx.clip();
         
-        // Draw album art with slight rotation for dynamic effect
+        // Apply vinyl rotation to album art (rotate with vinyl)
         exportCtx.save();
         exportCtx.translate(centerX, centerY);
-        exportCtx.rotate((vinylRotation * 0.1 * Math.PI) / 180); // Slow rotation
+        exportCtx.rotate((vinylRotation * Math.PI) / 180);
         exportCtx.translate(-centerX, -centerY);
+        
+        // Draw album art with rotation
         exportCtx.drawImage(albumArtImage, centerX - albumArtRadius, centerY - albumArtRadius, 
                           albumArtRadius * 2, albumArtRadius * 2);
-        exportCtx.restore();
         
         exportCtx.restore();
-        
-        // Album art border with gradient
-        const borderGradient = exportCtx.createRadialGradient(centerX, centerY, albumArtRadius - 2, centerX, centerY, albumArtRadius);
-        borderGradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-        borderGradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
-        exportCtx.strokeStyle = borderGradient;
-        exportCtx.lineWidth = 3;
-        exportCtx.beginPath();
-        exportCtx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);
-        exportCtx.stroke();
+        exportCtx.restore();
     } else {
         // Default album art placeholder with realistic gradient (like CSS background)
         const albumGradient = exportCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, albumArtRadius);
@@ -746,7 +711,7 @@ function renderToCanvas() {
     // Create song info (exact match with CSS .song-info)
     // text-align: center; color: white;
     const songInfoX = vinylSectionX;
-    const songInfoY = vinylContainerY + vinylContainerHeight + 5; // Much closer to vinyl
+    const songInfoY = vinylContainerY + vinylContainerHeight + 40; // Lower lyrics position
     const songInfoWidth = vinylSectionWidth;
     const songInfoHeight = 100;
     
@@ -760,14 +725,14 @@ function renderToCanvas() {
     exportCtx.fillStyle = '#ffffff';
     exportCtx.font = `bold 24px 'Patrick Hand', Arial, sans-serif`;
     exportCtx.textAlign = 'center';
-    exportCtx.fillText(songTitle, songInfoX + songInfoWidth / 2, songInfoY + 40);
+    exportCtx.fillText(songTitle, songInfoX + songInfoWidth / 2, songInfoY);
 
     if (artistName) {
         // Artist name (exact match with CSS .vinyl-artist-name)
         // font-size: 16px; color: rgba(255, 255, 255, 0.9); font-weight: 400; letter-spacing: 1px;
         exportCtx.font = `16px 'Patrick Hand', Arial, sans-serif`;
         exportCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        exportCtx.fillText(artistName, songInfoX + songInfoWidth / 2, songInfoY + 65);
+        exportCtx.fillText(artistName, songInfoX + songInfoWidth / 2, songInfoY + 25);
     }
 
     // Display current lyrics based on audio time (exact match with CSS .vinyl-lyrics-text)
@@ -781,12 +746,12 @@ function renderToCanvas() {
         if (currentLyric) {
             exportCtx.font = `18px 'Patrick Hand', Arial, sans-serif`;
             exportCtx.fillStyle = '#ffd700';
-            exportCtx.fillText(currentLyric.text, songInfoX + songInfoWidth / 2, songInfoY + 90);
+            exportCtx.fillText(currentLyric.text, songInfoX + songInfoWidth / 2, songInfoY + 60);
         }
     } else if (lyricsText) {
         exportCtx.font = `18px 'Patrick Hand', Arial, sans-serif`;
         exportCtx.fillStyle = '#ffd700';
-        exportCtx.fillText(lyricsText, songInfoX + songInfoWidth / 2, songInfoY + 90);
+        exportCtx.fillText(lyricsText, songInfoX + songInfoWidth / 2, songInfoY + 60);
     }
 
     // Create progress container (exact match with CSS .progress-container)
@@ -794,7 +759,7 @@ function renderToCanvas() {
     const progressContainerWidth = musicPlayerWidth;
     const progressContainerHeight = 50;
     const progressContainerX = musicPlayerX;
-    const progressContainerY = musicPlayerY + musicPlayerHeight - 180; // More space from bottom
+    const progressContainerY = songInfoY + 80; // Position below lyrics (nâng lên 40px)
     
     // Draw progress bar (exact match with CSS .vinyl-progress-bar)
     // width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px;
@@ -886,7 +851,7 @@ function renderToCanvas() {
     const controlsWidth = musicPlayerWidth;
     const controlsHeight = 80;
     const controlsX = musicPlayerX;
-    const controlsY = musicPlayerY + musicPlayerHeight - 140; // Much closer to progress bar, more space from bottom
+    const controlsY = progressContainerY + progressContainerHeight - 20; // Hạ controls xuống 20px
     
     // Control buttons with equal spacing
     // display: flex; justify-content: space-around; align-items: center; padding: 10px 30px 30px;
