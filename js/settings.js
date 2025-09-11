@@ -585,17 +585,12 @@ class LyricsColorManager {
         // Only show color history section if there are colors
         const colorHistorySection = document.querySelector('.color-history-section');
         
-        // Debug log
-        console.log('Color history length:', this.colorHistory.length);
-        console.log('Color history:', this.colorHistory);
         
         if (this.colorHistory.length === 0) {
             colorHistorySection.style.display = 'none';
-            console.log('Hiding color history section');
             return;
         } else {
             colorHistorySection.style.display = 'block';
-            console.log('Showing color history section');
         }
         
         // Render existing colors
@@ -716,7 +711,6 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         localStorage.removeItem('lyricsColorHistory');
         localStorage.removeItem('lyricsCurrentColor');
-        console.log('Cleared localStorage for fresh start');
     } catch (e) {
         console.warn('Could not clear localStorage:', e);
     }
