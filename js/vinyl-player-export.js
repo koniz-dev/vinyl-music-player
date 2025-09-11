@@ -303,8 +303,7 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
         // Start audio playback
         exportAudio.play();
 
-        // Reset vinyl rotation for export
-        vinylRotation = 0;
+        // Don't reset vinyl rotation to maintain continuous rotation
         
         // Start rendering loop
         function renderLoop() {
@@ -442,7 +441,10 @@ function renderToCanvas() {
     if (!exportCtx) return;
 
     // Update vinyl rotation (faster rotation for export)
-    vinylRotation += 2.0;
+    // Always update rotation when audio is loaded, regardless of play state
+    if (exportAudio && exportAudio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+        vinylRotation += 2.0;
+    }
 
     // Create body background gradient (exact match with CSS)
     // background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)
@@ -497,16 +499,9 @@ function renderToCanvas() {
     exportCtx.clip();
     
     // Music player background (exact match with CSS)
-    // background: rgba(0, 0, 0, 0.4) + box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4)
-    exportCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    exportCtx.shadowBlur = 60;
-    exportCtx.shadowOffsetX = 0;
-    exportCtx.shadowOffsetY = 20;
-    
+    // background: rgba(0, 0, 0, 0.4) - removed shadow effects
     exportCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     exportCtx.fillRect(musicPlayerX, musicPlayerY, musicPlayerWidth, musicPlayerHeight);
-    
-    exportCtx.shadowBlur = 0;
     
     // Draw blurred album art background if available (glassmorphism effect)
     if (albumArtImage) {
@@ -562,7 +557,7 @@ function renderToCanvas() {
     const vinylContainerWidth = 250;
     const vinylContainerHeight = 250;
     const vinylContainerX = vinylSectionX + (vinylSectionWidth - vinylContainerWidth) / 2;
-    const vinylContainerY = vinylSectionY + (vinylSectionHeight - vinylContainerHeight) / 2 - 50; // Center with slight offset
+    const vinylContainerY = vinylSectionY + (vinylSectionHeight - vinylContainerHeight) / 2 - 20; // Better centered positioning
     
     // Draw vinyl record (centered within vinyl container) - matching CSS exactly
     const centerX = vinylContainerX + vinylContainerWidth / 2;
@@ -571,15 +566,11 @@ function renderToCanvas() {
 
     // Vinyl record (exact match with CSS .vinyl-record)
     // background: radial-gradient(circle at center, #1a1a1a 30%, #000 70%)
-    // box-shadow: 0 0 50px rgba(0, 0, 0, 0.5)
-    exportCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    exportCtx.shadowBlur = 50;
-    exportCtx.shadowOffsetX = 0;
-    exportCtx.shadowOffsetY = 0;
+    // removed shadow effects
     
-    // Apply vinyl rotation only when playing (CSS: animation: none by default)
+    // Apply vinyl rotation when audio is loaded and playing
     // Animation is added via JS when playing: vinyl.style.animation = 'spin 8s linear infinite'
-    if (exportAudio && !exportAudio.paused) {
+    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
         exportCtx.save();
         exportCtx.translate(centerX, centerY);
         exportCtx.rotate((vinylRotation * Math.PI) / 180);
@@ -597,10 +588,9 @@ function renderToCanvas() {
     exportCtx.arc(centerX, centerY, vinylRadius, 0, 2 * Math.PI);
     exportCtx.fill();
     
-    if (exportAudio && !exportAudio.paused) {
+    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
         exportCtx.restore();
     }
-    exportCtx.shadowBlur = 0;
     
     // Draw vinyl grooves (exact match with CSS .vinyl-grooves)
     // border: 1px solid rgba(255, 255, 255, 0.1)
@@ -608,7 +598,7 @@ function renderToCanvas() {
     exportCtx.lineWidth = 1;
     
     // Apply same rotation to grooves only when playing
-    if (exportAudio && !exportAudio.paused) {
+    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
         exportCtx.save();
         exportCtx.translate(centerX, centerY);
         exportCtx.rotate((vinylRotation * Math.PI) / 180);
@@ -633,43 +623,10 @@ function renderToCanvas() {
     exportCtx.arc(centerX, centerY, groove3Radius, 0, 2 * Math.PI);
     exportCtx.stroke();
     
-    if (exportAudio && !exportAudio.paused) {
+    if (exportAudio && exportAudio.readyState >= 2 && !exportAudio.paused) {
         exportCtx.restore();
     }
 
-    // Draw tonearm (exact match with CSS .tonearm)
-    // position: absolute; top: 20px; right: 20px; width: 3px; height: 120px;
-    // background: linear-gradient(to bottom, #fff, #ccc); transform: rotate(25deg);
-    const tonearmX = centerX + vinylRadius * 0.8;
-    const tonearmY = centerY - vinylRadius * 0.8;
-    const tonearmLength = vinylRadius * 0.48; // 120px for 250px vinyl
-    
-    exportCtx.save();
-    exportCtx.translate(tonearmX, tonearmY);
-    exportCtx.rotate(25 * Math.PI / 180); // 25 degrees like CSS
-    
-    // Tonearm body (exact match with CSS)
-    // background: linear-gradient(to bottom, #fff, #ccc)
-    const tonearmGradient = exportCtx.createLinearGradient(0, 0, 0, tonearmLength);
-    tonearmGradient.addColorStop(0, '#fff');
-    tonearmGradient.addColorStop(1, '#ccc');
-    
-    exportCtx.fillStyle = tonearmGradient;
-    exportCtx.fillRect(-1.5, 0, 3, tonearmLength);
-    
-    // Tonearm pivot (exact match with CSS ::before)
-    // top: -8px; left: -4px; width: 10px; height: 10px; background: #fff;
-    exportCtx.fillStyle = '#fff';
-    exportCtx.beginPath();
-    exportCtx.arc(0, -8, 5, 0, 2 * Math.PI);
-    exportCtx.fill();
-    
-    // Tonearm needle (exact match with CSS ::after)
-    // bottom: -5px; left: -2px; width: 6px; height: 10px; background: #666;
-    exportCtx.fillStyle = '#666';
-    exportCtx.fillRect(-1, tonearmLength - 5, 3, 10);
-    
-    exportCtx.restore();
 
     // Vinyl center with CSS styling (like CSS .vinyl-center)
     const centerRadius = vinylRadius * 0.48; // 120px for 250px vinyl (like CSS width: 120px)
@@ -680,12 +637,7 @@ function renderToCanvas() {
     centerGradient.addColorStop(0, '#667eea'); // 0%
     centerGradient.addColorStop(1, '#764ba2'); // 100%
     
-    // Vinyl center shadow (exact match with CSS)
-    // box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3)
-    exportCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    exportCtx.shadowBlur = 20;
-    exportCtx.shadowOffsetX = 0;
-    exportCtx.shadowOffsetY = 0;
+    // Vinyl center - removed shadow effects
     
     exportCtx.fillStyle = centerGradient;
     exportCtx.beginPath();
@@ -693,7 +645,6 @@ function renderToCanvas() {
     exportCtx.fill();
     
     // Add glassmorphism highlight to center
-    exportCtx.shadowBlur = 0;
     const centerHighlight = exportCtx.createRadialGradient(centerX - centerRadius * 0.3, centerY - centerRadius * 0.3, 0, centerX - centerRadius * 0.3, centerY - centerRadius * 0.3, centerRadius * 0.8);
     centerHighlight.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
     centerHighlight.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
@@ -707,11 +658,7 @@ function renderToCanvas() {
     // Album art with realistic styling (like CSS .album-art)
     const albumArtRadius = centerRadius * 0.83; // 100px for 120px center (like CSS width: 100px)
     if (albumArtImage) {
-        // Album art shadow with realistic depth
-        exportCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-        exportCtx.shadowBlur = 15;
-        exportCtx.shadowOffsetX = 0;
-        exportCtx.shadowOffsetY = 8;
+        // Album art - removed shadow effects
         
         exportCtx.save();
         exportCtx.beginPath();
@@ -730,7 +677,6 @@ function renderToCanvas() {
         exportCtx.restore();
         
         // Album art border with gradient
-        exportCtx.shadowBlur = 0;
         const borderGradient = exportCtx.createRadialGradient(centerX, centerY, albumArtRadius - 2, centerX, centerY, albumArtRadius);
         borderGradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
         borderGradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
@@ -757,22 +703,50 @@ function renderToCanvas() {
         exportCtx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);
         exportCtx.stroke();
         
-        // Add music note icon with shadow
-        exportCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        exportCtx.shadowBlur = 5;
-        exportCtx.shadowOffsetX = 0;
-        exportCtx.shadowOffsetY = 2;
+        // Add music note icon - removed shadow effects
         exportCtx.fillStyle = '#ffffff';
         exportCtx.font = `${albumArtRadius * 0.4}px Arial`;
         exportCtx.textAlign = 'center';
         exportCtx.fillText('🎵', centerX, centerY + albumArtRadius * 0.15);
-        exportCtx.shadowBlur = 0;
     }
+
+    // Draw tonearm after album art (exact match with CSS .tonearm)
+    // position: absolute; top: 20px; right: 20px; width: 3px; height: 120px;
+    // background: linear-gradient(to bottom, #fff, #ccc); transform: rotate(25deg);
+    // Calculate tonearm position to match CSS: top: 20px; right: 20px from vinyl container
+    const tonearmX = vinylContainerX + vinylContainerWidth - 20; // right: 20px from container
+    const tonearmY = vinylContainerY + 20; // top: 20px from container
+    const tonearmLength = 120; // height: 120px as per CSS
+    
+    exportCtx.save();
+    exportCtx.translate(tonearmX, tonearmY);
+    exportCtx.rotate(25 * Math.PI / 180); // 25 degrees like CSS
+    
+    // Draw tonearm as one seamless piece
+    // First, draw the main tonearm body with gradient
+    const tonearmGradient = exportCtx.createLinearGradient(0, 0, 0, tonearmLength);
+    tonearmGradient.addColorStop(0, '#fff');
+    tonearmGradient.addColorStop(1, '#ccc');
+    
+    exportCtx.fillStyle = tonearmGradient;
+    exportCtx.fillRect(-1.5, 0, 3, tonearmLength);
+    
+    // Draw pivot as part of tonearm body (seamless connection)
+    exportCtx.fillStyle = '#fff';
+    exportCtx.beginPath();
+    exportCtx.arc(-1.5, 0, 5, 0, 2 * Math.PI); // Connected to tonearm body
+    exportCtx.fill();
+    
+    // Draw needle as part of tonearm body (seamless connection)
+    exportCtx.fillStyle = '#666';
+    exportCtx.fillRect(-2, tonearmLength - 5, 6, 10); // Connected to tonearm body
+    
+    exportCtx.restore();
 
     // Create song info (exact match with CSS .song-info)
     // text-align: center; color: white;
     const songInfoX = vinylSectionX;
-    const songInfoY = vinylContainerY + vinylContainerHeight + 30; // margin-bottom: 30px from vinyl-container
+    const songInfoY = vinylContainerY + vinylContainerHeight + 5; // Much closer to vinyl
     const songInfoWidth = vinylSectionWidth;
     const songInfoHeight = 100;
     
@@ -805,24 +779,14 @@ function renderToCanvas() {
         );
         
         if (currentLyric) {
-            exportCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            exportCtx.shadowBlur = 4;
-            exportCtx.shadowOffsetX = 0;
-            exportCtx.shadowOffsetY = 2;
             exportCtx.font = `18px 'Patrick Hand', Arial, sans-serif`;
             exportCtx.fillStyle = '#ffd700';
             exportCtx.fillText(currentLyric.text, songInfoX + songInfoWidth / 2, songInfoY + 90);
-            exportCtx.shadowBlur = 0;
         }
     } else if (lyricsText) {
-        exportCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        exportCtx.shadowBlur = 4;
-        exportCtx.shadowOffsetX = 0;
-        exportCtx.shadowOffsetY = 2;
         exportCtx.font = `18px 'Patrick Hand', Arial, sans-serif`;
         exportCtx.fillStyle = '#ffd700';
         exportCtx.fillText(lyricsText, songInfoX + songInfoWidth / 2, songInfoY + 90);
-        exportCtx.shadowBlur = 0;
     }
 
     // Create progress container (exact match with CSS .progress-container)
@@ -830,21 +794,21 @@ function renderToCanvas() {
     const progressContainerWidth = musicPlayerWidth;
     const progressContainerHeight = 50;
     const progressContainerX = musicPlayerX;
-    const progressContainerY = musicPlayerY + musicPlayerHeight - 120; // Position at bottom
+    const progressContainerY = musicPlayerY + musicPlayerHeight - 180; // More space from bottom
     
     // Draw progress bar (exact match with CSS .vinyl-progress-bar)
     // width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px;
     const progressBarWidth = progressContainerWidth - 60; // padding: 0 30px
-    const progressBarHeight = 4; // height: 4px like CSS
+    const progressBarHeight = 4; // Original height
     const progressBarX = progressContainerX + 30; // padding-left: 30px
     const progressBarY = progressContainerY + 10;
     
-    // Progress bar background (exact match with CSS)
+    // Progress bar background with better border-radius
     // background: rgba(255, 255, 255, 0.2); border-radius: 2px;
     exportCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
     exportCtx.save();
     exportCtx.beginPath();
-    const bgRadius = 2; // border-radius: 2px like CSS
+    const bgRadius = 2; // Original border-radius matching height
     exportCtx.moveTo(progressBarX + bgRadius, progressBarY);
     exportCtx.lineTo(progressBarX + progressBarWidth - bgRadius, progressBarY);
     exportCtx.quadraticCurveTo(progressBarX + progressBarWidth, progressBarY, progressBarX + progressBarWidth, progressBarY + bgRadius);
@@ -860,7 +824,7 @@ function renderToCanvas() {
     // Progress bar fill (exact match with CSS .progress)
     // background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 2px;
     let progressPercent = 0.0;
-    if (exportAudio && !isNaN(exportAudio.currentTime) && !isNaN(exportAudio.duration) && exportAudio.duration > 0) {
+    if (exportAudio && exportAudio.readyState >= 2 && !isNaN(exportAudio.currentTime) && !isNaN(exportAudio.duration) && exportAudio.duration > 0) {
         progressPercent = Math.min(exportAudio.currentTime / exportAudio.duration, 1.0);
     }
     const progressWidth = progressBarWidth * progressPercent;
@@ -871,7 +835,7 @@ function renderToCanvas() {
     exportCtx.fillStyle = progressGradient;
     exportCtx.save();
     exportCtx.beginPath();
-    const fillRadius = 2; // border-radius: 2px like CSS
+    const fillRadius = 2; // Original border-radius to match background
     exportCtx.moveTo(progressBarX + fillRadius, progressBarY);
     exportCtx.lineTo(progressBarX + progressWidth - fillRadius, progressBarY);
     exportCtx.quadraticCurveTo(progressBarX + progressWidth, progressBarY, progressBarX + progressWidth, progressBarY + fillRadius);
@@ -922,17 +886,23 @@ function renderToCanvas() {
     const controlsWidth = musicPlayerWidth;
     const controlsHeight = 80;
     const controlsX = musicPlayerX;
-    const controlsY = musicPlayerY + musicPlayerHeight - 80; // Position at bottom
+    const controlsY = musicPlayerY + musicPlayerHeight - 140; // Much closer to progress bar, more space from bottom
     
-    // Control buttons (exact match with CSS .controls)
+    // Control buttons with equal spacing
     // display: flex; justify-content: space-around; align-items: center; padding: 10px 30px 30px;
-    const buttonSize = 50;
+    const buttonSize = 45; // Smaller buttons to fit better
+    const playButtonSize = 70; // Play button is larger
     const availableWidth = controlsWidth - 60; // Available space minus padding (30px each side)
-    const totalButtonWidth = 5 * buttonSize; // 5 buttons
+    
+    // Calculate spacing for equal distribution
+    // We have 4 regular buttons (45px each) + 1 play button (70px) = 250px total button width
+    const totalButtonWidth = 4 * buttonSize + playButtonSize; // 4 regular + 1 play button
     const totalSpacing = availableWidth - totalButtonWidth; // Remaining space for spacing
-    const buttonSpacing = totalSpacing / 4; // 4 gaps between 5 buttons
+    const buttonSpacing = totalSpacing / 4; // Equal spacing between buttons
     const startButtonX = controlsX + 30; // padding-left: 30px
-    const buttonY = controlsY + 15; // padding-top: 10px
+    
+    // Center buttons vertically within controls area
+    const buttonY = controlsY + (controlsHeight - playButtonSize) / 2; // Center the largest button
     
     // Control button icons (exact match with HTML)
     // Play button should show pause icon when playing
@@ -940,16 +910,14 @@ function renderToCanvas() {
     const buttonIcons = ['🔊', '⏮', playIcon, '⏭', '↻'];
     
     // Control buttons (exact match with CSS .control-btn)
+    let currentX = startButtonX;
+    
     for (let i = 0; i < 5; i++) {
-        const buttonX = startButtonX + i * (buttonSize + buttonSpacing) + buttonSize/2;
-        const buttonYCenter = buttonY + buttonSize/2;
-        
         // Special styling for play button (exact match with CSS .vinyl-play-pause-btn)
         if (i === 2) { // Play button is at index 2
             // width: 70px !important; height: 70px !important; font-size: 28px !important; background: rgba(255, 255, 255, 0.15) !important;
-            const playButtonSize = 70;
-            const playButtonX = startButtonX + i * (buttonSize + buttonSpacing) + (buttonSize - playButtonSize)/2 + playButtonSize/2;
-            const playButtonYCenter = buttonY + (buttonSize - playButtonSize)/2 + playButtonSize/2;
+            const playButtonX = currentX + playButtonSize/2;
+            const playButtonYCenter = buttonY + playButtonSize/2;
             
             exportCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
             exportCtx.beginPath();
@@ -961,9 +929,15 @@ function renderToCanvas() {
             exportCtx.textAlign = 'center';
             exportCtx.textBaseline = 'middle';
             exportCtx.fillText(buttonIcons[i], playButtonX, playButtonYCenter);
+            
+            // Move to next position
+            currentX += playButtonSize + buttonSpacing;
         } else {
-            // Regular button styling
+            // Regular button styling - center them with the play button
             // background: rgba(255, 255, 255, 0.1)
+            const buttonX = currentX + buttonSize/2;
+            const buttonYCenter = buttonY + playButtonSize/2; // Align with play button center
+            
             exportCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
             exportCtx.beginPath();
             exportCtx.arc(buttonX, buttonYCenter, buttonSize/2, 0, 2 * Math.PI);
@@ -974,6 +948,9 @@ function renderToCanvas() {
             exportCtx.textAlign = 'center';
             exportCtx.textBaseline = 'middle';
             exportCtx.fillText(buttonIcons[i], buttonX, buttonYCenter);
+            
+            // Move to next position
+            currentX += buttonSize + buttonSpacing;
         }
     }
 }
