@@ -12,100 +12,9 @@ body {
     font-family: 'Patrick Hand', cursive;
 }
 
-/* Common gradient backgrounds */
-.gradient-bg-1 {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
-}
+/* Common gradient backgrounds removed as they are not used */
 
-.gradient-bg-2 {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-}
-
-.gradient-bg-3 {
-    background: linear-gradient(45deg, #ff6b6b, #feca57);
-}
-
-/* Common text gradients */
-.text-gradient-1 {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.text-gradient-2 {
-    background: linear-gradient(45deg, #ff6b6b, #feca57);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* Common button styles */
-.btn-primary {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 16px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: linear-gradient(45deg, #5a67d8, #6b46c1);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-}
-
-.btn-primary:disabled {
-    background: #a0aec0;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-secondary {
-    background: #4a5568;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.btn-secondary:hover {
-    background: #2d3748;
-    transform: translateY(-1px);
-}
-
-.btn-danger {
-    background: #e53e3e;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-danger:hover {
-    background: #c53030;
-    transform: translateY(-1px);
-}
+/* Common button styles removed as they are not used */
 
 /* Common form styles */
 .form-input {
@@ -227,102 +136,12 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }
 
-/* Common animations */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { 
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-/* Common utility classes */
-.fade-in {
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.slide-up {
-    animation: slideUp 0.3s ease-in-out;
-}
-
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-.text-center {
-    text-align: center;
-}
-
-.text-white {
-    color: white;
-}
-
-.text-gray {
-    color: #718096;
-}
-
-.text-gray-dark {
-    color: #4a5568;
-}
-
-.bg-transparent {
-    background: transparent;
-}
-
-.bg-white {
-    background: white;
-}
-
-.bg-gray-light {
-    background: #f7fafc;
-}
-
-.rounded {
-    border-radius: 8px;
-}
-
-.rounded-lg {
-    border-radius: 12px;
-}
-
-.rounded-xl {
-    border-radius: 24px;
-}
-
-.shadow {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.shadow-lg {
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.shadow-xl {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
+/* Common animations and utility classes removed as they are not used */
 
 /* Common responsive breakpoints */
 @media (max-width: 768px) {
     .container {
         padding: 20px;
-    }
-    
-    .btn-primary,
-    .btn-secondary {
-        width: 100%;
     }
 }
 

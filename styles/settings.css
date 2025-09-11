@@ -124,47 +124,9 @@
     font-size: 14px;
 }
 
-.remove-btn {
-    background: #e53e3e;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: all 0.2s ease;
-}
+/* remove-btn styles removed as they are not used */
 
-.remove-btn:hover {
-    background: #c53030;
-    transform: translateY(-1px);
-}
-
-.lyrics-area {
-    width: 100%;
-    min-height: 120px;
-    padding: 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 14px;
-    resize: vertical;
-    font-family: inherit;
-    transition: all 0.3s ease;
-}
-
-.lyrics-area:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.character-count {
-    text-align: right;
-    font-size: 12px;
-    color: #a0aec0;
-    margin-top: 4px;
-}
+/* lyrics-area and character-count styles removed as they are not used */
 
 .lyrics-container {
     margin-bottom: 16px;

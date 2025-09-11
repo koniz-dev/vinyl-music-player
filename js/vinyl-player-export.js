@@ -1,4 +1,3 @@
-// Export MP4 functionality
 let mediaRecorder = null;
 let recordedChunks = [];
 let exportCanvas = null;
@@ -8,19 +7,13 @@ let vinylRotation = 0;
 let albumArtImage = null;
 let exportAudio = null;
 let exportLyrics = [];
-// isExporting is declared in vinyl-player.js
-
-// Create export canvas
 function createExportCanvas() {
     exportCanvas = document.createElement('canvas');
     
-    // Get canvas dimensions with fallback system
-    let canvasWidth = 720; // Default fallback
-    let canvasHeight = 1280; // Default fallback
+    let canvasWidth = 720;
+    let canvasHeight = 1280;
     
-    // Try to get dimensions from various sources
     const dimensionSources = [
-        // 1. Vinyl player dimensions
         () => {
             const vinylPlayer = document.querySelector('.vinyl-player');
             if (vinylPlayer) {
@@ -31,7 +24,6 @@ function createExportCanvas() {
             }
             return null;
         },
-        // 2. Iframe dimensions
         () => {
             const iframe = window.frameElement;
             if (iframe) {
@@ -42,12 +34,11 @@ function createExportCanvas() {
             }
             return null;
         },
-        // 3. Window dimensions with aspect ratio
         () => {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             if (windowWidth > 0 && windowHeight > 0) {
-                const aspectRatio = 9 / 16; // Mobile portrait ratio
+                const aspectRatio = 9 / 16;
                 if (windowWidth / windowHeight > aspectRatio) {
                     return { width: windowHeight * aspectRatio, height: windowHeight };
                 } else {
@@ -58,53 +49,44 @@ function createExportCanvas() {
         }
     ];
     
-    // Try each source until we get valid dimensions
     for (const getDimensions of dimensionSources) {
         try {
             const dimensions = getDimensions();
             if (dimensions) {
                 canvasWidth = dimensions.width;
                 canvasHeight = dimensions.height;
-                break; // Found valid dimensions, stop trying
+                break;
             }
         } catch (e) {
-            // Continue to next source
         }
     }
     
-    // Ensure minimum dimensions for quality
     exportCanvas.width = Math.max(canvasWidth, 400);
     exportCanvas.height = Math.max(canvasHeight, 600);
     
     exportCtx = exportCanvas.getContext('2d');
     
-    // Set canvas style for better rendering
     exportCtx.imageSmoothingEnabled = true;
     exportCtx.imageSmoothingQuality = 'high';
 }
 
-// Start video recording
 async function startVideoRecording(audioFile, songTitle, artistName, albumArtFile) {
-    // Prevent duplicate exports
     if (isExporting) {
         return;
     }
     isExporting = true;
     
-    // Store current audio state and pause main audio to prevent conflicts
     let wasMainAudioPlaying = false;
     if (audioElement && !audioElement.paused) {
         wasMainAudioPlaying = true;
         audioElement.pause();
         
-        // Update UI to reflect paused state
         isPlaying = false;
         updatePlayerState();
         stopProgressTimer();
         stopLyricsTimer();
     }
     
-    // Disable all control buttons during export
     const controls = document.querySelectorAll('.control-btn');
     controls.forEach(btn => {
         btn.disabled = true;
@@ -115,9 +97,7 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
     let exportTimeout = null;
     
     try {
-        // Set overall timeout (5 minutes)
         exportTimeout = setTimeout(() => {
-            // Restore main audio playback state
             if (wasMainAudioPlaying && audioElement) {
                 audioElement.play().then(() => {
                     isPlaying = true;
@@ -125,11 +105,9 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                     startProgressTimer();
                     startLyricsTimer();
                 }).catch(error => {
-                    console.log('Could not resume main audio:', error);
                 });
             }
             
-            // Re-enable all control buttons
             const controls = document.querySelectorAll('.control-btn');
             controls.forEach(btn => {
                 btn.disabled = false;
@@ -137,7 +115,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                 btn.style.cursor = 'pointer';
             });
             
-            // Reset export flag
             isExporting = false;
             
             window.postMessage({
@@ -264,7 +241,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                 }, '*');
                 
             } catch (e) {
-                console.error('Error sending completion message:', e);
             }
             
             // Restore main audio playback state
@@ -275,7 +251,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                     startProgressTimer();
                     startLyricsTimer();
                 }).catch(error => {
-                    console.log('Could not resume main audio:', error);
                 });
             }
             
@@ -421,7 +396,6 @@ function debugBrowserSupport() {
         userAgent: navigator.userAgent
     };
     
-    console.log('Browser Support Debug:', support);
     
     let message = 'Browser Support Check:\n\n';
     message += `MediaRecorder: ${support.mediaRecorder ? '✅' : '❌'}\n`;
@@ -759,7 +733,7 @@ function renderToCanvas() {
     const progressContainerWidth = musicPlayerWidth;
     const progressContainerHeight = 50;
     const progressContainerX = musicPlayerX;
-    const progressContainerY = songInfoY + 80; // Position below lyrics (nâng lên 40px)
+    const progressContainerY = songInfoY + 80; // Position below lyrics (raised 40px)
     
     // Draw progress bar (exact match with CSS .vinyl-progress-bar)
     // width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px;
@@ -851,7 +825,7 @@ function renderToCanvas() {
     const controlsWidth = musicPlayerWidth;
     const controlsHeight = 80;
     const controlsX = musicPlayerX;
-    const controlsY = progressContainerY + progressContainerHeight - 20; // Hạ controls xuống 20px
+    const controlsY = progressContainerY + progressContainerHeight - 20; // Lower controls by 20px
     
     // Control buttons with equal spacing
     // display: flex; justify-content: space-around; align-items: center; padding: 10px 30px 30px;

@@ -1,6 +1,6 @@
 # 🎵 Vinyl Music Player
 
-A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as MP4 files.
+A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as MP4 files. Features realistic vinyl record animations, audio visualization, and professional video export capabilities.
 
 ![Vinyl Music Player](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
@@ -10,11 +10,12 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ## ✨ Features
 
 ### 🎧 Music Player
-- **Vinyl Record Animation**: Realistic spinning vinyl with tonearm animation
-- **Audio Controls**: Play, pause, mute, repeat, and progress scrubbing
-- **Real-time Visualizer**: Dynamic audio visualization bars
-- **Album Art Support**: Beautiful background effects with album artwork
+- **Vinyl Record Animation**: Realistic spinning vinyl with tonearm animation and groove effects
+- **Audio Controls**: Play, pause, mute, repeat, and progress scrubbing with click-to-seek
+- **Real-time Visualizer**: Dynamic audio visualization bars that respond to music
+- **Album Art Support**: Beautiful background effects with album artwork integration
 - **Responsive Design**: Works perfectly on desktop and mobile devices
+- **Progress Tracking**: Real-time progress display with current time and duration
 
 ### 📝 Lyrics System
 - **Synchronized Lyrics**: Time-based lyrics display with smooth transitions
@@ -24,8 +25,10 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 
 ### 🎬 Video Export
 - **MP4 Export**: Create professional music videos with your audio and lyrics
-- **High Quality**: Export videos with album art backgrounds and synchronized lyrics
+- **High Quality**: Export videos in 720x1280 resolution with album art backgrounds
+- **Synchronized Lyrics**: Lyrics appear at exact timing with smooth transitions
 - **Progress Tracking**: Real-time export progress with detailed status updates
+- **Canvas Rendering**: High-quality canvas-based video rendering
 - **Cross-browser Support**: Works with modern browsers supporting MediaRecorder API
 
 ### 🎨 Beautiful UI
@@ -33,6 +36,18 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Gradient Backgrounds**: Stunning visual effects and color schemes
 - **Interactive Elements**: Hover effects, smooth transitions, and responsive feedback
 - **Custom Fonts**: Beautiful typography with Patrick Hand font family
+
+### 📱 Progressive Web App (PWA)
+- **Offline Support**: Works without internet connection
+- **App-like Experience**: Install as a native app on mobile devices
+- **Responsive Design**: Optimized for all screen sizes
+- **Fast Loading**: Optimized performance with service worker support
+
+### 🎛️ Advanced Controls
+- **Drag & Drop**: Easy file upload with drag and drop support
+- **Real-time Preview**: See changes instantly in the vinyl player
+- **Export Progress**: Detailed progress tracking during video export
+- **Error Handling**: Comprehensive error messages and recovery options
 
 ## 🚀 Quick Start
 
@@ -66,25 +81,37 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ## 📖 How to Use
 
 ### 1. Upload Your Music
-- Click on the **Audio File** upload area in the settings panel
-- Select an MP3 file from your computer
-- The music will automatically start playing
+- Click on the **Audio File** upload area in the settings panel (left side)
+- Select an MP3, WAV, or other supported audio file from your computer
+- The music will automatically start playing and the vinyl will begin spinning
+- Use the play/pause button to control playback
 
 ### 2. Add Song Information
-- **Song Title**: Enter the name of your song (required)
-- **Artist Name**: Enter the artist name (optional)
-- **Album Art**: Upload an image file for the album cover (optional)
+- **Song Title**: Enter the name of your song (required for display)
+- **Artist Name**: Enter the artist name (optional, for display)
+- **Album Art**: Upload an image file (JPG, PNG) for the album cover (optional)
+- Changes are reflected immediately in the vinyl player
 
 ### 3. Add Lyrics (Optional)
 - Click **"Add Lyrics"** to create a new lyrics entry
-- Set the **Start Time** and **End Time** in MM:SS format
+- Set the **Start Time** and **End Time** in MM:SS format (e.g., 01:30)
 - Enter the **Lyrics Content** for that time period
-- Add multiple lyrics entries for the entire song
+- Add multiple lyrics entries to cover the entire song
+- Lyrics will appear automatically during playback at the specified times
+- Use the "×" button to remove individual lyrics entries
 
-### 4. Export Video
+### 4. Control Playback
+- **Play/Pause**: Click the play button to start/stop music
+- **Progress Bar**: Click anywhere on the progress bar to jump to that time
+- **Mute**: Toggle audio on/off
+- **Repeat**: Enable/disable repeat mode
+- **Volume**: Adjust using your system volume controls
+
+### 5. Export Video
 - Click **"Export MP4 Video"** when ready
-- Wait for the export process to complete
-- Download your custom music video
+- The export process will create a 720x1280 video with your audio and lyrics
+- Wait for the export process to complete (progress is shown)
+- Download your custom music video automatically when finished
 
 ## 🎯 Features in Detail
 
@@ -113,6 +140,9 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **No Backend Required**: Everything runs in the browser
 - **MediaRecorder API**: For video export functionality
 - **Canvas API**: For rendering the vinyl player and effects
+- **Web Audio API**: For audio processing and visualization
+- **File API**: For handling audio and image uploads
+- **PWA Support**: Service worker and manifest for app-like experience
 
 ### Browser Support
 - **Chrome**: Full support including video export
@@ -123,27 +153,28 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ### File Structure
 ```
 vinyl-music-player/
-├── index.html              # Main application entry point
-├── package.json            # Project configuration
-├── package-lock.json       # Dependency lock file
-├── README.md              # This file
-├── favicon/               # Favicon and PWA icons
-│   ├── favicon.ico
-│   ├── favicon-16x16.png
-│   ├── favicon-32x32.png
-│   ├── android-chrome-192x192.png
-│   ├── android-chrome-512x512.png
-│   └── site.webmanifest   # PWA manifest
-├── js/                    # JavaScript files
-│   ├── index.js           # Main application logic
-│   ├── settings.js        # Settings panel functionality
-│   ├── vinyl-player.js    # Vinyl player controls
-│   └── vinyl-player-export.js # Video export functionality
-└── styles/                # CSS stylesheets
-    ├── common.css         # Shared styles and utilities
-    ├── index.css          # Main page styles
-    ├── settings.css       # Settings panel styles
-    └── vinyl-player.css   # Vinyl player styles
+├── index.html                    # Main application entry point
+├── package.json                  # Project configuration and dependencies
+├── package-lock.json             # Dependency lock file
+├── README.md                     # Project documentation
+├── favicon/                      # Favicon and PWA icons
+│   ├── favicon.ico               # Main favicon
+│   ├── favicon-16x16.png         # 16x16 favicon
+│   ├── favicon-32x32.png         # 32x32 favicon
+│   ├── apple-touch-icon.png      # Apple touch icon
+│   ├── android-chrome-192x192.png # Android Chrome icon (192x192)
+│   ├── android-chrome-512x512.png # Android Chrome icon (512x512)
+│   └── site.webmanifest          # PWA manifest file
+├── js/                           # JavaScript modules
+│   ├── index.js                  # Main application logic and initialization
+│   ├── settings.js               # Settings panel and lyrics management
+│   ├── vinyl-player.js           # Vinyl player controls and animations
+│   └── vinyl-player-export.js    # Video export functionality
+└── styles/                       # CSS stylesheets
+    ├── common.css                # Shared styles and utilities
+    ├── index.css                 # Main page layout and styles
+    ├── settings.css              # Settings panel styles
+    └── vinyl-player.css          # Vinyl player specific styles
 ```
 
 ## 🎨 Customization
@@ -159,6 +190,20 @@ vinyl-music-player/
 - Enhance the visualizer effects
 - Add new export formats
 
+## 📁 Supported File Formats
+
+### Audio Files
+- **MP3**: Recommended format, best compatibility
+- **WAV**: High quality, larger file size
+- **OGG**: Open source format
+- **M4A**: Apple format
+- **AAC**: Advanced audio coding
+
+### Image Files
+- **JPG/JPEG**: Recommended for album art
+- **PNG**: Supports transparency
+- **WebP**: Modern format with good compression
+
 ## 🐛 Troubleshooting
 
 ### Common Issues
@@ -167,16 +212,24 @@ vinyl-music-player/
 - Ensure you're using a supported browser (Chrome, Firefox, Edge)
 - Check that MediaRecorder API is supported
 - Try with a shorter audio file first
+- Make sure you have sufficient disk space for the export
 
 **Audio Not Playing**
 - Check that the audio file format is supported (MP3 recommended)
 - Ensure the file is not corrupted
 - Try refreshing the page
+- Check browser console for error messages
 
 **Lyrics Not Appearing**
 - Verify the timing format is correct (MM:SS)
 - Check that start time is before end time
 - Ensure lyrics content is not empty
+- Make sure the audio is playing when the lyrics should appear
+
+**Vinyl Not Spinning**
+- Ensure audio is loaded and playing
+- Check that the vinyl player is visible on screen
+- Try refreshing the page
 
 ### Browser Compatibility
 - **Chrome 60+**: Full support
@@ -227,9 +280,26 @@ If you encounter any issues or have questions:
 - **Create an Issue**: [GitHub Issues](https://github.com/koniz-dev/vinyl-music-player/issues)
 - **Contact**: [koniz-dev](https://github.com/koniz-dev)
 
+## 🌏 Multi-language Support
+
+### Vietnamese (Tiếng Việt)
+This project supports Vietnamese language and is developed by a Vietnamese developer. The interface and documentation are available in both English and Vietnamese.
+
+### Language Features
+- **Interface**: Clean, intuitive design that works in any language
+- **Lyrics Support**: Add lyrics in any language including Vietnamese
+- **Documentation**: README available in multiple languages
+- **Community**: Vietnamese developer community support
+
 ## 🎵 Enjoy Your Music!
 
 Create beautiful music videos with your favorite songs and share them with the world. The Vinyl Music Player makes it easy to create professional-looking content with just a few clicks.
+
+Perfect for:
+- **Content Creators**: Create engaging music videos for social media
+- **Musicians**: Showcase your music with synchronized lyrics
+- **Music Lovers**: Create personalized music videos
+- **Educators**: Use for music education and presentations
 
 ---
 
