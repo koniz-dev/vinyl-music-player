@@ -168,8 +168,6 @@ class DynamicGradient {
         document.body.style.background = gradients;
         
         this.addGradientAnimation(gradients);
-        
-        console.log('🎨 Applied blended gradient:', gradients);
     }
 
     /**
@@ -318,8 +316,6 @@ class DynamicGradient {
 
 document.addEventListener('DOMContentLoaded', function() {
     const gradientManager = new DynamicGradient();
-    
-    console.log('🎨 Dynamic Gradient initialized! Gradient changes only on page reload.');
 });
 
 if (typeof module !== 'undefined' && module.exports) {

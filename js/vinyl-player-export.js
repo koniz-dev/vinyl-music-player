@@ -323,7 +323,7 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                 startProgressTimer();
                 startLyricsTimer();
             }).catch(error => {
-                console.log('Could not resume main audio:', error);
+                // Audio resume failed silently
             });
         }
         
@@ -685,7 +685,7 @@ function renderToCanvas() {
     // Song title (exact match with CSS .vinyl-song-title)
     // font-size: 24px; font-weight: bold; margin-top: 16px; letter-spacing: 2px;
     exportCtx.fillStyle = '#ffffff';
-    exportCtx.font = `bold 24px 'Patrick Hand', Arial, sans-serif`;
+    exportCtx.font = `bold 28px 'Patrick Hand', Arial, sans-serif`;
     exportCtx.textAlign = 'center';
     exportCtx.fillText(songTitle, songInfoX + songInfoWidth / 2, songInfoY);
 
@@ -706,12 +706,12 @@ function renderToCanvas() {
         );
         
         if (currentLyric) {
-            exportCtx.font = `18px 'Patrick Hand', Arial, sans-serif`;
+            exportCtx.font = `20px 'Patrick Hand', Arial, sans-serif`;
             exportCtx.fillStyle = '#ffd700';
             exportCtx.fillText(currentLyric.text, songInfoX + songInfoWidth / 2, songInfoY + 60);
         }
     } else if (lyricsText) {
-        exportCtx.font = `18px 'Patrick Hand', Arial, sans-serif`;
+        exportCtx.font = `20px 'Patrick Hand', Arial, sans-serif`;
         exportCtx.fillStyle = '#ffd700';
         exportCtx.fillText(lyricsText, songInfoX + songInfoWidth / 2, songInfoY + 60);
     }

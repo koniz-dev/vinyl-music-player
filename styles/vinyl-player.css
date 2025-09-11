@@ -131,7 +131,7 @@
 }
 
 .vinyl-song-title {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
     margin-top: 16px;
     letter-spacing: 2px;
@@ -145,7 +145,7 @@
 }
 
 .vinyl-lyrics-text {
-    font-size: 18px;
+    font-size: 20px;
     color: #ffd700;
     text-align: center;
     margin-top: 10px;

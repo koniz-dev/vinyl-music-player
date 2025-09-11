@@ -195,7 +195,6 @@ modalImportBtn.addEventListener('click', function() {
         
     } catch (error) {
         alert('Error parsing JSON: ' + error.message);
-        console.error('JSON parsing error:', error);
     }
 });
 const uploadArea = document.getElementById('upload-area');
@@ -420,7 +419,6 @@ exportBtn.addEventListener('click', async function() {
         
         window.postMessage(exportData, '*');
     } catch (error) {
-        console.error('Export failed:', error);
         alert('Export failed. Please try again.');
         exportProgress.style.display = 'none';
         exportBtn.disabled = false;
