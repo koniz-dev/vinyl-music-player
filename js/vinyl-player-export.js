@@ -123,17 +123,14 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
             }, '*');
         }, 5 * 60 * 1000);
         
-        // Send initial progress update
         window.postMessage({
             type: 'EXPORT_PROGRESS',
             progress: 5,
             message: 'Initializing export...'
         }, '*');
         
-        // Create export canvas
         createExportCanvas();
 
-        // Load album art if provided
         if (albumArtFile) {
             window.postMessage({
                 type: 'EXPORT_PROGRESS',
@@ -148,7 +145,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
             });
         }
 
-        // Create audio element for recording
         window.postMessage({
             type: 'EXPORT_PROGRESS',
             progress: 15,
@@ -158,34 +154,26 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
         const audioUrl = URL.createObjectURL(audioFile);
         exportAudio = new Audio(audioUrl);
         
-        // Store current lyrics for export
         exportLyrics = [...lyrics];
         
-        // Wait for audio to load
         await new Promise((resolve, reject) => {
             exportAudio.addEventListener('loadedmetadata', resolve);
             exportAudio.addEventListener('error', reject);
-            // Timeout after 10 seconds
             setTimeout(() => reject(new Error('Audio loading timeout')), 10000);
         });
 
-        // Create MediaRecorder with audio
-        const canvasStream = exportCanvas.captureStream(30); // 30 FPS
+        const canvasStream = exportCanvas.captureStream(30);
         
-        // Create audio context and connect to audio element
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioContext.createMediaElementSource(exportAudio);
         const destination = audioContext.createMediaStreamDestination();
         source.connect(destination);
-        // Remove connection to audioContext.destination to prevent audio output to speakers
         
-        // Combine video and audio streams
         const combinedStream = new MediaStream([
             ...canvasStream.getVideoTracks(),
             ...destination.stream.getAudioTracks()
         ]);
         
-        // Check for supported MIME types
         let mimeType = 'video/webm';
         if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
             mimeType = 'video/webm;codecs=vp9,opus';

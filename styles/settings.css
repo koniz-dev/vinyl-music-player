@@ -1,4 +1,3 @@
-/* Settings styles for merged layout */
 #musicForm {
     padding-bottom: 4px;
 }
@@ -124,9 +123,7 @@
     font-size: 14px;
 }
 
-/* remove-btn styles removed as they are not used */
 
-/* lyrics-area and character-count styles removed as they are not used */
 
 .lyrics-container {
     margin-bottom: 16px;
@@ -424,7 +421,6 @@
     font-weight: 500;
 }
 
-/* Hide scrollbar but keep scroll functionality */
 ::-webkit-scrollbar {
     width: 0px;
     background: transparent;
@@ -434,12 +430,10 @@
     background: transparent;
 }
 
-/* For Firefox */
 html {
     scrollbar-width: none;
 }
 
-/* Modal Styles */
 .modal-overlay {
     position: fixed;
     top: 0;

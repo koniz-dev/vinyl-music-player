@@ -1,4 +1,3 @@
-/* Vinyl player styles for merged layout */
 
 .music-player {
     width: 350px;
@@ -229,9 +228,7 @@
     transform: scale(1.1) !important;
 }
 
-/* Particle effects removed as they are not used */
 
-/* Audio visualizer bars */
 .visualizer {
     position: absolute;
     left: 50%;

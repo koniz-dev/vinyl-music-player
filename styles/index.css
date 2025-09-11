@@ -95,7 +95,6 @@ body {
     overflow-y: auto;
 }
 
-/* Container styles for merged content */
 .settings-container {
     width: 100%;
     height: 100%;
@@ -130,7 +129,6 @@ body {
     }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }
