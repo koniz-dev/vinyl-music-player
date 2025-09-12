@@ -1,6 +1,6 @@
 # 🎵 Vinyl Music Player
 
-A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations, audio visualization, and professional video export capabilities.
+A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations and professional video export capabilities.
 
 ![Vinyl Music Player](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
@@ -12,7 +12,6 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ### 🎧 Music Player
 - **Vinyl Record Animation**: Realistic spinning vinyl with tonearm animation and groove effects
 - **Audio Controls**: Play, pause, mute, repeat, and progress scrubbing with click-to-seek
-- **Real-time Visualizer**: Dynamic audio visualization bars that respond to music
 - **Album Art Support**: Beautiful background effects with album artwork integration
 - **Responsive Design**: Works perfectly on desktop and mobile devices
 - **Progress Tracking**: Real-time progress display with current time and duration
@@ -198,7 +197,6 @@ vinyl-music-player/
 ### Functionality
 - Add new control buttons
 - Modify the lyrics timing system
-- Enhance the visualizer effects
 - Add new export formats
 
 ## 📁 Supported File Formats

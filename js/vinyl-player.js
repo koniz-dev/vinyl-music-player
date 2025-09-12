@@ -13,7 +13,6 @@ const tonearm = document.getElementById('tonearm');
 const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
 const progress = document.querySelector('.vinyl-progress');
 const currentTimeEl = document.querySelector('.vinyl-current-time');
-const visualizer = document.getElementById('visualizer');
 const progressBar = document.querySelector('.vinyl-progress-bar');
 const lyricsText = document.querySelector('.vinyl-lyrics-text');
 const muteBtn = document.querySelector('.vinyl-mute-btn');
@@ -23,7 +22,6 @@ function init() {
     updateProgress();
     updateTonearm();
     updateLyrics();
-    updateVisualizerPosition();
     if (isPlaying) {
         startProgressTimer();
         startLyricsTimer();
@@ -33,7 +31,6 @@ function init() {
 function updateLyrics() {
     if (!audioElement || !isPlaying) {
         lyricsText.textContent = '';
-        updateVisualizerPosition();
         return;
     }
 
@@ -45,13 +42,11 @@ function updateLyrics() {
             setTimeout(() => {
                 lyricsText.textContent = currentLyric.text;
                 lyricsText.style.opacity = '1';
-                updateVisualizerPosition();
             }, 150);
         }
     } else {
         if (lyricsText.textContent !== '') {
             lyricsText.textContent = '';
-            updateVisualizerPosition();
         }
     }
 }
@@ -215,7 +210,6 @@ function updateSongTitle(title) {
     if (songTitleElement) {
         songTitleElement.textContent = title || '';
     }
-    updateVisualizerPosition();
 }
 
 function updateArtistName(artist) {
@@ -223,7 +217,6 @@ function updateArtistName(artist) {
     if (artistNameElement) {
         artistNameElement.textContent = artist || '';
     }
-    updateVisualizerPosition();
 }
 
 function updateLyricsFromSettings(newLyrics) {
@@ -246,37 +239,12 @@ function updateLyricsFromSettings(newLyrics) {
             updateLyrics();
         } else {
             lyricsText.textContent = '';
-            updateVisualizerPosition();
         }
     } else {
         lyricsText.textContent = '';
-        updateVisualizerPosition();
     }
 }
 
-function updateVisualizerPosition() {
-    const songTitleElement = document.querySelector('.vinyl-song-title');
-    const artistNameElement = document.querySelector('.vinyl-artist-name');
-    const lyricsTextElement = document.querySelector('.vinyl-lyrics-text');
-    const visualizer = document.getElementById('visualizer');
-    
-    if (songTitleElement && artistNameElement && lyricsTextElement && visualizer) {
-        const hasTitle = songTitleElement.textContent.trim() !== '';
-        const hasArtist = artistNameElement.textContent.trim() !== '';
-        const hasLyrics = lyricsTextElement.textContent.trim() !== '';
-        
-        let bottomValue;
-        if (hasTitle && hasArtist) {
-            bottomValue = '136px';
-        } else if (hasTitle || hasArtist) {
-            bottomValue = '128px';
-        } else {
-            bottomValue = '88px';
-        }
-        
-        visualizer.style.bottom = bottomValue;
-    }
-}
 
 function updateAlbumArt(imageUrl) {
     const musicPlayer = document.querySelector('.music-player');
@@ -384,7 +352,6 @@ function startPlaying(data) {
         updateAlbumArt(data.albumArtUrl);
     }
     
-    updateVisualizerPosition();
     enableControls();
     
     audioElement.addEventListener('loadedmetadata', function() {
@@ -441,18 +408,15 @@ function enableControls() {
 function updatePlayerState() {
     const vinyl = document.getElementById('vinyl');
     const tonearm = document.getElementById('tonearm');
-    const visualizer = document.getElementById('visualizer');
     const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
     
     if (isPlaying) {
         vinyl.style.animation = 'spin 8s linear infinite';
         tonearm.classList.add('playing');
-        visualizer.style.display = 'flex';
         playPauseBtn.textContent = '⏸';
     } else {
         vinyl.style.animation = 'none';
         tonearm.classList.remove('playing');
-        visualizer.style.display = 'none';
         playPauseBtn.textContent = '▶';
     }
     

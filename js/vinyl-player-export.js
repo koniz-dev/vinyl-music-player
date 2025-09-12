@@ -615,28 +615,21 @@ function renderToCanvas() {
         exportCtx.restore();
         exportCtx.restore();
     } else {
-        // Default album art placeholder with realistic gradient (like CSS background)
-        const albumGradient = exportCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, albumArtRadius);
-        albumGradient.addColorStop(0, '#ff6b6b');
-        albumGradient.addColorStop(0.5, '#4ecdc4');
-        albumGradient.addColorStop(1, '#667eea');
-        exportCtx.fillStyle = albumGradient;
-        exportCtx.beginPath();
-        exportCtx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);
-        exportCtx.fill();
+        // Default album art placeholder with custom SVG image (like CSS background)
+        const customSvgImage = new Image();
+        customSvgImage.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b6b"/><stop offset="100%" style="stop-color:%234ecdc4"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23g)"/><path d="M30 40 Q35 35 40 40 L45 50 Q50 45 55 50 L60 60 Q55 65 50 60 L45 50 Q40 55 35 50 Z" fill="white" opacity="0.8"/></svg>';
         
-        // Add subtle border
-        exportCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        exportCtx.lineWidth = 2;
-        exportCtx.beginPath();
-        exportCtx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);
-        exportCtx.stroke();
+        // Apply vinyl rotation to custom SVG image (rotate with vinyl)
+        exportCtx.save();
+        exportCtx.translate(centerX, centerY);
+        exportCtx.rotate((vinylRotation * Math.PI) / 180);
+        exportCtx.translate(-centerX, -centerY);
         
-        // Add music note icon - removed shadow effects
-        exportCtx.fillStyle = '#ffffff';
-        exportCtx.font = `${albumArtRadius * 0.4}px Arial`;
-        exportCtx.textAlign = 'center';
-        exportCtx.fillText('🎵', centerX, centerY + albumArtRadius * 0.15);
+        // Draw custom SVG image with rotation
+        exportCtx.drawImage(customSvgImage, centerX - albumArtRadius, centerY - albumArtRadius, 
+                          albumArtRadius * 2, albumArtRadius * 2);
+        
+        exportCtx.restore();
     }
 
     // Draw tonearm after album art (exact match with CSS .tonearm)
