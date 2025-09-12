@@ -410,7 +410,7 @@ exportBtn.addEventListener('click', async function() {
     
     try {
         const exportData = {
-            type: 'EXPORT_MP4',
+            type: 'EXPORT_WEBM',
             audioFile: audioFile,
             songTitle: songTitle,
             artistName: artistName,
@@ -447,7 +447,7 @@ function handleExportComplete(videoBlob, fileName) {
     progressFill.style.width = '0%';
     progressText.textContent = 'Preparing export...';
     
-    alert('Video exported successfully!');
+    alert('WebM video exported successfully!');
     
     setTimeout(() => {
         isExportCompleted = false;

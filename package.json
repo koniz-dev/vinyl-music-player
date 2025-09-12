@@ -1,7 +1,7 @@
 {
   "name": "vinyl-music-player",
   "version": "1.0.0",
-  "description": "A beautiful vinyl music player with synchronized lyrics and video export functionality",
+  "description": "A beautiful vinyl music player with synchronized lyrics and WebM video export functionality",
   "main": "index.html",
   "scripts": {
     "dev": "npx http-server -p 3000 -o -c-1",

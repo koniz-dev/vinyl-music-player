@@ -1,6 +1,6 @@
 # 🎵 Vinyl Music Player
 
-A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as MP4 files. Features realistic vinyl record animations, audio visualization, and professional video export capabilities.
+A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations, audio visualization, and professional video export capabilities.
 
 ![Vinyl Music Player](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
@@ -24,10 +24,11 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Easy Management**: Add, edit, and remove lyrics through the settings panel
 
 ### 🎬 Video Export
-- **MP4 Export**: Create professional music videos with your audio and lyrics
+- **WebM Format Only**: Create professional music videos with your audio and lyrics (WebM format)
 - **High Quality**: Export videos in 720x1280 resolution with album art backgrounds
 - **Synchronized Lyrics**: Lyrics appear at exact timing with smooth transitions
 - **Progress Tracking**: Real-time export progress with detailed status updates
+- **No Conversion**: Direct WebM export without format conversion for faster processing
 - **Canvas Rendering**: High-quality canvas-based video rendering
 - **Cross-browser Support**: Works with modern browsers supporting MediaRecorder API
 
@@ -48,6 +49,15 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Real-time Preview**: See changes instantly in the vinyl player
 - **Export Progress**: Detailed progress tracking during video export
 - **Error Handling**: Comprehensive error messages and recovery options
+
+## 🔮 Future Features
+
+### 📹 Enhanced Video Export
+- **MP4 Export**: Support for MP4 video format export for broader compatibility
+- **Multiple Resolutions**: Export options for different video resolutions (480p, 720p, 1080p)
+- **Custom Video Settings**: Adjustable bitrate, frame rate, and quality settings
+- **Batch Export**: Export multiple videos at once
+- **Video Templates**: Pre-designed templates for different social media platforms
 
 ## 🚀 Quick Start
 
@@ -108,10 +118,10 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Volume**: Adjust using your system volume controls
 
 ### 5. Export Video
-- Click **"Export MP4 Video"** when ready
-- The export process will create a 720x1280 video with your audio and lyrics
-- Wait for the export process to complete (progress is shown)
-- Download your custom music video automatically when finished
+- Click **"Export WebM Video"** when ready
+- The export process will create a 720x1280 WebM video with your audio and lyrics
+- Wait for the WebM export process to complete (progress is shown)
+- Download your custom WebM music video automatically when finished
 
 ## 🎯 Features in Detail
 
@@ -128,7 +138,8 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Export Controls**: One-click video export with progress tracking
 
 ### Video Export
-- **High Resolution**: Exports videos in high quality
+- **WebM Format**: Exports videos in WebM format for broad compatibility
+- **High Resolution**: Exports videos in 720x1280 high quality
 - **Synchronized Content**: Lyrics appear at the exact timing you specify
 - **Album Art Background**: Beautiful blurred album art as background
 - **Professional Quality**: Suitable for social media and sharing

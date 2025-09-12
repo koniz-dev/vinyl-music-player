@@ -184,7 +184,7 @@ window.addEventListener('message', function(event) {
         updateLyricsFromSettings(event.data.lyrics);
     } else if (event.data.type === 'DEBUG_BROWSER_SUPPORT') {
         debugBrowserSupport();
-    } else if (event.data.type === 'EXPORT_MP4') {
+    } else if (event.data.type === 'EXPORT_WEBM') {
         if (isExporting) {
             return;
         }

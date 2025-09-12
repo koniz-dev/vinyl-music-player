@@ -1,7 +1,7 @@
 {
   "name": "Vinyl Music Player",
   "short_name": "Vinyl Player",
-  "description": "A beautiful vinyl music player with synchronized lyrics and video export",
+  "description": "A beautiful vinyl music player with synchronized lyrics and WebM video export",
   "icons": [
     {
       "src": "favicon/android-chrome-192x192.png",
