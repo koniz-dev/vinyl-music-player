@@ -631,7 +631,6 @@ class LyricsColorManager {
         try {
             localStorage.setItem('lyricsColorHistory', JSON.stringify(this.colorHistory));
         } catch (e) {
-            console.warn('Could not save color history:', e);
         }
     }
     
@@ -647,7 +646,6 @@ class LyricsColorManager {
         try {
             localStorage.setItem('lyricsCurrentColor', this.currentColor);
         } catch (e) {
-            console.warn('Could not save current color:', e);
         }
     }
     
@@ -664,7 +662,6 @@ class LyricsColorManager {
         try {
             localStorage.removeItem('lyricsColorHistory');
         } catch (e) {
-            console.warn('Could not clear color history:', e);
         }
     }
     
@@ -712,7 +709,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('lyricsColorHistory');
         localStorage.removeItem('lyricsCurrentColor');
     } catch (e) {
-        console.warn('Could not clear localStorage:', e);
     }
     
     window.lyricsColorManager = new LyricsColorManager();

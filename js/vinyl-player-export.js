@@ -8,6 +8,119 @@ let albumArtImage = null;
 let exportAudio = null;
 let exportLyrics = [];
 let exportLyricsColor = '#ffd700'; // Default lyrics color
+let ffmpeg = null;
+let isFFmpegLoaded = false;
+
+// Initialize FFmpeg
+async function initializeFFmpeg() {
+    if (isFFmpegLoaded) return;
+    
+    try {
+        // Check if global variables are available
+        if (typeof FFmpegWASM === 'undefined') {
+            throw new Error('FFmpegWASM is not loaded. Please check the CDN script.');
+        }
+        
+        const { FFmpeg } = FFmpegWASM;
+        
+        // Try to get util functions from different possible global names
+        let fetchFile, toBlobURL;
+        
+        if (typeof FFIUtil !== 'undefined') {
+            ({ fetchFile, toBlobURL } = FFIUtil);
+        } else if (typeof FFmpegUtil !== 'undefined') {
+            ({ fetchFile, toBlobURL } = FFmpegUtil);
+        } else {
+            // Try to access from the util module directly
+            try {
+                const utilModule = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
+                fetchFile = utilModule.fetchFile;
+                toBlobURL = utilModule.toBlobURL;
+            } catch (importError) {
+                throw new Error('Cannot access FFmpeg util functions. Please check the CDN script.');
+            }
+        }
+        
+        ffmpeg = new FFmpeg();
+        
+        // Load FFmpeg core with multiple CDN fallbacks
+        const cdnUrls = [
+            'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd',
+            'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
+            'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm'
+        ];
+        
+        let loaded = false;
+        for (const baseURL of cdnUrls) {
+            try {
+                await ffmpeg.load({
+                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                });
+                loaded = true;
+                break;
+            } catch (error) {
+                continue;
+            }
+        }
+        
+        if (!loaded) {
+            // Instead of throwing error, just disable FFmpeg and use WebM
+            isFFmpegLoaded = false;
+            return;
+        }
+        
+        isFFmpegLoaded = true;
+    } catch (error) {
+        // Don't throw error, just disable FFmpeg
+        isFFmpegLoaded = false;
+    }
+}
+
+// Convert WebM to MP4 using FFmpeg
+async function convertWebMToMP4(webmBlob, songTitle) {
+    if (!isFFmpegLoaded) {
+        await initializeFFmpeg();
+    }
+    
+    try {
+        // Get fetchFile function
+        let fetchFile;
+        if (typeof FFIUtil !== 'undefined') {
+            ({ fetchFile } = FFIUtil);
+        } else if (typeof FFmpegUtil !== 'undefined') {
+            ({ fetchFile } = FFmpegUtil);
+        } else {
+            const utilModule = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
+            fetchFile = utilModule.fetchFile;
+        }
+        
+        // Write WebM file to FFmpeg filesystem
+        await ffmpeg.writeFile('input.webm', await fetchFile(webmBlob));
+        
+        // Convert WebM to MP4
+        await ffmpeg.exec([
+            '-i', 'input.webm',
+            '-c:v', 'libx264',
+            '-c:a', 'aac',
+            '-preset', 'fast',
+            '-crf', '23',
+            'output.mp4'
+        ]);
+        
+        // Read the converted MP4 file
+        const mp4Data = await ffmpeg.readFile('output.mp4');
+        
+        // Clean up files
+        await ffmpeg.deleteFile('input.webm');
+        await ffmpeg.deleteFile('output.mp4');
+        
+        return new Blob([mp4Data], { type: 'video/mp4' });
+    } catch (error) {
+        throw error;
+    }
+}
+
 function createExportCanvas() {
     exportCanvas = document.createElement('canvas');
     
@@ -130,12 +243,32 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
             message: 'Initializing export...'
         }, '*');
         
+        // Initialize FFmpeg if not already loaded
+        if (!isFFmpegLoaded) {
+            window.postMessage({
+                type: 'EXPORT_PROGRESS',
+                progress: 10,
+                message: 'Loading FFmpeg...'
+            }, '*');
+            
+            try {
+                await initializeFFmpeg();
+            } catch (error) {
+                // Continue with WebM export instead of failing
+                window.postMessage({
+                    type: 'EXPORT_PROGRESS',
+                    progress: 15,
+                    message: 'Using WebM format (FFmpeg not available)...'
+                }, '*');
+            }
+        }
+        
         createExportCanvas();
 
         if (albumArtFile) {
             window.postMessage({
                 type: 'EXPORT_PROGRESS',
-                progress: 10,
+                progress: 15,
                 message: 'Loading album art...'
             }, '*');
             
@@ -213,28 +346,65 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
             }
         };
 
-        mediaRecorder.onstop = function() {
+        mediaRecorder.onstop = async function() {
             // Clear timeout
             if (exportTimeout) {
                 clearTimeout(exportTimeout);
             }
             
-            const blob = new Blob(recordedChunks, { type: mimeType });
+            const webmBlob = new Blob(recordedChunks, { type: mimeType });
             
-            // Convert to MP4 using FFmpeg.js (we'll use a simpler approach)
-            // For now, we'll export as WebM and let the user convert if needed
-            const fileName = `${songTitle.replace(/[<>:"/\\|?*]/g, '')}.webm`;
+            // Update progress for conversion
+            window.postMessage({
+                type: 'EXPORT_PROGRESS',
+                progress: 85,
+                message: 'Converting to MP4...'
+            }, '*');
             
-            // Send completion message to settings
-            try {
-                // Send to same window since this is a single page app
+            if (isFFmpegLoaded) {
+                try {
+                    // Convert WebM to MP4 using FFmpeg
+                    const mp4Blob = await convertWebMToMP4(webmBlob, songTitle);
+                    const fileName = `${songTitle.replace(/[<>:"/\\|?*]/g, '')}.mp4`;
+                    
+                    // Update progress to completion
+                    window.postMessage({
+                        type: 'EXPORT_PROGRESS',
+                        progress: 100,
+                        message: 'Export complete!'
+                    }, '*');
+                    
+                    // Send completion message to settings
+                    window.postMessage({
+                        type: 'EXPORT_COMPLETE',
+                        videoBlob: mp4Blob,
+                        fileName: fileName
+                    }, '*');
+                    
+                } catch (conversionError) {
+                    
+                    // Fallback to WebM if conversion fails
+                    const fileName = `${songTitle.replace(/[<>:"/\\|?*]/g, '')}.webm`;
+                    window.postMessage({
+                        type: 'EXPORT_COMPLETE',
+                        videoBlob: webmBlob,
+                        fileName: fileName
+                    }, '*');
+                }
+            } else {
+                // FFmpeg not available, export as WebM
+                const fileName = `${songTitle.replace(/[<>:"/\\|?*]/g, '')}.webm`;
                 window.postMessage({
-                    type: 'EXPORT_COMPLETE',
-                    videoBlob: blob,
-                    fileName: fileName
+                    type: 'EXPORT_PROGRESS',
+                    progress: 100,
+                    message: 'Export complete!'
                 }, '*');
                 
-            } catch (e) {
+                window.postMessage({
+                    type: 'EXPORT_COMPLETE',
+                    videoBlob: webmBlob,
+                    fileName: fileName
+                }, '*');
             }
             
             // Restore main audio playback state
@@ -263,7 +433,7 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
         // Start recording
         window.postMessage({
             type: 'EXPORT_PROGRESS',
-            progress: 25,
+            progress: 20,
             message: 'Starting recording...'
         }, '*');
         
@@ -287,7 +457,7 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
         
         const progressInterval = setInterval(() => {
             const elapsed = (Date.now() - startTime) / 1000;
-            const progress = Math.min((elapsed / duration) * 100, 100);
+            const progress = Math.min(20 + (elapsed / duration) * 60, 80);
             
             window.postMessage({
                 type: 'EXPORT_PROGRESS',

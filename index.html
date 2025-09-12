@@ -256,6 +256,46 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/util.js"></script>
+    <script>
+        // Alternative FFmpeg.js from different CDN
+        if (typeof window.FFmpegWASM === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
+            document.head.appendChild(script);
+        }
+    </script>
+    <script>
+        // Manually expose util functions as global
+        if (typeof window.FFmpegUtil === 'undefined' && typeof window.FFIUtil === 'undefined') {
+            // Try to access from the loaded module
+            try {
+                // Check if the util module is loaded but not exposed globally
+                if (typeof window.FFmpegUtil === 'undefined') {
+                    // Try to create a global reference
+                    window.FFmpegUtil = {
+                        fetchFile: function(blob) {
+                            return new Promise((resolve) => {
+                                const reader = new FileReader();
+                                reader.onload = () => resolve(new Uint8Array(reader.result));
+                                reader.readAsArrayBuffer(blob);
+                            });
+                        },
+                        toBlobURL: function(url, mimeType) {
+                            return new Promise((resolve) => {
+                                fetch(url)
+                                    .then(response => response.blob())
+                                    .then(blob => resolve(URL.createObjectURL(blob)));
+                            });
+                        }
+                    };
+                }
+            } catch (e) {
+                // FFmpegUtil fallback creation failed
+            }
+        }
+    </script>
     <script src="js/dynamic-gradient.js"></script>
     <script src="js/index.js"></script>
     <script src="js/settings.js"></script>
