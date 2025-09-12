@@ -7,7 +7,7 @@ let vinylRotation = 0;
 let albumArtImage = null;
 let exportAudio = null;
 let exportLyrics = [];
-let exportLyricsColor = '#ffd700'; // Default lyrics color
+let exportLyricsColor = '#ffb3d1'; // Default lyrics color
 
 function createExportCanvas() {
     exportCanvas = document.createElement('canvas');
@@ -498,20 +498,20 @@ function renderToCanvas() {
     const vinylSectionY = musicPlayerY;
     
     // Create vinyl container (exact match with CSS .vinyl-container)
-    // position: relative; width: 250px; height: 250px; margin-bottom: 30px;
-    const vinylContainerWidth = 250;
-    const vinylContainerHeight = 250;
+    // position: relative; width: 200px; height: 200px; margin-bottom: 30px;
+    const vinylContainerWidth = 200;
+    const vinylContainerHeight = 200;
     const vinylContainerX = vinylSectionX + (vinylSectionWidth - vinylContainerWidth) / 2;
     const vinylContainerY = vinylSectionY + (vinylSectionHeight - vinylContainerHeight) / 2 - 20; // Better centered positioning
     
     // Draw vinyl record (centered within vinyl container) - matching CSS exactly
     const centerX = vinylContainerX + vinylContainerWidth / 2;
     const centerY = vinylContainerY + vinylContainerHeight / 2;
-    const vinylRadius = vinylContainerWidth / 2; // 250px / 2 = 125px
+    const vinylRadius = vinylContainerWidth / 2; // 200px / 2 = 100px
 
     // Vinyl record (exact match with CSS .vinyl-record)
-    // background: radial-gradient(circle at center, #1a1a1a 30%, #000 70%)
-    // removed shadow effects
+    // background: radial-gradient(circle at center, #2a2a2a 20%, #1a1a1a 40%, #000 80%)
+    // with silver highlights for 3D effect
     
     // Apply vinyl rotation (always rotate during export)
     // Animation is added via JS when playing: vinyl.style.animation = 'spin 8s linear infinite'
@@ -521,9 +521,10 @@ function renderToCanvas() {
     exportCtx.translate(-centerX, -centerY);
     
     const vinylGradient = exportCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, vinylRadius);
-    vinylGradient.addColorStop(0, '#1a1a1a');
-    vinylGradient.addColorStop(0.3, '#1a1a1a');
-    vinylGradient.addColorStop(0.7, '#000000');
+    vinylGradient.addColorStop(0, '#2a2a2a');
+    vinylGradient.addColorStop(0.2, '#2a2a2a');
+    vinylGradient.addColorStop(0.4, '#1a1a1a');
+    vinylGradient.addColorStop(0.8, '#000000');
     vinylGradient.addColorStop(1, '#000000');
     
     exportCtx.fillStyle = vinylGradient;
@@ -566,7 +567,7 @@ function renderToCanvas() {
 
 
     // Vinyl center with CSS styling (like CSS .vinyl-center)
-    const centerRadius = vinylRadius * 0.48; // 120px for 250px vinyl (like CSS width: 120px)
+    const centerRadius = vinylRadius * 0.48; // 96px for 200px vinyl (like CSS width: 96px)
     
     // Vinyl center background (exact match with CSS)
     // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
@@ -633,12 +634,12 @@ function renderToCanvas() {
     }
 
     // Draw tonearm after album art (exact match with CSS .tonearm)
-    // position: absolute; top: 20px; right: 20px; width: 3px; height: 120px;
+    // position: absolute; top: 16px; right: 16px; width: 3px; height: 96px;
     // background: linear-gradient(to bottom, #fff, #ccc); transform: rotate(25deg);
-    // Calculate tonearm position to match CSS: top: 20px; right: 20px from vinyl container
-    const tonearmX = vinylContainerX + vinylContainerWidth - 20; // right: 20px from container
-    const tonearmY = vinylContainerY + 20; // top: 20px from container
-    const tonearmLength = 120; // height: 120px as per CSS
+    // Calculate tonearm position to match CSS: top: 16px; right: 16px from vinyl container
+    const tonearmX = vinylContainerX + vinylContainerWidth - 16; // right: 16px from container
+    const tonearmY = vinylContainerY + 16; // top: 16px from container
+    const tonearmLength = 96; // height: 96px as per CSS
     
     exportCtx.save();
     exportCtx.translate(tonearmX, tonearmY);

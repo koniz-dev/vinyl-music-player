@@ -24,19 +24,22 @@
 
 .vinyl-container {
     position: relative;
-    width: 250px;
-    height: 250px;
+    width: 200px;
+    height: 200px;
     margin-bottom: 30px;
 }
 
 .vinyl-record {
-    width: 250px;
-    height: 250px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
-    background: radial-gradient(circle at center, #1a1a1a 30%, #000 70%);
+    background: radial-gradient(circle at center, #2a2a2a 20%, #1a1a1a 40%, #000 80%);
     position: relative;
     animation: none;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 
+        0 0 30px rgba(0, 0, 0, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.1),
+        inset 0 0 40px rgba(192, 192, 192, 0.05);
     will-change: transform;
     transform-origin: center;
 }
@@ -50,8 +53,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
@@ -61,8 +64,8 @@
 }
 
 .album-art, .vinyl-album-art {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b6b"/><stop offset="100%" style="stop-color:%234ecdc4"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23g)"/><path d="M30 40 Q35 35 40 40 L45 50 Q50 45 55 50 L60 60 Q55 65 50 60 L45 50 Q40 55 35 50 Z" fill="white" opacity="0.8"/></svg>') center/cover;
     object-fit: cover;
@@ -75,16 +78,16 @@
     transform-origin: center;
 }
 
-.groove-1 { width: 200px; height: 200px; top: 25px; left: 25px; }
-.groove-2 { width: 170px; height: 170px; top: 40px; left: 40px; }
-.groove-3 { width: 140px; height: 140px; top: 55px; left: 55px; }
+.groove-1 { width: 160px; height: 160px; top: 20px; left: 20px; }
+.groove-2 { width: 136px; height: 136px; top: 32px; left: 32px; }
+.groove-3 { width: 112px; height: 112px; top: 44px; left: 44px; }
 
 .tonearm {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 16px;
+    right: 16px;
     width: 3px;
-    height: 120px;
+    height: 96px;
     background: linear-gradient(to bottom, #fff, #ccc);
     transform-origin: top center;
     transform: rotate(25deg);
@@ -236,12 +239,32 @@
     }
     
     .vinyl-container {
-        width: 200px;
-        height: 200px;
+        width: 160px;
+        height: 160px;
     }
     
     .vinyl-record {
-        width: 200px;
-        height: 200px;
+        width: 160px;
+        height: 160px;
+    }
+    
+    .vinyl-center {
+        width: 76px;
+        height: 76px;
+    }
+    
+    .album-art, .vinyl-album-art {
+        width: 64px;
+        height: 64px;
+    }
+    
+    .groove-1 { width: 128px; height: 128px; top: 16px; left: 16px; }
+    .groove-2 { width: 108px; height: 108px; top: 26px; left: 26px; }
+    .groove-3 { width: 88px; height: 88px; top: 36px; left: 36px; }
+    
+    .tonearm {
+        height: 76px;
+        top: 12px;
+        right: 12px;
     }
 }

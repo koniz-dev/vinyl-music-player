@@ -542,7 +542,7 @@ class LyricsColorManager {
     
     addToHistory(color) {
         // Don't add default color to history
-        if (color === '#ffd700') {
+        if (color === '#ffb3d1') {
             return;
         }
         
@@ -621,7 +621,7 @@ class LyricsColorManager {
             const saved = localStorage.getItem('lyricsColorHistory');
             const history = saved ? JSON.parse(saved) : [];
             // Filter out any default colors that might have been saved before
-            return history.filter(color => color !== '#ffd700' && color !== '#ffffff');
+            return history.filter(color => color !== '#ffb3d1' && color !== '#ffffff');
         } catch (e) {
             return [];
         }
@@ -636,9 +636,9 @@ class LyricsColorManager {
     
     loadCurrentColor() {
         try {
-            return localStorage.getItem('lyricsCurrentColor') || '#ffd700';
+            return localStorage.getItem('lyricsCurrentColor') || '#ffb3d1';
         } catch (e) {
-            return '#ffd700';
+            return '#ffb3d1';
         }
     }
     
