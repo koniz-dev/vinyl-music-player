@@ -2,7 +2,7 @@
  * Toast Notification System for Vinyl Music Player
  * Provides a clean, modern notification system with different types and animations
  */
-class ToastSystem {
+export class ToastSystem {
     constructor() {
         this.toastContainer = document.getElementById('toast-container');
         this.init();
