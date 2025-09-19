@@ -1,0 +1,93 @@
+:root {
+    /* Colors */
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+    --primary-blue: #667eea;
+    --primary-purple: #764ba2;
+    --primary-pink: #f093fb;
+    --primary-red: #f5576c;
+    --primary-cyan: #4facfe;
+    
+    --secondary-gradient: linear-gradient(45deg, #ff6b6b, #feca57);
+    --secondary-orange: #feca57;
+    --secondary-red: #ff6b6b;
+    
+    --text-primary: #2d3748;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --text-light: #a0aec0;
+    --text-white: #ffffff;
+    
+    --bg-white: #ffffff;
+    --bg-light: #f7fafc;
+    --bg-gray: #e2e8f0;
+    --bg-dark: #2a2a2a;
+    --bg-darker: #1a1a1a;
+    --bg-black: #000000;
+    
+    --border-light: #e2e8f0;
+    --border-medium: #cbd5e0;
+    --border-dark: #a0aec0;
+    
+    --success: #38a169;
+    --error: #e53e3e;
+    --warning: #feca57;
+    
+    /* White with opacity */
+    --white-15: rgba(255, 255, 255, 0.15);
+    --white-20: rgba(255, 255, 255, 0.2);
+    
+    /* Primary blue with opacity */
+    --primary-blue-10: rgba(102, 126, 234, 0.1);
+    
+    /* Gradients */
+    --gradient-haf: linear-gradient(135deg, #5a67d8 0%, #6b46c1 50%, #e879f9 100%);
+    --gradient-vinyl: radial-gradient(circle at center, #2a2a2a 20%, #1a1a1a 40%, #000 80%);
+    --gradient-vinyl-center: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-tonearm: linear-gradient(to bottom, #fff, #ccc);
+    --gradient-progress: linear-gradient(90deg, #667eea, #764ba2);
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 20px;
+    --spacing-2xl: 24px;
+    --spacing-3xl: 28px;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 28px;
+    --radius-full: 50%;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.4);
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.4s ease;
+    
+    /* Font Sizes */
+    --text-xs: 12px;
+    --text-sm: 14px;
+    --text-base: 16px;
+    --text-lg: 18px;
+    --text-xl: 20px;
+    --text-2xl: 24px;
+    --text-3xl: 28px;
+    --text-4xl: 32px;
+    --text-5xl: 36px;
+    
+    /* Font Weights */
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+}

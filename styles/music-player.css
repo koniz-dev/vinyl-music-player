@@ -1,0 +1,229 @@
+/* Music Player & Vinyl Components */
+.music-player {
+    width: 350px;
+    height: 600px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 30px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    transform: translateZ(0);
+}
+
+.vinyl-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.vinyl-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 30px;
+}
+
+.vinyl-record {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--gradient-vinyl);
+    position: relative;
+    animation: spin 8s linear infinite;
+    animation-play-state: paused;
+    box-shadow: 
+        0 0 30px rgba(0, 0, 0, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.1),
+        inset 0 0 40px rgba(192, 192, 192, 0.05);
+    transform-origin: center;
+}
+
+.vinyl-record.paused {
+    animation-play-state: paused;
+}
+
+.vinyl-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--gradient-vinyl-center);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.vinyl-album-art {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b6b"/><stop offset="100%" style="stop-color:%234ecdc4"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23g)"/><path d="M30 40 Q35 35 40 40 L45 50 Q50 45 55 50 L60 60 Q55 65 50 60 L45 50 Q40 55 35 50 Z" fill="white" opacity="0.8"/></svg>') center/cover;
+    object-fit: cover;
+}
+
+.vinyl-grooves {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform-origin: center;
+}
+
+.groove-1 { width: 160px; height: 160px; top: 20px; left: 20px; }
+.groove-2 { width: 136px; height: 136px; top: 32px; left: 32px; }
+.groove-3 { width: 112px; height: 112px; top: 44px; left: 44px; }
+
+.tonearm {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 3px;
+    height: 96px;
+    background: var(--gradient-tonearm);
+    transform-origin: top center;
+    transform: rotate(25deg);
+    border-radius: 2px;
+    transition: transform 0.3s ease;
+}
+
+.tonearm::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.tonearm::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: -2px;
+    width: 6px;
+    height: 10px;
+    background: #666;
+    border-radius: 3px;
+}
+
+.tonearm.playing {
+    transform: rotate(15deg);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.song-info {
+    text-align: center;
+    color: white;
+}
+
+.vinyl-song-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 16px;
+    letter-spacing: 2px;
+}
+
+.vinyl-artist-name {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.vinyl-lyrics-text {
+    font-size: 20px;
+    text-align: center;
+    margin-top: 10px;
+    display: block;
+    transition: opacity 0.3s ease-in-out;
+    min-height: 24px;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.progress-container {
+    width: 100%;
+    padding: 0 30px;
+}
+
+.vinyl-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--white-20);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.vinyl-progress {
+    height: 100%;
+    background: var(--gradient-progress);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+.progress-time {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 30px 30px;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn:hover {
+    background: var(--white-20);
+}
+
+.vinyl-play-pause-btn {
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 28px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.vinyl-play-pause-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.control-btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

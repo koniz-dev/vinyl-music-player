@@ -9,7 +9,6 @@ class ToastManager {
         this.toastQueue = [];
         this.maxToasts = 5;
         
-        // Icon mapping for different toast types
         this.iconMap = {
             success: '✅',
             error: '❌',
@@ -17,7 +16,6 @@ class ToastManager {
             warning: '⚠️'
         };
         
-        // Initialize the toast container if it doesn't exist
         if (!this.toastContainer) {
             this.createToastContainer();
         }
@@ -41,7 +39,6 @@ class ToastManager {
      * @param {number} duration - Duration in milliseconds (default: 4000)
      */
     showToast(type, title, message, duration = 4000) {
-        // Limit number of toasts
         if (this.toastContainer.children.length >= this.maxToasts) {
             this.removeOldestToast();
         }
@@ -62,17 +59,14 @@ class ToastManager {
         
         this.toastContainer.appendChild(toast);
         
-        // Trigger animation
         setTimeout(() => {
             toast.classList.add('show');
         }, 100);
         
-        // Auto remove
         setTimeout(() => {
             this.removeToast(toast);
         }, duration);
 
-        // Add click to close functionality
         toast.addEventListener('click', (e) => {
             if (e.target.classList.contains('toast-close') || e.target.textContent === '×') {
                 this.removeToast(toast);
@@ -164,13 +158,10 @@ class ToastManager {
     }
 }
 
-// Create global toast manager instance
 const toastManager = new ToastManager();
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { ToastManager, toastManager };
 }
 
-// Make toastManager available globally
 window.toastManager = toastManager;

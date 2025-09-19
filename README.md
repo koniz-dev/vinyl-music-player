@@ -291,14 +291,14 @@ If you encounter any issues or have questions:
 
 ## 🌏 Multi-language Support
 
-### Vietnamese (Tiếng Việt)
-This project supports Vietnamese language and is developed by a Vietnamese developer. The interface and documentation are available in both English and Vietnamese.
+### International Support
+This project supports multiple languages and is developed with international users in mind. The interface and documentation are available in English with support for various languages.
 
 ### Language Features
 - **Interface**: Clean, intuitive design that works in any language
-- **Lyrics Support**: Add lyrics in any language including Vietnamese
-- **Documentation**: README available in multiple languages
-- **Community**: Vietnamese developer community support
+- **Lyrics Support**: Add lyrics in any language including international languages
+- **Documentation**: README available in English
+- **Community**: International developer community support
 
 ## 🎵 Enjoy Your Music!
 

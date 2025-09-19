@@ -1,0 +1,233 @@
+/* Form Elements */
+.form-input {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base);
+    transition: all var(--transition-normal);
+    background: var(--bg-white);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px var(--primary-blue-10);
+    transform: translateY(-1px);
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.required-asterisk {
+    color: #e53e3e;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed var(--border-medium);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl) var(--spacing-lg);
+    text-align: center;
+    background: var(--bg-light);
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    position: relative;
+    margin: var(--spacing-lg) 0;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-blue);
+    background: rgba(102, 126, 234, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.upload-area input[type="file"] {
+    position: absolute;
+    width: calc(100% + 30px);
+    height: calc(100% + 30px);
+    top: -15px;
+    left: -15px;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-icon {
+    font-size: var(--text-5xl);
+    color: var(--text-light);
+    margin-bottom: var(--spacing-sm);
+}
+
+.upload-text {
+    color: var(--text-secondary);
+    font-weight: var(--font-medium);
+    margin-bottom: var(--spacing-xs);
+}
+
+.upload-hint {
+    color: var(--text-light);
+    font-size: var(--text-sm);
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: var(--spacing-sm);
+    background: var(--border-light);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    width: 0%;
+    transition: width var(--transition-normal);
+}
+
+.progress-text {
+    text-align: center;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-medium);
+}
+
+/* Music Form */
+#music-form {
+    padding-bottom: var(--spacing-xs);
+}
+
+/* Lyrics Container */
+.lyrics-container {
+    margin-bottom: var(--spacing-lg);
+}
+
+.lyrics-item {
+    background: var(--bg-light);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: all var(--transition-normal);
+}
+
+.lyrics-item:hover {
+    border-color: var(--border-medium);
+    background: var(--bg-light);
+}
+
+.lyrics-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.lyrics-item-title {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+}
+
+.remove-lyrics-btn {
+    background: var(--error);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.remove-lyrics-btn:hover {
+    background: var(--error);
+    transform: translateY(-1px);
+}
+
+.lyrics-inputs {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: end;
+}
+
+.lyrics-inputs > div {
+    flex: 1;
+}
+
+.lyrics-inputs > div:last-child {
+    flex: 2;
+}
+
+.time-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-family: 'Courier New', monospace;
+    transition: all var(--transition-normal);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px var(--primary-blue-10);
+}
+
+.time-input:invalid {
+    border-color: var(--error);
+}
+
+.time-input:valid {
+    border-color: var(--success);
+}
+
+.lyrics-text-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    transition: all var(--transition-normal);
+    box-sizing: border-box;
+}
+
+.lyrics-text-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px var(--primary-blue-10);
+}
+
+.time-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-xs);
+    font-weight: var(--font-medium);
+}
+
+.lyrics-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-xs);
+    font-weight: var(--font-medium);
+}
+
+.lyrics-buttons-container {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}

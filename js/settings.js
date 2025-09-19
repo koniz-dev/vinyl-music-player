@@ -35,7 +35,6 @@ function removeLyricsItem(button) {
     lyricsItem.remove();
     updateLyricsData();
     
-    // Show toast notification
     if (window.toastManager) {
         window.toastManager.showInfo('Lyrics Removed', 'Lyrics item has been removed successfully');
     }
@@ -104,7 +103,6 @@ const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalImportBtn = document.getElementById('modal-import-btn');
 const jsonLyricsInput = document.getElementById('json-lyrics-input');
 devLyricsBtn.addEventListener('click', function() {
-    // Set aria-hidden to false and remove inert BEFORE making the modal visible
     devLyricsModal.setAttribute('aria-hidden', 'false');
     devLyricsModal.removeAttribute('inert');
     devLyricsModal.style.display = 'flex';
@@ -112,12 +110,10 @@ devLyricsBtn.addEventListener('click', function() {
 });
 
 function closeModal() {
-    // Set aria-hidden to true and add inert BEFORE hiding the modal to prevent focus issues
     devLyricsModal.setAttribute('aria-hidden', 'true');
     devLyricsModal.setAttribute('inert', '');
     devLyricsModal.style.display = 'none';
     jsonLyricsInput.value = '';
-    // Return focus to the button that opened the modal
     devLyricsBtn.focus();
 }
 
@@ -209,7 +205,6 @@ modalImportBtn.addEventListener('click', function() {
         updateLyricsData();
         closeModal();
         
-        // Show success toast
         if (window.toastManager) {
             window.toastManager.showSuccess('Import Successful', `Successfully imported ${lyricsData.length} lyrics items!`);
         } else {
@@ -300,7 +295,6 @@ function updateUploadDisplay(file) {
     
     sendAlbumArtToPlayer(file);
     
-    // Show success toast
     if (window.toastManager) {
         window.toastManager.showSuccess('Album Art Uploaded', `Successfully uploaded ${file.name}`);
     }
@@ -317,7 +311,6 @@ function updateAudioUploadDisplay(file) {
     
     startAutoPlay(file);
     
-    // Show success toast
     if (window.toastManager) {
         window.toastManager.showSuccess('Audio File Uploaded', `Successfully uploaded ${file.name}`);
     }
@@ -484,7 +477,6 @@ function handleExportComplete(videoBlob, fileName) {
     progressFill.style.width = '0%';
     progressText.textContent = 'Preparing export...';
     
-    // Show success toast
     if (window.toastManager) {
         window.toastManager.showSuccess('Export Complete', 'WebM video exported successfully!');
     } else {
@@ -516,7 +508,6 @@ if (!window.exportMessageListenerAdded) {
             } else if (data.type === 'EXPORT_ERROR') {
                 const error = data.error;
                 
-                // Show error toast
                 if (window.toastManager) {
                     window.toastManager.showError('Export Failed', 'Export failed: ' + error);
                 } else {
@@ -532,21 +523,18 @@ if (!window.exportMessageListenerAdded) {
     }
 }
 
-// Lyrics Color Management
 class LyricsColorManager {
     constructor() {
         this.colorHistory = this.loadColorHistory();
         this.currentColor = this.loadCurrentColor();
         this.maxHistorySize = 5;
         
-        // Clear any old default colors from localStorage
         this.cleanupOldDefaultColors();
         
         this.initializeElements();
         this.setupEventListeners();
         this.updateColorPreview();
         this.renderColorHistory();
-        // Send initial color to player without adding to history
         this.sendColorToPlayer();
     }
     
@@ -582,25 +570,19 @@ class LyricsColorManager {
     }
     
     updateColorPreviewOnly(color) {
-        // Only update preview and send to player, don't save to history
         this.currentColor = color;
         this.updateColorPreview();
         this.sendColorToPlayer();
     }
     
     addToHistory(color) {
-        // Don't add default color to history
         if (color === '#ffb3d1') {
             return;
         }
         
-        // Remove if already exists
         this.colorHistory = this.colorHistory.filter(c => c !== color);
-        
-        // Add to beginning
         this.colorHistory.unshift(color);
         
-        // Keep only max history size
         if (this.colorHistory.length > this.maxHistorySize) {
             this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
         }
@@ -616,12 +598,10 @@ class LyricsColorManager {
     }
     
     getContrastColor(hexColor) {
-        // Convert hex to RGB
         const r = parseInt(hexColor.slice(1, 3), 16);
         const g = parseInt(hexColor.slice(3, 5), 16);
         const b = parseInt(hexColor.slice(5, 7), 16);
         
-        // Calculate luminance
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         
         return luminance > 0.5 ? '#000000' : '#ffffff';
@@ -630,9 +610,7 @@ class LyricsColorManager {
     renderColorHistory() {
         this.colorHistoryContainer.innerHTML = '';
         
-        // Only show color history section if there are colors
         const colorHistorySection = document.querySelector('.color-history-section');
-        
         
         if (this.colorHistory.length === 0) {
             colorHistorySection.style.display = 'none';
@@ -640,8 +618,6 @@ class LyricsColorManager {
         } else {
             colorHistorySection.style.display = 'block';
         }
-        
-        // Render existing colors
         this.colorHistory.forEach(color => {
             const colorItem = document.createElement('div');
             colorItem.className = 'color-history-item';
@@ -649,7 +625,7 @@ class LyricsColorManager {
             colorItem.title = color.toUpperCase();
             
             colorItem.addEventListener('click', () => {
-                this.setCurrentColor(color, false); // Don't add to history when clicking existing color
+                this.setCurrentColor(color, false);
             });
             
             this.colorHistoryContainer.appendChild(colorItem);
@@ -663,12 +639,10 @@ class LyricsColorManager {
         }, '*');
     }
     
-    // Local Storage Methods
     loadColorHistory() {
         try {
             const saved = localStorage.getItem('lyricsColorHistory');
             const history = saved ? JSON.parse(saved) : [];
-            // Filter out any default colors that might have been saved before
             return history.filter(color => color !== '#ffb3d1' && color !== '#ffffff');
         } catch (e) {
             return [];
@@ -702,11 +676,9 @@ class LyricsColorManager {
     }
     
     cleanupOldDefaultColors() {
-        // Force clear any existing color history to start fresh
         this.colorHistory = [];
         this.saveColorHistory();
         
-        // Also clear any old default colors from localStorage
         try {
             localStorage.removeItem('lyricsColorHistory');
         } catch (e) {
@@ -717,19 +689,16 @@ class LyricsColorManager {
         try {
             await navigator.clipboard.writeText(this.currentColor);
             
-            // Visual feedback
             const originalIcon = this.copyHexBtn.querySelector('.copy-icon').textContent;
             this.copyHexBtn.classList.add('copied');
             this.copyHexBtn.querySelector('.copy-icon').textContent = '✓';
             
-            // Reset after 2 seconds
             setTimeout(() => {
                 this.copyHexBtn.classList.remove('copied');
                 this.copyHexBtn.querySelector('.copy-icon').textContent = originalIcon;
             }, 2000);
             
         } catch (err) {
-            // Fallback for older browsers
             const textArea = document.createElement('textarea');
             textArea.value = this.currentColor;
             document.body.appendChild(textArea);
@@ -737,7 +706,6 @@ class LyricsColorManager {
             document.execCommand('copy');
             document.body.removeChild(textArea);
             
-            // Visual feedback for fallback
             const originalIcon = this.copyHexBtn.querySelector('.copy-icon').textContent;
             this.copyHexBtn.classList.add('copied');
             this.copyHexBtn.querySelector('.copy-icon').textContent = '✓';
@@ -750,9 +718,7 @@ class LyricsColorManager {
     }
 }
 
-// Initialize color manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Force clear localStorage first
     try {
         localStorage.removeItem('lyricsColorHistory');
         localStorage.removeItem('lyricsCurrentColor');

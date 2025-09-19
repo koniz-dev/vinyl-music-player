@@ -1,0 +1,42 @@
+/* Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body & Layout */
+body {
+    font-family: 'Patrick Hand', cursive;
+    background: var(--primary-gradient);
+    background-attachment: fixed;
+    background-size: 100% 100%;
+    min-height: 100vh;
+    height: 100vh;
+    overflow-x: hidden;
+    transition: background 3s ease-in-out;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+html {
+    scrollbar-width: none;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}

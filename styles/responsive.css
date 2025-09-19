@@ -1,0 +1,58 @@
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: var(--spacing-xl);
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: var(--spacing-lg);
+    }
+    
+    .upload-area {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+    
+    .form-input {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 400px) {
+    .music-player {
+        width: 320px;
+        height: 550px;
+    }
+    
+    .vinyl-container {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .vinyl-record {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .vinyl-center {
+        width: 76px;
+        height: 76px;
+    }
+    
+    .album-art, .vinyl-album-art {
+        width: 64px;
+        height: 64px;
+    }
+    
+    .groove-1 { width: 128px; height: 128px; top: 16px; left: 16px; }
+    .groove-2 { width: 108px; height: 108px; top: 26px; left: 26px; }
+    .groove-3 { width: 88px; height: 88px; top: 36px; left: 36px; }
+    
+    .tonearm {
+        height: 76px;
+        top: 12px;
+        right: 12px;
+    }
+}
