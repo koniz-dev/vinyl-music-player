@@ -28,12 +28,23 @@ function addLyricsItem() {
         </div>
     `;
     lyricsContainer.appendChild(lyricsItem);
+    
+    // Show success toast
+    if (typeof showSuccess === 'function') {
+        showSuccess('Lyrics Added', `Lyrics item ${lyricsCount} has been added successfully!`);
+    }
 }
 
 function removeLyricsItem(button) {
     const lyricsItem = button.closest('.lyrics-item');
+    const lyricsTitle = lyricsItem.querySelector('.lyrics-item-title').textContent;
     lyricsItem.remove();
     updateLyricsData();
+    
+    // Show info toast
+    if (typeof showInfo === 'function') {
+        showInfo('Lyrics Removed', `${lyricsTitle} has been removed successfully!`);
+    }
 }
 
 function timeToSeconds(timeString) {
@@ -126,7 +137,11 @@ modalImportBtn.addEventListener('click', function() {
     const jsonText = jsonLyricsInput.value.trim();
     
     if (!jsonText) {
-        alert('Please paste your JSON lyrics first.');
+        if (typeof showWarning === 'function') {
+            showWarning('Input Required', 'Please paste your JSON lyrics first.');
+        } else {
+            alert('Please paste your JSON lyrics first.');
+        }
         return;
     }
     
@@ -191,10 +206,21 @@ modalImportBtn.addEventListener('click', function() {
         
         updateLyricsData();
         closeModal();
-        alert(`Successfully imported ${lyricsData.length} lyrics items!`);
+        
+        // Show success toast
+        if (typeof showSuccess === 'function') {
+            showSuccess('Import Successful', `Successfully imported ${lyricsData.length} lyrics items!`);
+        } else {
+            alert(`Successfully imported ${lyricsData.length} lyrics items!`);
+        }
         
     } catch (error) {
-        alert('Error parsing JSON: ' + error.message);
+        // Show error toast
+        if (typeof showError === 'function') {
+            showError('Import Failed', 'Error parsing JSON: ' + error.message);
+        } else {
+            alert('Error parsing JSON: ' + error.message);
+        }
     }
 });
 const uploadArea = document.getElementById('upload-area');
@@ -272,6 +298,11 @@ function updateUploadDisplay(file) {
     uploadArea.style.background = 'rgba(56, 161, 105, 0.05)';
     
     sendAlbumArtToPlayer(file);
+    
+    // Show success toast
+    if (typeof showSuccess === 'function') {
+        showSuccess('Album Art Uploaded', `Successfully uploaded "${file.name}" as album art!`);
+    }
 }
 
 function updateAudioUploadDisplay(file) {
@@ -284,6 +315,11 @@ function updateAudioUploadDisplay(file) {
     audioUploadArea.style.background = 'rgba(56, 161, 105, 0.05)';
     
     startAutoPlay(file);
+    
+    // Show success toast
+    if (typeof showSuccess === 'function') {
+        showSuccess('Audio File Uploaded', `Successfully uploaded "${file.name}" as audio file!`);
+    }
 }
 
 function startAutoPlay(file) {
@@ -394,12 +430,21 @@ exportBtn.addEventListener('click', async function() {
     const albumArtFile = document.getElementById('album-art').files[0];
     
     if (!audioFile || !songTitle) {
-        alert('Please upload an audio file and enter a song title before exporting.');
+        if (typeof showWarning === 'function') {
+            showWarning('Missing Information', 'Please upload an audio file and enter a song title before exporting.');
+        } else {
+            alert('Please upload an audio file and enter a song title before exporting.');
+        }
         return;
     }
 
     exportProgress.style.display = 'block';
     exportBtn.disabled = true;
+    
+    // Show info toast
+    if (typeof showInfo === 'function') {
+        showInfo('Export Started', 'Video export has started. Please wait...');
+    }
     
     setTimeout(() => {
         exportProgress.scrollIntoView({ 
@@ -447,7 +492,12 @@ function handleExportComplete(videoBlob, fileName) {
     progressFill.style.width = '0%';
     progressText.textContent = 'Preparing export...';
     
-    alert('WebM video exported successfully!');
+    // Show success toast
+    if (typeof showSuccess === 'function') {
+        showSuccess('Export Complete', `WebM video "${fileName}" exported successfully!`);
+    } else {
+        alert('WebM video exported successfully!');
+    }
     
     setTimeout(() => {
         isExportCompleted = false;
@@ -473,7 +523,13 @@ if (!window.exportMessageListenerAdded) {
                 handleExportComplete(videoBlob, fileName);
             } else if (data.type === 'EXPORT_ERROR') {
                 const error = data.error;
-                alert('Export failed: ' + error);
+                
+                // Show error toast
+                if (typeof showError === 'function') {
+                    showError('Export Failed', 'Export failed: ' + error);
+                } else {
+                    alert('Export failed: ' + error);
+                }
                 
                 exportProgress.style.display = 'none';
                 exportBtn.disabled = false;
@@ -674,6 +730,11 @@ class LyricsColorManager {
             this.copyHexBtn.classList.add('copied');
             this.copyHexBtn.querySelector('.copy-icon').textContent = '✓';
             
+            // Show success toast
+            if (typeof showSuccess === 'function') {
+                showSuccess('Color Copied', `Hex color ${this.currentColor} copied to clipboard!`);
+            }
+            
             // Reset after 2 seconds
             setTimeout(() => {
                 this.copyHexBtn.classList.remove('copied');
@@ -693,6 +754,11 @@ class LyricsColorManager {
             const originalIcon = this.copyHexBtn.querySelector('.copy-icon').textContent;
             this.copyHexBtn.classList.add('copied');
             this.copyHexBtn.querySelector('.copy-icon').textContent = '✓';
+            
+            // Show success toast
+            if (typeof showSuccess === 'function') {
+                showSuccess('Color Copied', `Hex color ${this.currentColor} copied to clipboard!`);
+            }
             
             setTimeout(() => {
                 this.copyHexBtn.classList.remove('copied');
