@@ -56,11 +56,6 @@ export class MessageManager {
                         this.onDebugBrowserSupport();
                     }
                     break;
-                case 'EXPORT_WEBM':
-                    if (this.onExportRequest) {
-                        this.onExportRequest(message);
-                    }
-                    break;
             }
         });
     }
@@ -78,7 +73,6 @@ export class MessageManager {
         this.onUpdateLyrics = callbacks.onUpdateLyrics;
         this.onUpdateLyricsColor = callbacks.onUpdateLyricsColor;
         this.onDebugBrowserSupport = callbacks.onDebugBrowserSupport;
-        this.onExportRequest = callbacks.onExportRequest;
     }
 
     /**
@@ -107,31 +101,4 @@ export class MessageManager {
         alert(message);
     }
 
-    /**
-     * Handle export request from control panel
-     * @param {Object} data - Export data
-     */
-    handleExportRequest(data) {
-        const { audioFile, songTitle, artistName, albumArtFile } = data;
-        
-        if (!window.MediaRecorder) {
-            window.postMessage({
-                type: 'EXPORT_ERROR',
-                error: 'MediaRecorder API is not supported in this browser. Please use Chrome, Firefox, or Edge.'
-            }, '*');
-            return;
-        }
-        
-        if (songTitle) {
-            document.querySelector('.song-title').textContent = songTitle;
-        }
-        if (artistName) {
-            document.querySelector('.artist-name').textContent = artistName;
-        }
-        
-        // Call the video exporter function
-        if (window.startVideoRecording) {
-            window.startVideoRecording(audioFile, songTitle, artistName, albumArtFile);
-        }
-    }
 }

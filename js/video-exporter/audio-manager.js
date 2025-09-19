@@ -1,10 +1,10 @@
 import { getDefaultLyricsColor } from '../constants/colors.js';
 
 /**
- * Audio Manager
+ * Export Audio Manager
  * Handles audio processing for video export
  */
-export class AudioManager {
+export class ExportAudioManager {
     constructor() {
         this.exportAudio = null;
         this.exportLyrics = [];
@@ -33,7 +33,7 @@ export class AudioManager {
      * Load lyrics data
      */
     loadLyrics() {
-        this.exportLyrics = [...(window.vinylMusicPlayer ? window.vinylMusicPlayer.lyrics : [])];
+        this.exportLyrics = [...(window.musicPlayer ? window.musicPlayer.lyricsManager.getLyrics() : [])];
         
         // Get current lyrics color from settings
         if (window.controlPanel && window.controlPanel.colorManager) {
@@ -41,6 +41,9 @@ export class AudioManager {
         } else if (window.lyricsColorManager) {
             // Fallback for backward compatibility
             this.exportLyricsColor = window.lyricsColorManager.getCurrentColor();
+        } else {
+            // Final fallback to default color
+            this.exportLyricsColor = getDefaultLyricsColor();
         }
     }
 

@@ -1,31 +1,48 @@
 /**
- * Message Manager
- * Handles communication with control panel
+ * Export Message Manager
+ * Handles communication with control panel for video export
  */
-export class MessageManager {
+export class ExportMessageManager {
     constructor() {
         this.setupMessageListener();
     }
 
     /**
-     * Setup message listener for lyrics color updates
+     * Setup message listener for all video exporter messages
      */
     setupMessageListener() {
         window.addEventListener('message', (event) => {
-            if (event.data.type === 'UPDATE_LYRICS_COLOR') {
-                if (this.onLyricsColorUpdate) {
-                    this.onLyricsColorUpdate(event.data.color);
-                }
+            const message = event.data;
+            const { type } = message;
+            
+            switch (type) {
+                case 'UPDATE_LYRICS_COLOR':
+                    if (this.onLyricsColorUpdate) {
+                        this.onLyricsColorUpdate(message.color);
+                    }
+                    break;
+                case 'EXPORT_WEBM':
+                    if (this.onExportRequest) {
+                        this.onExportRequest(message);
+                    }
+                    break;
+                case 'DEBUG_BROWSER_SUPPORT':
+                    if (this.onDebugBrowserSupport) {
+                        this.onDebugBrowserSupport();
+                    }
+                    break;
             }
         });
     }
 
     /**
-     * Set callback for lyrics color updates
-     * @param {Function} callback - Callback function
+     * Set callbacks for message handling
+     * @param {Object} callbacks - Callback functions
      */
-    setLyricsColorCallback(callback) {
-        this.onLyricsColorUpdate = callback;
+    setCallbacks(callbacks) {
+        this.onLyricsColorUpdate = callbacks.onLyricsColorUpdate;
+        this.onExportRequest = callbacks.onExportRequest;
+        this.onDebugBrowserSupport = callbacks.onDebugBrowserSupport;
     }
 
     /**

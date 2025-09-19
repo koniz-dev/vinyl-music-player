@@ -96,4 +96,12 @@ export class LyricsManager {
     clearLyrics() {
         this.lyricsText.textContent = '';
     }
+
+    /**
+     * Get lyrics array
+     * @returns {Array} Lyrics array
+     */
+    getLyrics() {
+        return this.lyrics;
+    }
 }

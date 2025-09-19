@@ -9,6 +9,7 @@ export class ControlsManager {
         this.repeatBtn = document.querySelector('.repeat-btn');
         
         this.setupEventListeners();
+        this.disableControls(); // Disable controls initially
     }
 
     /**
@@ -75,6 +76,18 @@ export class ControlsManager {
             this.repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
             this.repeatBtn.style.color = 'white';
         }
+    }
+
+    /**
+     * Disable all control buttons
+     */
+    disableControls() {
+        const controls = document.querySelectorAll('.control-btn');
+        controls.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        });
     }
 
     /**

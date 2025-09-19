@@ -5,10 +5,10 @@
 
 // Import all video exporter modules
 import { CanvasManager } from './canvas-manager.js';
-import { AudioManager } from './audio-manager.js';
+import { ExportAudioManager } from './audio-manager.js';
 import { RecordingManager } from './recording-manager.js';
-import { ProgressManager } from './progress-manager.js';
-import { MessageManager } from './message-manager.js';
+import { ExportProgressManager } from './progress-manager.js';
+import { ExportMessageManager } from './message-manager.js';
 import { BrowserSupportManager } from './browser-support-manager.js';
 
 // Import all renderers
@@ -28,10 +28,10 @@ class VideoExporter {
     constructor() {
         // Initialize managers
         this.canvasManager = new CanvasManager();
-        this.audioManager = new AudioManager();
+        this.audioManager = new ExportAudioManager();
         this.recordingManager = new RecordingManager();
-        this.progressManager = new ProgressManager();
-        this.messageManager = new MessageManager();
+        this.progressManager = new ExportProgressManager();
+        this.messageManager = new ExportMessageManager();
         this.browserSupportManager = new BrowserSupportManager();
         
         // Initialize renderers
@@ -54,23 +54,17 @@ class VideoExporter {
      * Setup message handlers
      */
     setupMessageHandlers() {
-        this.messageManager.setLyricsColorCallback((color) => {
-            this.audioManager.updateLyricsColor(color);
-        });
-
-        window.addEventListener('message', (event) => {
-            const message = event.data;
-            const { type } = message;
-            
-            switch (type) {
-                case 'EXPORT_WEBM':
-                    this.messageManager.handleExportRequest(message, (audioFile, songTitle, artistName, albumArtFile) => {
-                        this.startVideoRecording(audioFile, songTitle, artistName, albumArtFile);
-                    });
-                    break;
-                case 'DEBUG_BROWSER_SUPPORT':
-                    this.browserSupportManager.debugBrowserSupport();
-                    break;
+        this.messageManager.setCallbacks({
+            onLyricsColorUpdate: (color) => {
+                this.audioManager.updateLyricsColor(color);
+            },
+            onExportRequest: (message) => {
+                this.messageManager.handleExportRequest(message, (audioFile, songTitle, artistName, albumArtFile) => {
+                    this.startVideoRecording(audioFile, songTitle, artistName, albumArtFile);
+                });
+            },
+            onDebugBrowserSupport: () => {
+                this.browserSupportManager.debugBrowserSupport();
             }
         });
     }
@@ -89,12 +83,13 @@ class VideoExporter {
         this.recordingManager.setExporting(true);
         
         let wasMainAudioPlaying = false;
-        if (window.vinylMusicPlayer && window.vinylMusicPlayer.audioElement && !window.vinylMusicPlayer.audioElement.paused) {
+        if (window.musicPlayer && window.musicPlayer.audioManager.audioElement && !window.musicPlayer.audioManager.audioElement.paused) {
             wasMainAudioPlaying = true;
-            window.vinylMusicPlayer.audioElement.pause();
+            window.musicPlayer.audioManager.audioElement.pause();
             
-            window.vinylMusicPlayer.isPlaying = false;
-            window.vinylMusicPlayer.updatePlayerState();
+            window.musicPlayer.audioManager.isPlaying = false;
+            window.musicPlayer.animationManager.updatePlayerState(false);
+            window.musicPlayer.controlsManager.updatePlayPauseButton(false); // Update button to show play
         }
         
         const controls = document.querySelectorAll('.control-btn');
@@ -131,14 +126,15 @@ class VideoExporter {
                 this.audioManager.getAudio(),
                 {
                     onComplete: (webmBlob, mimeType) => {
+                        console.log('Video exporter: onComplete from recording manager called with blob size:', webmBlob.size);
                         const fileName = `${songTitle.replace(/[<>:"/\\|?*]/g, '')}.webm`;
                         this.progressManager.reportComplete(webmBlob, fileName);
                         
                         // Restore main audio playback state
-                        if (wasMainAudioPlaying && window.vinylMusicPlayer && window.vinylMusicPlayer.audioElement) {
-                            window.vinylMusicPlayer.audioElement.play().then(() => {
-                                window.vinylMusicPlayer.isPlaying = true;
-                                window.vinylMusicPlayer.updatePlayerState();
+                        if (wasMainAudioPlaying && window.musicPlayer && window.musicPlayer.audioManager.audioElement) {
+                            window.musicPlayer.audioManager.audioElement.play().then(() => {
+                                window.musicPlayer.audioManager.isPlaying = true;
+                                window.musicPlayer.animationManager.updatePlayerState(true);
                             }).catch(error => {
                             });
                         }
@@ -152,6 +148,9 @@ class VideoExporter {
                         });
                         
                         this.recordingManager.setExporting(false);
+                        
+                        // Clean up resources
+                        this.recordingManager.cleanup();
                     }
                 }
             );
@@ -173,6 +172,7 @@ class VideoExporter {
             this.progressManager.startProgressTracking(
                 this.audioManager.getAudio(),
                 () => {
+                    console.log('Video exporter: onComplete from progress manager called');
                     this.recordingManager.stopRecording();
                 },
                 (error) => {
@@ -186,6 +186,7 @@ class VideoExporter {
             
             // Clean up resources
             this.audioManager.cleanup();
+            this.recordingManager.cleanup();
             if (this.albumArtImage) {
                 URL.revokeObjectURL(this.albumArtImage.src);
                 this.albumArtImage = null;
@@ -196,10 +197,10 @@ class VideoExporter {
             }
             
             // Restore main audio playback state
-            if (wasMainAudioPlaying && window.vinylMusicPlayer && window.vinylMusicPlayer.audioElement) {
-                window.vinylMusicPlayer.audioElement.play().then(() => {
-                    window.vinylMusicPlayer.isPlaying = true;
-                    window.vinylMusicPlayer.updatePlayerState();
+            if (wasMainAudioPlaying && window.musicPlayer && window.musicPlayer.audioManager.audioElement) {
+                window.musicPlayer.audioManager.audioElement.play().then(() => {
+                    window.musicPlayer.audioManager.isPlaying = true;
+                    window.musicPlayer.animationManager.updatePlayerState(true);
                 }).catch(error => {
                 });
             }

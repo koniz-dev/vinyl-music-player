@@ -1,8 +1,8 @@
 /**
- * Lyrics Management Module
+ * Control Panel Lyrics Management Module
  * Handles adding, removing, and managing lyrics items
  */
-export class LyricsManager {
+export class ControlPanelLyricsManager {
     constructor() {
         this.lyricsCount = 0;
         this.initializeElements();

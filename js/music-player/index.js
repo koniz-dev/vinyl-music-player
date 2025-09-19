@@ -110,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     lyricsManager.updateLyrics(currentTime, audioManager.isPlaying);
                 },
                 onEnded: () => {
+                    audioManager.isPlaying = false;
                     animationManager.updatePlayerState(audioManager.isPlaying);
                     animationManager.updateTonearm(audioManager.isPlaying);
                     controlsManager.updatePlayPauseButton(audioManager.isPlaying);
@@ -155,9 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         onDebugBrowserSupport: () => {
             messageManager.debugBrowserSupport();
-        },
-        onExportRequest: (data) => {
-            messageManager.handleExportRequest(data);
         }
     });
     

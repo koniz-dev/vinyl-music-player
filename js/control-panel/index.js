@@ -4,7 +4,7 @@
  */
 
 // Import all control panel modules
-import { LyricsManager } from './lyrics-manager.js';
+import { ControlPanelLyricsManager } from './lyrics-manager.js';
 import { ModalManager } from './modal-manager.js';
 import { UploadManager } from './upload-manager.js';
 import { ExportManager } from './export-manager.js';
@@ -15,7 +15,7 @@ import { ColorManager } from './color-manager.js';
  */
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize modules in dependency order
-    const lyricsManager = new LyricsManager();
+    const lyricsManager = new ControlPanelLyricsManager();
     const modalManager = new ModalManager(lyricsManager);
     const uploadManager = new UploadManager();
     const exportManager = new ExportManager();

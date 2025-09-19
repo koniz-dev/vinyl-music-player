@@ -1,8 +1,8 @@
 /**
- * Progress Manager
+ * Export Progress Manager
  * Handles export progress tracking and reporting
  */
-export class ProgressManager {
+export class ExportProgressManager {
     constructor() {
         this.progressInterval = null;
         this.exportTimeout = null;
@@ -29,15 +29,20 @@ export class ProgressManager {
         
         this.progressInterval = setInterval(() => {
             const elapsed = (Date.now() - startTime) / 1000;
-            const progress = Math.min(20 + (elapsed / duration) * 60, 80);
+            const progress = Math.min(20 + (elapsed / duration) * 75, 100);
             
             this.reportProgress(progress, `Recording... ${Math.round(progress)}%`);
 
             if (elapsed >= duration) {
+                console.log('Progress manager: Duration reached, calling onComplete');
                 this.stopProgressTracking();
-                if (onComplete) {
-                    onComplete();
-                }
+                // Add a small delay to ensure recording is complete
+                setTimeout(() => {
+                    if (onComplete) {
+                        console.log('Progress manager: Calling onComplete callback');
+                        onComplete();
+                    }
+                }, 100);
             }
         }, 100);
     }
