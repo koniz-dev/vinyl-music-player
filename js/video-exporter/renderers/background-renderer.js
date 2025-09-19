@@ -34,7 +34,7 @@ export class BackgroundRenderer {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.fillRect(rightPanelX, rightPanelY, rightPanelWidth, rightPanelHeight);
         
-        // Create vinyl player container (exact match with CSS .vinyl-player-container)
+        // Create vinyl player container (exact match with CSS .player-container)
         // width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
         const vinylPlayerContainerWidth = rightPanelWidth;
         const vinylPlayerContainerHeight = rightPanelHeight;

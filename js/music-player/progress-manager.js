@@ -6,9 +6,9 @@ import { formatTime } from './utils.js';
 
 export class ProgressManager {
     constructor() {
-        this.progress = document.querySelector('.vinyl-progress');
-        this.currentTimeEl = document.querySelector('.vinyl-current-time');
-        this.progressBar = document.querySelector('.vinyl-progress-bar');
+        this.progress = document.querySelector('.progress');
+        this.currentTimeEl = document.querySelector('.current-time');
+        this.progressBar = document.querySelector('.progress-bar');
         this.isProgressUpdating = false;
         
         this.setupEventListeners();
@@ -54,7 +54,7 @@ export class ProgressManager {
      * @param {number} totalTime - Total time in seconds
      */
     updateTotalTime(totalTime) {
-        document.querySelector('.vinyl-total-time').textContent = formatTime(totalTime);
+        document.querySelector('.total-time').textContent = formatTime(totalTime);
     }
 
     /**

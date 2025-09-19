@@ -23,7 +23,7 @@ export class ProgressRenderer {
         const progressContainerX = musicPlayerX;
         const progressContainerY = songInfoY + 80; // Position below lyrics (raised 40px)
         
-        // Draw progress bar (exact match with CSS .vinyl-progress-bar)
+        // Draw progress bar (exact match with CSS .progress-bar)
         // width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px;
         const progressBarWidth = progressContainerWidth - 60; // padding: 0 30px
         const progressBarHeight = 4; // Original height

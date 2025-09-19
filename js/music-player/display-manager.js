@@ -13,7 +13,7 @@ export class DisplayManager {
      * @param {string} title - The song title
      */
     updateSongTitle(title) {
-        const songTitleElement = document.querySelector('.vinyl-song-title');
+        const songTitleElement = document.querySelector('.song-title');
         if (songTitleElement) {
             songTitleElement.textContent = title || '';
         }
@@ -24,7 +24,7 @@ export class DisplayManager {
      * @param {string} artist - The artist name
      */
     updateArtistName(artist) {
-        const artistNameElement = document.querySelector('.vinyl-artist-name');
+        const artistNameElement = document.querySelector('.artist-name');
         if (artistNameElement) {
             artistNameElement.textContent = artist || '';
         }
@@ -67,7 +67,7 @@ export class DisplayManager {
             }
             
             // Ensure UI elements are above overlay
-            const vinylSection = this.musicPlayer.querySelector('.vinyl-section');
+            const vinylSection = this.musicPlayer.querySelector('.music-section');
             const progressContainer = this.musicPlayer.querySelector('.progress-container');
             const controls = this.musicPlayer.querySelector('.controls');
             
@@ -108,7 +108,7 @@ export class DisplayManager {
             }
             
             // Reset z-index for UI elements
-            const vinylSection = this.musicPlayer.querySelector('.vinyl-section');
+            const vinylSection = this.musicPlayer.querySelector('.music-section');
             const progressContainer = this.musicPlayer.querySelector('.progress-container');
             const controls = this.musicPlayer.querySelector('.controls');
             

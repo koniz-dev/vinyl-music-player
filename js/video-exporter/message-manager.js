@@ -45,10 +45,10 @@ export class MessageManager {
         }
         
         if (songTitle) {
-            document.querySelector('.vinyl-song-title').textContent = songTitle;
+            document.querySelector('.song-title').textContent = songTitle;
         }
         if (artistName) {
-            document.querySelector('.vinyl-artist-name').textContent = artistName;
+            document.querySelector('.artist-name').textContent = artistName;
         }
         
         if (onExportRequest) {

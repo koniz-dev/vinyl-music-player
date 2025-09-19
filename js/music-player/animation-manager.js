@@ -26,10 +26,14 @@ export class AnimationManager {
      */
     updatePlayerState(isPlaying) {
         if (isPlaying) {
-            this.vinyl.style.animation = 'spin 8s linear infinite';
+            // Ensure animation is set before starting
+            if (!this.vinyl.style.animation || this.vinyl.style.animation === 'none') {
+                this.vinyl.style.animation = 'spin 8s linear infinite';
+            }
+            this.vinyl.style.animationPlayState = 'running';
             this.tonearm.classList.add('playing');
         } else {
-            this.vinyl.style.animation = 'none';
+            this.vinyl.style.animationPlayState = 'paused';
             this.tonearm.classList.remove('playing');
         }
     }

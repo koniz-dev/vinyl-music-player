@@ -59,8 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Setup controls manager callbacks
     controlsManager.setCallbacks({
-        onPlayPauseClick: () => {
-            audioManager.togglePlayPause();
+        onPlayPauseClick: async () => {
+            await audioManager.togglePlayPause();
+            controlsManager.updatePlayPauseButton(audioManager.isPlaying);
+            animationManager.updatePlayerState(audioManager.isPlaying);
         },
         onMuteClick: () => {
             audioManager.toggleMute();
@@ -110,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 onEnded: () => {
                     animationManager.updatePlayerState(audioManager.isPlaying);
                     animationManager.updateTonearm(audioManager.isPlaying);
+                    controlsManager.updatePlayPauseButton(audioManager.isPlaying);
                     audioManager.currentTime = 0;
                     progressManager.updateProgress(0, audioManager.totalTime);
                 }
@@ -118,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Start playback
             audioManager.play().then(() => {
                 animationManager.updatePlayerState(audioManager.isPlaying);
+                controlsManager.updatePlayPauseButton(audioManager.isPlaying);
             });
             
             lyricsManager.updateLyrics(audioManager.currentTime, audioManager.isPlaying);

@@ -46,7 +46,7 @@ export class ControlsRenderer {
         let currentX = startButtonX;
         
         for (let i = 0; i < 5; i++) {
-            // Special styling for play button (exact match with CSS .vinyl-play-pause-btn)
+            // Special styling for play button (exact match with CSS .play-pause-btn)
             if (i === 2) { // Play button is at index 2
                 // width: 70px !important; height: 70px !important; font-size: 28px !important; background: rgba(255, 255, 255, 0.15) !important;
                 const playButtonX = currentX + playButtonSize/2;

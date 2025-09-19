@@ -24,11 +24,11 @@ export class SongInfoRenderer {
         const songInfoHeight = 100;
         
         // Get song info from DOM
-        const songTitle = document.querySelector('.vinyl-song-title').textContent;
-        const artistName = document.querySelector('.vinyl-artist-name').textContent;
-        const lyricsText = document.querySelector('.vinyl-lyrics-text').textContent;
+        const songTitle = document.querySelector('.song-title').textContent;
+        const artistName = document.querySelector('.artist-name').textContent;
+        const lyricsText = document.querySelector('.lyrics-text').textContent;
 
-        // Song title (exact match with CSS .vinyl-song-title)
+        // Song title (exact match with CSS .song-title)
         // font-size: 24px; font-weight: bold; margin-top: 16px; letter-spacing: 2px;
         ctx.fillStyle = '#ffffff';
         ctx.font = `bold 28px 'Patrick Hand', Arial, sans-serif`;
@@ -36,14 +36,14 @@ export class SongInfoRenderer {
         ctx.fillText(songTitle, songInfoX + songInfoWidth / 2, songInfoY);
 
         if (artistName) {
-            // Artist name (exact match with CSS .vinyl-artist-name)
+            // Artist name (exact match with CSS .artist-name)
             // font-size: 16px; color: rgba(255, 255, 255, 0.9); font-weight: 400; letter-spacing: 1px;
             ctx.font = `16px 'Patrick Hand', Arial, sans-serif`;
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.fillText(artistName, songInfoX + songInfoWidth / 2, songInfoY + 25);
         }
 
-        // Display current lyrics based on audio time (exact match with CSS .vinyl-lyrics-text)
+        // Display current lyrics based on audio time (exact match with CSS .lyrics-text)
         // font-size: 18px; color: #ffd700; text-align: center; margin-top: 10px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         if (audio && lyrics && lyrics.length > 0) {
             const currentTime = audio.currentTime;

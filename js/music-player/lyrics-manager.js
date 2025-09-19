@@ -7,7 +7,7 @@ import { getDefaultLyricsColor } from '../constants/colors.js';
 export class LyricsManager {
     constructor() {
         this.lyrics = [];
-        this.lyricsText = document.querySelector('.vinyl-lyrics-text');
+        this.lyricsText = document.querySelector('.lyrics-text');
         
         // Set default lyrics color
         this.lyricsText.style.color = getDefaultLyricsColor();

@@ -19,7 +19,7 @@ export class CanvasManager {
         
         const dimensionSources = [
             () => {
-                const vinylPlayer = document.querySelector('.vinyl-player-container');
+                const vinylPlayer = document.querySelector('.player-container');
                 if (vinylPlayer) {
                     const rect = vinylPlayer.getBoundingClientRect();
                     if (rect.width > 0 && rect.height > 0) {

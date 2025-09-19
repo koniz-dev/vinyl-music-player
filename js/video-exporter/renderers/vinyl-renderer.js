@@ -24,7 +24,7 @@ export class VinylRenderer {
     render(ctx, layout) {
         const { musicPlayerX, musicPlayerY, musicPlayerWidth, musicPlayerHeight } = layout;
 
-        // Create vinyl section (exact match with CSS .vinyl-section)
+        // Create vinyl section (exact match with CSS .music-section)
         // flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
         const vinylSectionWidth = musicPlayerWidth;
         const vinylSectionHeight = musicPlayerHeight * 0.7; // flex: 1 takes most space

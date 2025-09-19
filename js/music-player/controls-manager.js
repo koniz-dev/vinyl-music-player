@@ -4,9 +4,9 @@
  */
 export class ControlsManager {
     constructor() {
-        this.playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
-        this.muteBtn = document.querySelector('.vinyl-mute-btn');
-        this.repeatBtn = document.querySelector('.vinyl-repeat-btn');
+        this.playPauseBtn = document.querySelector('.play-pause-btn');
+        this.muteBtn = document.querySelector('.mute-btn');
+        this.repeatBtn = document.querySelector('.repeat-btn');
         
         this.setupEventListeners();
     }
