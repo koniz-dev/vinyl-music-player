@@ -287,6 +287,33 @@ body {
     }
 }
 
+/* Lyrics buttons styling */
+.lyrics-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+/* Debug button styling */
+.debug-btn {
+    margin-top: 8px;
+}
+
+/* Required asterisk styling */
+.required-asterisk {
+    color: #e53e3e;
+}
+
+/* Hidden utility class */
+.hidden {
+    display: none !important;
+}
+
+/* Color history section */
+.color-history-section {
+    display: block;
+}
+
 /* Responsive toast */
 @media (max-width: 768px) {
     .toast-container {

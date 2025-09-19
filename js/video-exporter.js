@@ -1,3 +1,9 @@
+/**
+ * Video Exporter Module
+ * Handles WebM video export functionality with canvas rendering
+ */
+
+// Export State Variables
 let mediaRecorder = null;
 let recordedChunks = [];
 let exportCanvas = null;

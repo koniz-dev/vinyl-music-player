@@ -1,67 +1,82 @@
 /**
  * Dynamic Background Gradient Generator
  * Generates random background gradients for body on each page load
+ * Provides a variety of beautiful gradient combinations with smooth animations
  */
-
 class DynamicGradient {
     constructor() {
-        this.gradientSets = [
+        this.gradientSets = this.initializeGradientSets();
+        this.init();
+    }
+
+    /**
+     * Initialize predefined gradient color sets
+     * @returns {Array} Array of gradient color sets
+     */
+    initializeGradientSets() {
+        return [
+            // Warm color sets
             [
                 ['#ff6b6b', '#ffa726', '#ffeb3b'],
                 ['#ff9a9e', '#fecfef', '#fecfef'],
                 ['#ff9a56', '#ff6b6b', '#c44569']
             ],
+            // Cool color sets
             [
                 ['#667eea', '#764ba2', '#f093fb'],
                 ['#4facfe', '#00f2fe', '#43e97b'],
                 ['#a8edea', '#fed6e3', '#d299c2']
             ],
+            // Nature color sets
             [
                 ['#11998e', '#38ef7d', '#56ab2f'],
                 ['#134e5e', '#71b280', '#a8e6cf'],
                 ['#2c3e50', '#3498db', '#2ecc71']
             ],
+            // Purple/violet sets
             [
                 ['#667eea', '#764ba2', '#f093fb'],
                 ['#a8c0ff', '#3f2b96', '#c471f5'],
                 ['#8360c3', '#2ebf91', '#f093fb']
             ],
+            // Sunset/sunrise sets
             [
                 ['#ffecd2', '#fcb69f', '#ff8a80'],
                 ['#ffeaa7', '#fab1a0', '#e17055'],
                 ['#fd79a8', '#fdcb6e', '#6c5ce7']
             ],
+            // Ocean/water sets
             [
                 ['#74b9ff', '#0984e3', '#6c5ce7'],
                 ['#a29bfe', '#6c5ce7', '#fd79a8'],
                 ['#00b894', '#00cec9', '#74b9ff']
             ],
+            // Neon/vibrant sets
             [
                 ['#ff006e', '#8338ec', '#3a86ff'],
                 ['#06ffa5', '#3d5a80', '#ee6c4d'],
                 ['#f72585', '#b5179e', '#7209b7']
             ],
+            // Pastel sets
             [
                 ['#ffecd2', '#fcb69f', '#ff8a80'],
                 ['#a8edea', '#fed6e3', '#d299c2'],
                 ['#ff9a9e', '#fecfef', '#fecfef']
             ]
         ];
-        
-        this.init();
     }
 
     /**
-     * Initialize dynamic gradient
+     * Initialize dynamic gradient system
      */
     init() {
         this.applyRandomGradient();
-        
         this.addSmoothTransition();
     }
 
     /**
-     * Generate random hex color
+     * Generate a random hex color
+     * @returns {string} Random hex color
      */
     generateRandomColor() {
         const letters = '0123456789ABCDEF';
@@ -73,7 +88,8 @@ class DynamicGradient {
     }
 
     /**
-     * Generate gradient from preset color sets
+     * Generate gradient from predefined color sets
+     * @returns {Array} Array of colors for gradient
      */
     generateGradientFromSet() {
         const randomSet = this.gradientSets[Math.floor(Math.random() * this.gradientSets.length)];
@@ -89,6 +105,7 @@ class DynamicGradient {
 
     /**
      * Generate completely random gradient
+     * @returns {Array} Array of random colors
      */
     generateRandomGradient() {
         const colorCount = Math.floor(Math.random() * 3) + 3;
@@ -103,6 +120,7 @@ class DynamicGradient {
 
     /**
      * Generate random gradient angle
+     * @returns {string} Random gradient angle
      */
     generateRandomAngle() {
         const angles = [
@@ -116,6 +134,8 @@ class DynamicGradient {
 
     /**
      * Generate random color stops with blending effect
+     * @param {Array} colors - Array of colors
+     * @returns {string} Color stops string
      */
     generateRandomStops(colors) {
         const stops = [];
@@ -143,7 +163,10 @@ class DynamicGradient {
     }
 
     /**
-     * Add transparency to color
+     * Add transparency to a hex color
+     * @param {string} color - Hex color string
+     * @param {number} alpha - Alpha value (0-1)
+     * @returns {string} RGBA color string
      */
     addTransparency(color, alpha) {
         if (color.startsWith('#')) {
@@ -157,7 +180,7 @@ class DynamicGradient {
     }
 
     /**
-     * Apply random gradient to body
+     * Apply random gradient to body element
      */
     applyRandomGradient() {
         const usePreset = Math.random() > 0.3;
@@ -171,19 +194,24 @@ class DynamicGradient {
     }
 
     /**
-     * Create multiple blended gradients
+     * Create multiple blended gradients for complex background
+     * @param {Array} colors - Base colors for gradients
+     * @returns {string} Combined gradient string
      */
     createBlendedGradients(colors) {
         const gradients = [];
         
+        // Primary linear gradient
         const angle = this.generateRandomAngle();
         const stops = this.generateRandomStops(colors);
         gradients.push(`linear-gradient(${angle}, ${stops})`);
         
+        // Radial gradient overlay
         const radialColors = this.createRadialColors(colors);
         const radialStops = this.generateRadialStops(radialColors);
         gradients.push(`radial-gradient(circle at ${this.generateRandomPosition()}, ${radialStops})`);
         
+        // Secondary linear gradient
         const angle2 = this.generateRandomAngle();
         const colors2 = this.shiftColors(colors);
         const stops2 = this.generateRandomStops(colors2);
@@ -193,7 +221,9 @@ class DynamicGradient {
     }
 
     /**
-     * Create colors for radial gradient
+     * Create colors for radial gradient with transparency
+     * @param {Array} colors - Base colors
+     * @returns {Array} Colors with transparency
      */
     createRadialColors(colors) {
         return colors.map(color => {
@@ -203,6 +233,8 @@ class DynamicGradient {
 
     /**
      * Generate stops for radial gradient
+     * @param {Array} colors - Colors for radial gradient
+     * @returns {string} Radial gradient stops
      */
     generateRadialStops(colors) {
         const stops = [];
@@ -215,6 +247,7 @@ class DynamicGradient {
 
     /**
      * Generate random position for radial gradient
+     * @returns {string} Random position string
      */
     generateRandomPosition() {
         const positions = [
@@ -226,7 +259,9 @@ class DynamicGradient {
     }
 
     /**
-     * Shift colors to create variations
+     * Shift colors to create variations (increase brightness)
+     * @param {Array} colors - Original colors
+     * @returns {Array} Shifted colors
      */
     shiftColors(colors) {
         return colors.map(color => {
@@ -244,6 +279,7 @@ class DynamicGradient {
 
     /**
      * Add animation effect to gradient
+     * @param {string} baseGradient - Base gradient string
      */
     addGradientAnimation(baseGradient) {
         const animationName = 'gradientBlend';
@@ -276,6 +312,9 @@ class DynamicGradient {
 
     /**
      * Create gradient with brightness changes and blending effect
+     * @param {string} baseGradient - Base gradient string
+     * @param {number} shift - Brightness shift amount
+     * @returns {string} Shifted gradient string
      */
     createShiftedGradient(baseGradient, shift) {
         const gradients = baseGradient.split(', ');
@@ -297,7 +336,7 @@ class DynamicGradient {
     }
 
     /**
-     * Add smooth transition
+     * Add smooth transition styles to body
      */
     addSmoothTransition() {
         const style = document.createElement('style');
@@ -311,13 +350,16 @@ class DynamicGradient {
         `;
         document.head.appendChild(style);
     }
-
 }
 
+/**
+ * Initialize Dynamic Gradient when DOM is loaded
+ */
 document.addEventListener('DOMContentLoaded', function() {
     const gradientManager = new DynamicGradient();
 });
 
+// Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = DynamicGradient;
 }

@@ -35,7 +35,7 @@
     <meta name="msapplication-TileColor" content="#1e1b4b">
     <meta name="msapplication-config" content="favicon/browserconfig.xml">
 
-    <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
+    <link rel="icon" href="favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -44,10 +44,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="styles/common.css">
-    <link rel="stylesheet" type="text/css" href="styles/index.css">
-    <link rel="stylesheet" type="text/css" href="styles/settings.css">
-    <link rel="stylesheet" type="text/css" href="styles/vinyl-player.css">
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/index.css">
+    <link rel="stylesheet" href="styles/settings.css">
+    <link rel="stylesheet" href="styles/vinyl-player.css">
 </head>
 
 <body>
@@ -70,10 +70,10 @@
                         <p class="subtitle">Customize your music experience</p>
                     </div>
 
-                    <form id="musicForm">
+                    <form id="music-form">
                         <div class="form-group">
-                            <label class="form-label">
-                                🎵 Audio File<span style="color: #e53e3e;">*</span>
+                            <label class="form-label" for="audio-file">
+                                🎵 Audio File<span class="required-asterisk">*</span>
                             </label>
                             <div class="upload-area audio-upload" id="audio-upload-area">
                                 <input type="file" accept="audio/*" id="audio-file">
@@ -84,27 +84,26 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
-                                📝 Song Title<span style="color: #e53e3e;">*</span>
+                            <label class="form-label" for="song-title">
+                                📝 Song Title<span class="required-asterisk">*</span>
                             </label>
-                            <input type="text" class="form-input" id="song-title" placeholder="Enter song title"
-                                value="">
+                            <input type="text" class="form-input" id="song-title" placeholder="Enter song title" 
+                                required>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <label class="form-label" for="artist-name">
                                 🎤 Song Artist
                             </label>
-                            <input type="text" class="form-input" id="artist-name" placeholder="Enter artist name"
-                                value="">
+                            <input type="text" class="form-input" id="artist-name" placeholder="Enter artist name">
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <div class="form-label">
                                 🎨 Album Art
-                            </label>
+                            </div>
                             <div class="upload-area" id="upload-area">
-                                <input type="file" accept="image/*" id="album-art">
+                                <input type="file" accept="image/*" id="album-art" aria-label="Upload album art">
                                 <div class="upload-icon">📷</div>
                                 <div class="upload-text">Upload Album Art</div>
                                 <div class="upload-hint">Click to browse or drag & drop</div>
@@ -112,12 +111,12 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <div class="form-label">
                                 📝 Lyrics
-                            </label>
+                            </div>
                             <div class="lyrics-container" id="lyrics-container">
                             </div>
-                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <div class="lyrics-buttons">
                                 <button type="button" class="add-lyrics-btn" id="add-lyrics-btn">
                                     <span class="add-icon">+</span> Add Lyrics
                                 </button>
@@ -128,7 +127,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <label class="form-label" for="lyrics-color-picker">
                                 🎨 Lyrics Color
                             </label>
                             <div class="color-settings-container">
@@ -152,11 +151,10 @@
                             <button type="button" class="export-btn" id="export-btn" disabled>
                                 <span class="export-icon">🎬</span> Export WebM Video
                             </button>
-                            <button type="button" class="debug-btn" id="debug-btn"
-                                style="margin-top: 8px; display: none;">
+                            <button type="button" class="debug-btn hidden" id="debug-btn">
                                 <span class="debug-icon">🔧</span> Check Browser Support
                             </button>
-                            <div class="export-progress" id="export-progress" style="display: none;">
+                            <div class="export-progress hidden" id="export-progress">
                                 <div class="progress-bar">
                                     <div class="progress-fill" id="progress-fill"></div>
                                 </div>
@@ -187,9 +185,9 @@
 
 
                             <div class="song-info">
-                                <div class="vinyl-song-title"></div>
-                                <div class="vinyl-artist-name"></div>
-                                <div class="vinyl-lyrics-text"></div>
+                                <div class="vinyl-song-title" aria-live="polite"></div>
+                                <div class="vinyl-artist-name" aria-live="polite"></div>
+                                <div class="vinyl-lyrics-text" aria-live="polite"></div>
                             </div>
                         </div>
 
@@ -198,22 +196,17 @@
                                 <div class="vinyl-progress"></div>
                             </div>
                             <div class="progress-time">
-                                <span class="vinyl-current-time">00:00</span>
-                                <span class="vinyl-total-time">00:00</span>
+                                <span class="vinyl-current-time" aria-live="polite">00:00</span>
+                                <span class="vinyl-total-time" aria-live="polite">00:00</span>
                             </div>
                         </div>
 
                         <div class="controls">
-                            <button type="button" class="control-btn vinyl-mute-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">🔊</button>
-                            <button type="button" class="control-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">⏮</button>
-                            <button type="button" class="control-btn vinyl-play-pause-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">▶</button>
-                            <button type="button" class="control-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">⏭</button>
-                            <button type="button" class="control-btn vinyl-repeat-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">↻</button>
+                            <button type="button" class="control-btn vinyl-mute-btn" disabled aria-label="Mute/Unmute">🔊</button>
+                            <button type="button" class="control-btn" disabled aria-label="Previous track">⏮</button>
+                            <button type="button" class="control-btn vinyl-play-pause-btn" disabled aria-label="Play/Pause">▶</button>
+                            <button type="button" class="control-btn" disabled aria-label="Next track">⏭</button>
+                            <button type="button" class="control-btn vinyl-repeat-btn" disabled aria-label="Repeat">↻</button>
                         </div>
                     </div>
                 </div>
@@ -221,11 +214,11 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="dev-lyrics-modal" style="display: none;">
+    <div class="modal-overlay hidden" id="dev-lyrics-modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>For Dev - Import JSON Lyrics</h3>
-                <button type="button" class="modal-close-btn" id="modal-close-btn">×</button>
+                <h3 id="modal-title">For Dev - Import JSON Lyrics</h3>
+                <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">×</button>
             </div>
             <div class="modal-body">
                 <p class="modal-description">

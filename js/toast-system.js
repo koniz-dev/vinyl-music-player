@@ -1,10 +1,16 @@
-// Toast Notification System for Vinyl Music Player
+/**
+ * Toast Notification System for Vinyl Music Player
+ * Provides a clean, modern notification system with different types and animations
+ */
 class ToastSystem {
     constructor() {
         this.toastContainer = document.getElementById('toast-container');
         this.init();
     }
 
+    /**
+     * Initialize the toast system
+     */
     init() {
         // Ensure toast container exists
         if (!this.toastContainer) {
@@ -13,12 +19,39 @@ class ToastSystem {
         }
     }
 
+    /**
+     * Show a toast notification
+     * @param {string} type - Type of toast (success, error, info, warning)
+     * @param {string} title - Toast title
+     * @param {string} message - Toast message
+     * @param {number} duration - Duration in milliseconds (default: 4000)
+     */
     showToast(type, title, message, duration = 4000) {
         if (!this.toastContainer) {
             console.error('Toast container not found!');
             return;
         }
 
+        const toast = this.createToastElement(type, title, message);
+        this.toastContainer.appendChild(toast);
+        
+        // Trigger animation
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 100);
+        
+        // Auto remove
+        this.scheduleToastRemoval(toast, duration);
+    }
+
+    /**
+     * Create toast DOM element
+     * @param {string} type - Toast type
+     * @param {string} title - Toast title
+     * @param {string} message - Toast message
+     * @returns {HTMLElement} The toast element
+     */
+    createToastElement(type, title, message) {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         
@@ -40,14 +73,15 @@ class ToastSystem {
             </button>
         `;
         
-        this.toastContainer.appendChild(toast);
-        
-        // Trigger animation
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 100);
-        
-        // Auto remove
+        return toast;
+    }
+
+    /**
+     * Schedule toast removal with animation
+     * @param {HTMLElement} toast - The toast element
+     * @param {number} duration - Duration before removal
+     */
+    scheduleToastRemoval(toast, duration) {
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => {
@@ -58,58 +92,58 @@ class ToastSystem {
         }, duration);
     }
 
+    /**
+     * Show success toast
+     * @param {string} title - Toast title
+     * @param {string} message - Toast message
+     * @param {number} duration - Duration in milliseconds
+     */
     showSuccess(title, message, duration) {
         this.showToast('success', title, message, duration);
     }
 
+    /**
+     * Show error toast
+     * @param {string} title - Toast title
+     * @param {string} message - Toast message
+     * @param {number} duration - Duration in milliseconds
+     */
     showError(title, message, duration) {
         this.showToast('error', title, message, duration);
     }
 
+    /**
+     * Show info toast
+     * @param {string} title - Toast title
+     * @param {string} message - Toast message
+     * @param {number} duration - Duration in milliseconds
+     */
     showInfo(title, message, duration) {
         this.showToast('info', title, message, duration);
     }
 
+    /**
+     * Show warning toast
+     * @param {string} title - Toast title
+     * @param {string} message - Toast message
+     * @param {number} duration - Duration in milliseconds
+     */
     showWarning(title, message, duration) {
         this.showToast('warning', title, message, duration);
     }
 }
 
+/**
+ * Global Toast System Instance and Functions
+ */
+
 // Create global toast instance
 let toastSystem;
 
-// Initialize toast system when DOM is loaded
+/**
+ * Initialize toast system when DOM is loaded
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    toastSystem = new ToastSystem();
+    window.toastSystem = new ToastSystem();
 });
 
-// Global functions for easy access
-function showToast(type, title, message, duration) {
-    if (toastSystem) {
-        toastSystem.showToast(type, title, message, duration);
-    }
-}
-
-function showSuccess(title, message, duration) {
-    if (toastSystem) {
-        toastSystem.showSuccess(title, message, duration);
-    }
-}
-
-function showError(title, message, duration) {
-    if (toastSystem) {
-        toastSystem.showError(title, message, duration);
-    }
-}
-
-function showInfo(title, message, duration) {
-    if (toastSystem) {
-        toastSystem.showInfo(title, message, duration);
-    }
-}
-
-function showWarning(title, message, duration) {
-    if (toastSystem) {
-        toastSystem.showWarning(title, message, duration);
-    }
-}
