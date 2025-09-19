@@ -246,9 +246,6 @@
 .control-btn:hover,
 .control-btn:focus {
     background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
 }
 
 .vinyl-play-pause-btn {
@@ -260,5 +257,4 @@
 
 .vinyl-play-pause-btn:hover {
     background: rgba(255, 255, 255, 0.25) !important;
-    transform: scale(1.1) !important;
 }

@@ -1,3 +1,5 @@
+import { getDefaultLyricsColor } from '../constants/colors.js';
+
 /**
  * Lyrics Color Management Class
  * Handles color picker, history, and persistence for lyrics colors
@@ -7,6 +9,7 @@ export class ColorManager {
         this.colorHistory = this.loadColorHistory();
         this.currentColor = this.loadCurrentColor();
         this.maxHistorySize = 5;
+        
         
         // Clear any old default colors from localStorage
         this.cleanupOldDefaultColors();
@@ -77,7 +80,7 @@ export class ColorManager {
      */
     addToHistory(color) {
         // Don't add default color to history
-        if (color === '#ffb3d1') {
+        if (color === getDefaultLyricsColor()) {
             return;
         }
         
@@ -176,7 +179,7 @@ export class ColorManager {
             const saved = localStorage.getItem('lyricsColorHistory');
             const history = saved ? JSON.parse(saved) : [];
             // Filter out any default colors that might have been saved before
-            return history.filter(color => color !== '#ffb3d1' && color !== '#ffffff');
+            return history.filter(color => color !== getDefaultLyricsColor() && color !== '#ffffff');
         } catch (e) {
             return [];
         }
@@ -199,9 +202,9 @@ export class ColorManager {
      */
     loadCurrentColor() {
         try {
-            return localStorage.getItem('lyricsCurrentColor') || '#ffb3d1';
+            return localStorage.getItem('lyricsCurrentColor') || getDefaultLyricsColor();
         } catch (e) {
-            return '#ffb3d1';
+            return getDefaultLyricsColor();
         }
     }
     
@@ -301,3 +304,17 @@ export class ColorManager {
 }
 
 // Note: This class is now exported and will be instantiated by the main index.js
+
+/**
+ * Initialize color picker with default value
+ * This function runs when DOM is loaded
+ */
+function initializeColorPicker() {
+    const colorPicker = document.getElementById('lyrics-color-picker');
+    if (colorPicker) {
+        colorPicker.value = getDefaultLyricsColor();
+    }
+}
+
+// Set default color picker value when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeColorPicker);
