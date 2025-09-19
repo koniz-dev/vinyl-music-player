@@ -3,7 +3,7 @@
  * Generates random background gradients for body on each page load
  * Provides a variety of beautiful gradient combinations with smooth animations
  */
-class DynamicGradient {
+export class DynamicGradient {
     constructor() {
         this.gradientSets = this.initializeGradientSets();
         this.init();
@@ -355,11 +355,6 @@ class DynamicGradient {
 /**
  * Initialize Dynamic Gradient when DOM is loaded
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     const gradientManager = new DynamicGradient();
 });
-
-// Export for module systems
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DynamicGradient;
-}

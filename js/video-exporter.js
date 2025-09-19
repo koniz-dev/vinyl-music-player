@@ -91,8 +91,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
         
         isPlaying = false;
         updatePlayerState();
-        stopProgressTimer();
-        stopLyricsTimer();
     }
     
     const controls = document.querySelectorAll('.control-btn');
@@ -110,8 +108,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                 audioElement.play().then(() => {
                     isPlaying = true;
                     updatePlayerState();
-                    startProgressTimer();
-                    startLyricsTimer();
                 }).catch(error => {
                 });
             }
@@ -246,8 +242,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                 audioElement.play().then(() => {
                     isPlaying = true;
                     updatePlayerState();
-                    startProgressTimer();
-                    startLyricsTimer();
                 }).catch(error => {
                 });
             }
@@ -330,8 +324,6 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
             audioElement.play().then(() => {
                 isPlaying = true;
                 updatePlayerState();
-                startProgressTimer();
-                startLyricsTimer();
             }).catch(error => {
                 // Audio resume failed silently
             });

@@ -33,10 +33,8 @@ function init() {
     updateProgress();
     updateTonearm();
     updateLyrics();
-    if (isPlaying) {
-        startProgressTimer();
-        startLyricsTimer();
-    }
+    // Set default lyrics color
+    lyricsText.style.color = '#ffb3d1';
 }
 
 /**
@@ -86,19 +84,6 @@ function getCurrentLyric(time) {
     return null;
 }
 
-/**
- * Start lyrics timer (placeholder for future implementation)
- */
-function startLyricsTimer() {
-    // Currently handled by updateLyrics() called from audio timeupdate event
-}
-
-/**
- * Stop lyrics timer (placeholder for future implementation)
- */
-function stopLyricsTimer() {
-    // Currently handled by updateLyrics() called from audio timeupdate event
-}
 
 /**
  * Restart audio from the beginning
@@ -114,8 +99,6 @@ function restartAudio() {
         audioElement.play().then(() => {
             isPlaying = true;
             updatePlayerState();
-            startProgressTimer();
-            startLyricsTimer();
         }).catch(error => {
             isPlaying = false;
             updatePlayerState();
@@ -133,8 +116,6 @@ function togglePlayPause() {
         audioElement.pause();
         isPlaying = false;
         updatePlayerState();
-        stopProgressTimer();
-        stopLyricsTimer();
     } else {
         if (audioElement.ended) {
             restartAudio();
@@ -142,8 +123,6 @@ function togglePlayPause() {
             audioElement.play().then(() => {
                 isPlaying = true;
                 updatePlayerState();
-                startProgressTimer();
-                startLyricsTimer();
             }).catch(error => {
                 isPlaying = false;
                 updatePlayerState();
@@ -152,19 +131,6 @@ function togglePlayPause() {
     }
 }
 
-/**
- * Start progress timer (placeholder for future implementation)
- */
-function startProgressTimer() {
-    // Currently handled by updateProgress() called from audio timeupdate event
-}
-
-/**
- * Stop progress timer (placeholder for future implementation)
- */
-function stopProgressTimer() {
-    // Currently handled by updateProgress() called from audio timeupdate event
-}
 
 /**
  * Update progress bar and time display
@@ -230,32 +196,36 @@ progressBar.addEventListener('click', (e) => {
  * Handles communication with the control panel
  */
 window.addEventListener('message', function(event) {
-    const { type, data } = event;
+    const message = event.data;
+    const { type } = message;
     
     switch (type) {
         case 'START_PLAY':
-            startPlaying(data);
+            startPlaying(message);
             break;
         case 'UPDATE_SONG_TITLE':
-            updateSongTitle(data.songTitle);
+            updateSongTitle(message.songTitle);
             break;
         case 'UPDATE_ARTIST_NAME':
-            updateArtistName(data.artistName);
+            updateArtistName(message.artistName);
             break;
         case 'UPDATE_ALBUM_ART':
-            updateAlbumArt(data.imageUrl);
+            updateAlbumArt(message.imageUrl);
             break;
         case 'REMOVE_ALBUM_ART':
             removeAlbumArt();
             break;
         case 'UPDATE_LYRICS':
-            updateLyricsFromSettings(data.lyrics);
+            updateLyricsFromSettings(message.lyrics);
+            break;
+        case 'UPDATE_LYRICS_COLOR':
+            lyricsText.style.color = message.color;
             break;
         case 'DEBUG_BROWSER_SUPPORT':
             debugBrowserSupport();
             break;
         case 'EXPORT_WEBM':
-            handleExportRequest(data);
+            handleExportRequest(message);
             break;
     }
 });
@@ -493,8 +463,6 @@ function startPlaying(data) {
         } else {
             isPlaying = false;
             updatePlayerState();
-            stopProgressTimer();
-            stopLyricsTimer();
             updateTonearm();
             currentTime = 0;
             updateProgress();
@@ -505,8 +473,6 @@ function startPlaying(data) {
     audioElement.play().then(() => {
         isPlaying = true;
         updatePlayerState();
-        startProgressTimer();
-        startLyricsTimer();
     });
     
     updateLyrics();
@@ -591,12 +557,6 @@ repeatBtn.addEventListener('click', function() {
     }
 });
 
-// Listen for lyrics color updates from settings
-window.addEventListener('message', function(event) {
-    if (event.data.type === 'UPDATE_LYRICS_COLOR') {
-        lyricsText.style.color = event.data.color;
-    }
-});
 
 /**
  * Initialize the music player
