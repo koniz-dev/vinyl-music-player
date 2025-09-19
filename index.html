@@ -34,20 +34,65 @@
     <meta name="application-name" content="Vinyl Music Player">
     <meta name="msapplication-TileColor" content="#1e1b4b">
     <meta name="msapplication-config" content="favicon/browserconfig.xml">
+    
+    <!-- Additional PWA and Performance -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
+    
+    <!-- Performance and Security -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
     <link rel="manifest" href="favicon/site.webmanifest">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="js/index.js" as="script" fetchpriority="high">
+    <link rel="preload" href="js/settings.js" as="script">
+    <link rel="preload" href="js/vinyl-player.js" as="script">
+    <link rel="preload" href="js/vinyl-player-export.js" as="script">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="styles/common.css">
-    <link rel="stylesheet" type="text/css" href="styles/index.css">
-    <link rel="stylesheet" type="text/css" href="styles/settings.css">
-    <link rel="stylesheet" type="text/css" href="styles/vinyl-player.css">
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet"></noscript>
+    <link rel="preload" href="styles/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'" fetchpriority="high">
+    <noscript><link rel="stylesheet" href="styles/index.css"></noscript>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Vinyl Music Player",
+        "description": "A beautiful vinyl music player with synchronized lyrics and WebM video export. Create stunning music videos with your favorite songs and share them with the world.",
+        "url": "https://github.com/koniz-dev/vinyl-music-player",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "koniz-dev"
+        },
+        "featureList": [
+            "Audio file upload and playback",
+            "Synchronized lyrics display",
+            "WebM video export",
+            "Customizable album art",
+            "Color customization for lyrics",
+            "Responsive design"
+        ]
+    }
+    </script>
 </head>
 
 <body>
@@ -70,29 +115,29 @@
                         <p class="subtitle">Customize your music experience</p>
                     </div>
 
-                    <form id="musicForm">
+                    <form id="music-form">
                         <div class="form-group">
-                            <label class="form-label">
-                                🎵 Audio File<span style="color: #e53e3e;">*</span>
-                            </label>
+                            <div class="form-label">
+                                🎵 Audio File<span class="required-asterisk">*</span>
+                            </div>
                             <div class="upload-area audio-upload" id="audio-upload-area">
-                                <input type="file" accept="audio/*" id="audio-file">
-                                <div class="upload-icon">🎵</div>
+                                <input type="file" accept="audio/*" id="audio-file" aria-label="Upload audio file" aria-describedby="audio-upload-hint">
+                                <div class="upload-icon" aria-hidden="true">🎵</div>
                                 <div class="upload-text">Upload MP3 File</div>
-                                <div class="upload-hint">Click to browse or drag & drop</div>
+                                <div class="upload-hint" id="audio-upload-hint">Click to browse or drag & drop</div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
-                                📝 Song Title<span style="color: #e53e3e;">*</span>
+                            <label class="form-label" for="song-title">
+                                📝 Song Title<span class="required-asterisk">*</span>
                             </label>
                             <input type="text" class="form-input" id="song-title" placeholder="Enter song title"
-                                value="">
+                                value="" aria-required="true">
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <label class="form-label" for="artist-name">
                                 🎤 Song Artist
                             </label>
                             <input type="text" class="form-input" id="artist-name" placeholder="Enter artist name"
@@ -100,40 +145,40 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <div class="form-label">
                                 🎨 Album Art
-                            </label>
+                            </div>
                             <div class="upload-area" id="upload-area">
-                                <input type="file" accept="image/*" id="album-art">
-                                <div class="upload-icon">📷</div>
+                                <input type="file" accept="image/*" id="album-art" aria-label="Upload album art" aria-describedby="album-art-hint">
+                                <div class="upload-icon" aria-hidden="true">📷</div>
                                 <div class="upload-text">Upload Album Art</div>
-                                <div class="upload-hint">Click to browse or drag & drop</div>
+                                <div class="upload-hint" id="album-art-hint">Click to browse or drag & drop</div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <div class="form-label">
                                 📝 Lyrics
-                            </label>
+                            </div>
                             <div class="lyrics-container" id="lyrics-container">
                             </div>
-                            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                                <button type="button" class="add-lyrics-btn" id="add-lyrics-btn">
+                            <div class="lyrics-buttons-container">
+                                <button type="button" class="add-lyrics-btn" id="add-lyrics-btn" aria-label="Add lyrics">
                                     <span class="add-icon">+</span> Add Lyrics
                                 </button>
-                                <button type="button" class="dev-lyrics-btn" id="dev-lyrics-btn">
+                                <button type="button" class="dev-lyrics-btn" id="dev-lyrics-btn" aria-label="Developer options">
                                     <span class="dev-icon">⚙️</span> For Dev
                                 </button>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
+                            <div class="form-label">
                                 🎨 Lyrics Color
-                            </label>
+                            </div>
                             <div class="color-settings-container">
                                 <div class="color-picker-section">
-                                    <input type="color" class="color-picker" id="lyrics-color-picker" value="#ffb3d1">
+                                    <input type="color" class="color-picker" id="lyrics-color-picker" value="#ffb3d1" aria-label="Select lyrics color">
                                     <span class="color-preview" id="color-preview">Current Color</span>
                                     <button type="button" class="copy-hex-btn" id="copy-hex-btn" title="Copy hex code">
                                         <span class="copy-icon">📋</span>
@@ -149,14 +194,13 @@
                         </div>
 
                         <div class="form-group">
-                            <button type="button" class="export-btn" id="export-btn" disabled>
+                            <button type="button" class="export-btn" id="export-btn" disabled aria-label="Export WebM video">
                                 <span class="export-icon">🎬</span> Export WebM Video
                             </button>
-                            <button type="button" class="debug-btn" id="debug-btn"
-                                style="margin-top: 8px; display: none;">
+                            <button type="button" class="debug-btn debug-btn-hidden" id="debug-btn" aria-label="Check browser support">
                                 <span class="debug-icon">🔧</span> Check Browser Support
                             </button>
-                            <div class="export-progress" id="export-progress" style="display: none;">
+                            <div class="export-progress export-progress-hidden" id="export-progress">
                                 <div class="progress-bar">
                                     <div class="progress-fill" id="progress-fill"></div>
                                 </div>
@@ -203,17 +247,12 @@
                             </div>
                         </div>
 
-                        <div class="controls">
-                            <button type="button" class="control-btn vinyl-mute-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">🔊</button>
-                            <button type="button" class="control-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">⏮</button>
-                            <button type="button" class="control-btn vinyl-play-pause-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">▶</button>
-                            <button type="button" class="control-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">⏭</button>
-                            <button type="button" class="control-btn vinyl-repeat-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">↻</button>
+                        <div class="controls" role="group" aria-label="Music player controls">
+                            <button type="button" class="control-btn vinyl-mute-btn control-btn-disabled" disabled aria-label="Mute/Unmute">🔊</button>
+                            <button type="button" class="control-btn control-btn-disabled" disabled aria-label="Previous track">⏮</button>
+                            <button type="button" class="control-btn vinyl-play-pause-btn control-btn-disabled" disabled aria-label="Play/Pause">▶</button>
+                            <button type="button" class="control-btn control-btn-disabled" disabled aria-label="Next track">⏭</button>
+                            <button type="button" class="control-btn vinyl-repeat-btn control-btn-disabled" disabled aria-label="Repeat">↻</button>
                         </div>
                     </div>
                 </div>
@@ -221,11 +260,11 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="dev-lyrics-modal" style="display: none;">
+    <div class="modal-overlay modal-overlay-hidden" id="dev-lyrics-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>For Dev - Import JSON Lyrics</h3>
-                <button type="button" class="modal-close-btn" id="modal-close-btn">×</button>
+                <h3 id="modal-title">For Dev - Import JSON Lyrics</h3>
+                <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">×</button>
             </div>
             <div class="modal-body">
                 <p class="modal-description">
@@ -234,25 +273,33 @@
                 </p>
                 <strong>Example:</strong>
                 <div class="json-example">
-                    <pre>[
+                    <pre lang="en">[
   {"start": "00:18", "end": "00:21", "text": "I wake up in the familiar room"},
   {"start": "00:22", "end": "00:24", "text": "Where your hand once rested"}
 ]</pre>
                 </div>
                 <textarea class="json-textarea" id="json-lyrics-input" placeholder="Paste your JSON lyrics here..."
-                    rows="10"></textarea>
+                    rows="10" aria-label="JSON lyrics input" lang="en"></textarea>
                 <div class="modal-actions">
-                    <button type="button" class="modal-cancel-btn" id="modal-cancel-btn">Cancel</button>
-                    <button type="button" class="modal-import-btn" id="modal-import-btn">Import Lyrics</button>
+                    <button type="button" class="modal-cancel-btn" id="modal-cancel-btn" aria-label="Cancel">Cancel</button>
+                    <button type="button" class="modal-import-btn" id="modal-import-btn" aria-label="Import lyrics">Import Lyrics</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="js/index.js"></script>
-    <script src="js/settings.js"></script>
-    <script src="js/vinyl-player.js"></script>
-    <script src="js/vinyl-player-export.js"></script>
+    <script src="js/index.js" defer onerror="console.error('Failed to load index.js')"></script>
+    <script src="js/settings.js" defer onerror="console.error('Failed to load settings.js')"></script>
+    <script src="js/vinyl-player.js" defer onerror="console.error('Failed to load vinyl-player.js')"></script>
+    <script src="js/vinyl-player-export.js" defer onerror="console.error('Failed to load vinyl-player-export.js')"></script>
+    
+    <!-- Fallback for browsers that don't support modern features -->
+    <noscript>
+        <div style="text-align: center; padding: 20px; background: #f0f0f0; margin: 20px; border-radius: 8px;">
+            <h2>JavaScript Required</h2>
+            <p>This application requires JavaScript to function properly. Please enable JavaScript in your browser settings.</p>
+        </div>
+    </noscript>
 </body>
 
 </html>

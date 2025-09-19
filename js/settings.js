@@ -100,11 +100,13 @@ const modalImportBtn = document.getElementById('modal-import-btn');
 const jsonLyricsInput = document.getElementById('json-lyrics-input');
 devLyricsBtn.addEventListener('click', function() {
     devLyricsModal.style.display = 'flex';
+    devLyricsModal.setAttribute('aria-hidden', 'false');
     jsonLyricsInput.focus();
 });
 
 function closeModal() {
     devLyricsModal.style.display = 'none';
+    devLyricsModal.setAttribute('aria-hidden', 'true');
     jsonLyricsInput.value = '';
 }
 
