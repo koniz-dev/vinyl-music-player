@@ -1,4 +1,3 @@
-/* Responsive Design */
 @media (max-width: 768px) {
     .container {
         padding: var(--spacing-xl);

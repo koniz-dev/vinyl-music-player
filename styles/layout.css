@@ -1,4 +1,3 @@
-/* Header Styles */
 .main-header {
     text-align: center;
     padding: var(--spacing-xl);
@@ -22,7 +21,6 @@
     background-clip: text;
 }
 
-/* Container & Panel Layout */
 .container {
     display: flex;
     height: calc(100vh - 84px);
@@ -102,7 +100,6 @@
     justify-content: center;
 }
 
-/* Header Section */
 .header {
     text-align: center;
     margin-bottom: var(--spacing-3xl);

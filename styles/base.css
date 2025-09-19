@@ -1,11 +1,9 @@
-/* Reset & Base Styles */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Body & Layout */
 body {
     font-family: 'Patrick Hand', cursive;
     background: var(--primary-gradient);
@@ -23,7 +21,6 @@ html {
     scrollbar-width: none;
 }
 
-/* Scrollbar Styles */
 ::-webkit-scrollbar {
     width: 8px;
 }

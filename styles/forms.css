@@ -1,4 +1,3 @@
-/* Form Elements */
 .form-input {
     width: 100%;
     padding: var(--spacing-md) var(--spacing-lg);
@@ -32,7 +31,6 @@
     color: #e53e3e;
 }
 
-/* Upload Area */
 .upload-area {
     border: 2px dashed var(--border-medium);
     border-radius: var(--radius-lg);
@@ -79,7 +77,6 @@
     font-size: var(--text-sm);
 }
 
-/* Progress Bar */
 .progress-bar {
     width: 100%;
     height: var(--spacing-sm);
@@ -103,12 +100,10 @@
     font-weight: var(--font-medium);
 }
 
-/* Music Form */
 #music-form {
     padding-bottom: var(--spacing-xs);
 }
 
-/* Lyrics Container */
 .lyrics-container {
     margin-bottom: var(--spacing-lg);
 }
