@@ -1,0 +1,143 @@
+/* Responsive Design - Media Queries */
+
+@media (max-width: 768px) {
+    .main-title {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .main-icon {
+        font-size: var(--font-size-3xl);
+    }
+    
+    .container {
+        flex-direction: column;
+        height: calc(100vh - 84px);
+        gap: var(--spacing-sm);
+    }
+    
+    .left-panel,
+    .right-panel {
+        width: 100%;
+        height: 50%;
+        margin: 0 var(--spacing-sm);
+    }
+    
+    .toast-container {
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+        left: var(--spacing-sm);
+        max-width: none;
+    }
+    
+    .toast {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .music-player {
+        width: 90%;
+        max-width: 350px;
+    }
+    
+    .vinyl-container {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .vinyl-record {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: var(--spacing-2xl);
+        margin: var(--spacing-sm);
+    }
+    
+    .lyrics-inputs {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .lyrics-inputs > div {
+        flex: none;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: var(--spacing-xl);
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .modal-cancel-btn,
+    .modal-import-btn {
+        width: 100%;
+    }
+    
+    .form-input {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: var(--font-size-sm);
+    }
+    
+    .upload-area {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: var(--spacing-lg);
+    }
+    
+    .upload-area {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+    
+    .form-input {
+        padding: var(--spacing-md) 14px;
+        font-size: var(--font-size-sm);
+    }
+}
+
+@media (max-width: 400px) {
+    .music-player {
+        width: 320px;
+        height: 550px;
+    }
+    
+    .vinyl-container {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .vinyl-record {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .vinyl-center {
+        width: 76px;
+        height: 76px;
+    }
+    
+    .vinyl-album-art {
+        width: 64px;
+        height: 64px;
+    }
+    
+    .groove-1 { width: 128px; height: 128px; top: 16px; left: 16px; }
+    .groove-2 { width: 108px; height: 108px; top: 26px; left: 26px; }
+    .groove-3 { width: 88px; height: 88px; top: 36px; left: 36px; }
+    
+    .tonearm {
+        height: 76px;
+        top: 12px;
+        right: 12px;
+    }
+}

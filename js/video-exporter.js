@@ -28,7 +28,7 @@ export class VideoExporter {
         
         const dimensionSources = [
             () => {
-                const vinylPlayer = document.querySelector('.vinyl-player');
+                const vinylPlayer = document.querySelector('.vinyl-player-container');
                 if (vinylPlayer) {
                     const rect = vinylPlayer.getBoundingClientRect();
                     if (rect.width > 0 && rect.height > 0) {

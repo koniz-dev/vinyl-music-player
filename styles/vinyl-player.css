@@ -1,16 +1,27 @@
+/* Vinyl Music Player Components */
+
+.vinyl-player-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 .music-player {
     width: 350px;
     height: 600px;
     background: rgba(0, 0, 0, 0.4);
-    border-radius: 30px;
+    border-radius: var(--spacing-3xl);
     position: relative;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-xl);
     transform: translateZ(0);
     backface-visibility: hidden;
+    will-change: transform;
+    contain: layout style paint;
 }
 
 .vinyl-section {
@@ -26,13 +37,13 @@
     position: relative;
     width: 200px;
     height: 200px;
-    margin-bottom: 30px;
+    margin-bottom: var(--spacing-3xl);
 }
 
 .vinyl-record {
     width: 200px;
     height: 200px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     background: radial-gradient(circle at center, #2a2a2a 20%, #1a1a1a 40%, #000 80%);
     position: relative;
     animation: none;
@@ -42,10 +53,7 @@
         inset 0 0 40px rgba(192, 192, 192, 0.05);
     will-change: transform;
     transform-origin: center;
-}
-
-.vinyl-record.paused {
-    animation-play-state: paused;
+    backface-visibility: hidden;
 }
 
 .vinyl-center {
@@ -55,25 +63,25 @@
     transform: translate(-50%, -50%);
     width: 96px;
     height: 96px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-.album-art, .vinyl-album-art {
+.vinyl-album-art {
     width: 80px;
     height: 80px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b6b"/><stop offset="100%" style="stop-color:%234ecdc4"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23g)"/><path d="M30 40 Q35 35 40 40 L45 50 Q50 45 55 50 L60 60 Q55 65 50 60 L45 50 Q40 55 35 50 Z" fill="white" opacity="0.8"/></svg>') center/cover;
     object-fit: cover;
 }
 
 .vinyl-grooves {
     position: absolute;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transform-origin: center;
 }
@@ -92,7 +100,7 @@
     transform-origin: top center;
     transform: rotate(25deg);
     border-radius: 2px;
-    transition: transform 0.3s ease;
+    transition: transform var(--transition-normal);
     will-change: transform;
 }
 
@@ -104,7 +112,7 @@
     width: 10px;
     height: 10px;
     background: #fff;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
@@ -128,31 +136,52 @@
     to { transform: rotate(360deg); }
 }
 
+/* Performance optimizations */
+.vinyl-record.spinning {
+    animation: spin 3s linear infinite;
+    will-change: transform;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .vinyl-record.spinning {
+        animation: none;
+    }
+}
+
 .song-info {
     text-align: center;
-    color: white;
+    color: var(--text-white);
 }
 
 .vinyl-song-title {
-    font-size: 28px;
+    font-size: var(--font-size-3xl);
     font-weight: bold;
-    margin-top: 16px;
+    margin-top: var(--spacing-lg);
     letter-spacing: 2px;
 }
 
 .vinyl-artist-name {
-    font-size: 16px;
+    font-size: var(--font-size-base);
     color: rgba(255, 255, 255, 0.9);
     font-weight: 400;
     letter-spacing: 1px;
 }
 
 .vinyl-lyrics-text {
-    font-size: 20px;
+    font-size: var(--font-size-xl);
     text-align: center;
     margin-top: 10px;
     display: block;
-    transition: opacity 0.3s ease-in-out;
+    transition: opacity var(--transition-normal);
     min-height: 24px;
     font-weight: 500;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -160,7 +189,7 @@
 
 .progress-container {
     width: 100%;
-    padding: 0 30px;
+    padding: 0 var(--spacing-3xl);
 }
 
 .vinyl-progress-bar {
@@ -175,7 +204,7 @@
 
 .vinyl-progress {
     height: 100%;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     border-radius: 2px;
     width: 0%;
     transition: width 0.1s ease;
@@ -185,38 +214,42 @@
     display: flex;
     justify-content: space-between;
     color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    margin-top: 8px;
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-sm);
 }
 
 .controls {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 10px 30px 30px;
+    padding: 10px var(--spacing-3xl) var(--spacing-3xl);
 }
 
 .control-btn {
     width: 50px;
     height: 50px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     background: rgba(255, 255, 255, 0.1);
     border: none;
-    color: white;
+    color: var(--text-white);
     font-size: 20px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
     will-change: transform;
+    min-width: 44px;
+    min-height: 44px;
 }
 
-.control-btn:hover {
+.control-btn:hover,
+.control-btn:focus {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
-
 
 .vinyl-play-pause-btn {
     width: 70px !important;
@@ -228,43 +261,4 @@
 .vinyl-play-pause-btn:hover {
     background: rgba(255, 255, 255, 0.25) !important;
     transform: scale(1.1) !important;
-}
-
-
-
-@media (max-width: 400px) {
-    .music-player {
-        width: 320px;
-        height: 550px;
-    }
-    
-    .vinyl-container {
-        width: 160px;
-        height: 160px;
-    }
-    
-    .vinyl-record {
-        width: 160px;
-        height: 160px;
-    }
-    
-    .vinyl-center {
-        width: 76px;
-        height: 76px;
-    }
-    
-    .album-art, .vinyl-album-art {
-        width: 64px;
-        height: 64px;
-    }
-    
-    .groove-1 { width: 128px; height: 128px; top: 16px; left: 16px; }
-    .groove-2 { width: 108px; height: 108px; top: 26px; left: 26px; }
-    .groove-3 { width: 88px; height: 88px; top: 36px; left: 36px; }
-    
-    .tonearm {
-        height: 76px;
-        top: 12px;
-        right: 12px;
-    }
 }

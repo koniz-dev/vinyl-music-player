@@ -1,0 +1,10 @@
+/* Main CSS file - imports all modules */
+
+@import url('variables.css');
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('vinyl-player.css');
+@import url('modal.css');
+@import url('toast.css');
+@import url('responsive.css');

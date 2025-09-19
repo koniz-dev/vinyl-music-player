@@ -261,7 +261,7 @@ export class ColorManager {
         this.copyHexBtn.classList.add('copied');
         this.copyHexBtn.querySelector('.copy-icon').textContent = '✓';
         
-        showToastNotification('success', 'Color Copied', `Hex color ${this.currentColor} copied to clipboard!`);
+        this.showToastNotification('success', 'Color Copied', `Hex color ${this.currentColor} copied to clipboard!`);
         
         // Reset after 2 seconds
         setTimeout(() => {
@@ -282,6 +282,21 @@ export class ColorManager {
         document.body.removeChild(textArea);
         
         this.showCopyFeedback();
+    }
+    
+    /**
+     * Show toast notification
+     * @param {string} type - Type of notification (success, error, info, warning)
+     * @param {string} title - Notification title
+     * @param {string} message - Notification message
+     */
+    showToastNotification(type, title, message) {
+        if (window.toastSystem) {
+            window.toastSystem.showToast(type, title, message);
+        } else {
+            // Fallback to alert if toast system is not available
+            alert(`${title}: ${message}`);
+        }
     }
 }
 
