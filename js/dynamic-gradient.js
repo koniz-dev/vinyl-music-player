@@ -15,49 +15,41 @@ export class DynamicGradient {
      */
     initializeGradientSets() {
         return [
-            // Warm color sets
             [
                 ['#ff6b6b', '#ffa726', '#ffeb3b'],
                 ['#ff9a9e', '#fecfef', '#fecfef'],
                 ['#ff9a56', '#ff6b6b', '#c44569']
             ],
-            // Cool color sets
             [
                 ['#667eea', '#764ba2', '#f093fb'],
                 ['#4facfe', '#00f2fe', '#43e97b'],
                 ['#a8edea', '#fed6e3', '#d299c2']
             ],
-            // Nature color sets
             [
                 ['#11998e', '#38ef7d', '#56ab2f'],
                 ['#134e5e', '#71b280', '#a8e6cf'],
                 ['#2c3e50', '#3498db', '#2ecc71']
             ],
-            // Purple/violet sets
             [
                 ['#667eea', '#764ba2', '#f093fb'],
                 ['#a8c0ff', '#3f2b96', '#c471f5'],
                 ['#8360c3', '#2ebf91', '#f093fb']
             ],
-            // Sunset/sunrise sets
             [
                 ['#ffecd2', '#fcb69f', '#ff8a80'],
                 ['#ffeaa7', '#fab1a0', '#e17055'],
                 ['#fd79a8', '#fdcb6e', '#6c5ce7']
             ],
-            // Ocean/water sets
             [
                 ['#74b9ff', '#0984e3', '#6c5ce7'],
                 ['#a29bfe', '#6c5ce7', '#fd79a8'],
                 ['#00b894', '#00cec9', '#74b9ff']
             ],
-            // Neon/vibrant sets
             [
                 ['#ff006e', '#8338ec', '#3a86ff'],
                 ['#06ffa5', '#3d5a80', '#ee6c4d'],
                 ['#f72585', '#b5179e', '#7209b7']
             ],
-            // Pastel sets
             [
                 ['#ffecd2', '#fcb69f', '#ff8a80'],
                 ['#a8edea', '#fed6e3', '#d299c2'],
@@ -72,6 +64,19 @@ export class DynamicGradient {
     init() {
         this.applyRandomGradient();
         this.addSmoothTransition();
+    }
+
+    /**
+     * Setup automatic gradient change
+     */
+    setupAutoChange() {
+        setInterval(() => {
+            this.applyRandomGradient();
+        }, 30000);
+    }
+
+    changeGradient() {
+        this.applyRandomGradient();
     }
 
     /**
@@ -171,16 +176,16 @@ export class DynamicGradient {
     addTransparency(color, alpha) {
         if (color.startsWith('#')) {
             const hex = color.slice(1);
-            const r = parseInt(hex.substr(0, 2), 16);
-            const g = parseInt(hex.substr(2, 2), 16);
-            const b = parseInt(hex.substr(4, 2), 16);
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
         return color;
     }
 
     /**
-     * Apply random gradient to body element
+     * Apply random gradient to body element with smooth transition
      */
     applyRandomGradient() {
         const usePreset = Math.random() > 0.3;
@@ -188,9 +193,47 @@ export class DynamicGradient {
         
         const gradients = this.createBlendedGradients(colors);
         
-        document.body.style.background = gradients;
+        this.applyGradientWithFade(gradients);
         
         this.addGradientAnimation(gradients);
+    }
+
+    /**
+     * Apply gradient with smooth fade effect using opacity transition
+     * @param {string} newGradient - New gradient to apply
+     */
+    applyGradientWithFade(newGradient) {
+        const body = document.body;
+        const currentGradient = body.style.background || getComputedStyle(body).background;
+        
+        if (!currentGradient || currentGradient === 'rgba(0, 0, 0, 0)') {
+            body.style.background = newGradient;
+            return;
+        }
+        
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: ${newGradient};
+            opacity: 0;
+            z-index: -1;
+            pointer-events: none;
+            transition: opacity 2s ease-in-out;
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+        });
+        setTimeout(() => {
+            body.style.background = newGradient;
+            overlay.remove();
+        }, 2000);
     }
 
     /**
@@ -201,17 +244,13 @@ export class DynamicGradient {
     createBlendedGradients(colors) {
         const gradients = [];
         
-        // Primary linear gradient
         const angle = this.generateRandomAngle();
         const stops = this.generateRandomStops(colors);
         gradients.push(`linear-gradient(${angle}, ${stops})`);
         
-        // Radial gradient overlay
         const radialColors = this.createRadialColors(colors);
         const radialStops = this.generateRadialStops(radialColors);
         gradients.push(`radial-gradient(circle at ${this.generateRandomPosition()}, ${radialStops})`);
-        
-        // Secondary linear gradient
         const angle2 = this.generateRandomAngle();
         const colors2 = this.shiftColors(colors);
         const stops2 = this.generateRandomStops(colors2);
@@ -266,11 +305,10 @@ export class DynamicGradient {
     shiftColors(colors) {
         return colors.map(color => {
             if (color.startsWith('#')) {
-                // Increase brightness slightly
                 const hex = color.slice(1);
-                const r = Math.min(255, parseInt(hex.substr(0, 2), 16) + 20);
-                const g = Math.min(255, parseInt(hex.substr(2, 2), 16) + 20);
-                const b = Math.min(255, parseInt(hex.substr(4, 2), 16) + 20);
+                const r = Math.min(255, parseInt(hex.slice(0, 2), 16) + 20);
+                const g = Math.min(255, parseInt(hex.slice(2, 4), 16) + 20);
+                const b = Math.min(255, parseInt(hex.slice(4, 6), 16) + 20);
                 return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
             }
             return color;
@@ -325,9 +363,9 @@ export class DynamicGradient {
                     return `rgba(${r},${g},${b},${newAlpha})`;
                 })
                 .replace(/#([0-9a-fA-F]{6})/g, (match, hex) => {
-                    const r = Math.min(255, parseInt(hex.substr(0, 2), 16) + shift * 50);
-                    const g = Math.min(255, parseInt(hex.substr(2, 2), 16) + shift * 50);
-                    const b = Math.min(255, parseInt(hex.substr(4, 2), 16) + shift * 50);
+                    const r = Math.min(255, parseInt(hex.slice(0, 2), 16) + shift * 50);
+                    const g = Math.min(255, parseInt(hex.slice(2, 4), 16) + shift * 50);
+                    const b = Math.min(255, parseInt(hex.slice(4, 6), 16) + shift * 50);
                     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
                 });
         });
@@ -339,13 +377,22 @@ export class DynamicGradient {
      * Add smooth transition styles to body
      */
     addSmoothTransition() {
+        // Check if style already exists to avoid duplicates
+        if (document.getElementById('dynamic-gradient-styles')) {
+            return;
+        }
+        
         const style = document.createElement('style');
+        style.id = 'dynamic-gradient-styles';
         style.textContent = `
             body {
-                transition: background 2s ease-in-out;
                 background-attachment: fixed;
                 background-size: 100% 100%;
                 min-height: 100vh;
+            }
+            
+            .gradient-overlay {
+                transition: opacity 2s ease-in-out;
             }
         `;
         document.head.appendChild(style);
@@ -355,6 +402,11 @@ export class DynamicGradient {
 /**
  * Initialize Dynamic Gradient when DOM is loaded
  */
+let gradientManager;
+
 document.addEventListener('DOMContentLoaded', () => {
-    const gradientManager = new DynamicGradient();
+    gradientManager = new DynamicGradient();
+    
+    window.gradientManager = gradientManager;
 });
+

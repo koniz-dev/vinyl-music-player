@@ -19,9 +19,9 @@ body {
     min-height: 100vh;
     height: 100vh;
     overflow-x: hidden;
-    transition: background 3s ease-in-out;
     background-repeat: no-repeat;
     background-position: center center;
+    /* Transition managed by JavaScript to avoid conflicts */
 }
 
 /* Custom scrollbar */
