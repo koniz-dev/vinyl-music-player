@@ -1,48 +1,19 @@
 {
   "name": "vinyl-music-player",
   "version": "0.0.1",
-  "description": "A beautiful vinyl music player with synchronized lyrics and WebM video export functionality",
-  "main": "index.html",
+  "description": "A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations and professional video export capabilities.",
   "scripts": {
-    "dev": "npx http-server -p 3000 -o -c-1",
-    "start": "npx http-server -p 3000 -c-1",
-    "build": "echo 'No build process needed for static HTML'",
-    "preview": "npx http-server -p 3000 -c-1",
-    "serve": "npx http-server -p 8080 -c-1",
-    "test": "echo 'No tests configured yet'"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "music",
-    "player",
-    "vinyl",
-    "html",
-    "css",
-    "javascript",
-    "audio",
-    "video",
-    "export",
-    "lyrics",
-    "pwa"
-  ],
-  "author": "koniz-dev",
-  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/koniz-dev/vinyl-music-player.git"
+    "url": "git+https://github.com/koniz-dev/vinyl-music-player.git"
   },
-  "homepage": "https://github.com/koniz-dev/vinyl-music-player#readme",
+  "keywords": [],
+  "author": "koniz-dev",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/koniz-dev/vinyl-music-player/issues"
   },
-  "devDependencies": {
-    "http-server": "^14.1.1"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+  "homepage": "https://github.com/koniz-dev/vinyl-music-player#readme"
 }
