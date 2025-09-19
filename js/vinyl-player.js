@@ -86,9 +86,11 @@ function restartAudio() {
             updatePlayerState();
             startProgressTimer();
             startLyricsTimer();
+            
         }).catch(error => {
             isPlaying = false;
             updatePlayerState();
+            
         });
     }, 100);
 }
@@ -102,6 +104,7 @@ function togglePlayPause() {
         updatePlayerState();
         stopProgressTimer();
         stopLyricsTimer();
+        
     } else {
         if (audioElement.ended) {
             restartAudio();
@@ -111,9 +114,11 @@ function togglePlayPause() {
                 updatePlayerState();
                 startProgressTimer();
                 startLyricsTimer();
+                
             }).catch(error => {
                 isPlaying = false;
                 updatePlayerState();
+                
             });
         }
     }
@@ -412,10 +417,11 @@ function updatePlayerState() {
     
     if (isPlaying) {
         vinyl.style.animation = 'spin 8s linear infinite';
+        vinyl.style.animationPlayState = 'running';
         tonearm.classList.add('playing');
         playPauseBtn.textContent = '⏸';
     } else {
-        vinyl.style.animation = 'none';
+        vinyl.style.animationPlayState = 'paused';
         tonearm.classList.remove('playing');
         playPauseBtn.textContent = '▶';
     }

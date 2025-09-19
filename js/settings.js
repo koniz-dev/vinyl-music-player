@@ -34,6 +34,11 @@ function removeLyricsItem(button) {
     const lyricsItem = button.closest('.lyrics-item');
     lyricsItem.remove();
     updateLyricsData();
+    
+    // Show toast notification
+    if (window.toastManager) {
+        window.toastManager.showInfo('Lyrics Removed', 'Lyrics item has been removed successfully');
+    }
 }
 
 function timeToSeconds(timeString) {
@@ -99,15 +104,21 @@ const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalImportBtn = document.getElementById('modal-import-btn');
 const jsonLyricsInput = document.getElementById('json-lyrics-input');
 devLyricsBtn.addEventListener('click', function() {
-    devLyricsModal.style.display = 'flex';
+    // Set aria-hidden to false and remove inert BEFORE making the modal visible
     devLyricsModal.setAttribute('aria-hidden', 'false');
+    devLyricsModal.removeAttribute('inert');
+    devLyricsModal.style.display = 'flex';
     jsonLyricsInput.focus();
 });
 
 function closeModal() {
-    devLyricsModal.style.display = 'none';
+    // Set aria-hidden to true and add inert BEFORE hiding the modal to prevent focus issues
     devLyricsModal.setAttribute('aria-hidden', 'true');
+    devLyricsModal.setAttribute('inert', '');
+    devLyricsModal.style.display = 'none';
     jsonLyricsInput.value = '';
+    // Return focus to the button that opened the modal
+    devLyricsBtn.focus();
 }
 
 modalCloseBtn.addEventListener('click', closeModal);
@@ -128,7 +139,11 @@ modalImportBtn.addEventListener('click', function() {
     const jsonText = jsonLyricsInput.value.trim();
     
     if (!jsonText) {
-        alert('Please paste your JSON lyrics first.');
+        if (window.toastManager) {
+            window.toastManager.showWarning('Warning', 'Please paste your JSON lyrics first.');
+        } else {
+            alert('Please paste your JSON lyrics first.');
+        }
         return;
     }
     
@@ -193,10 +208,20 @@ modalImportBtn.addEventListener('click', function() {
         
         updateLyricsData();
         closeModal();
-        alert(`Successfully imported ${lyricsData.length} lyrics items!`);
+        
+        // Show success toast
+        if (window.toastManager) {
+            window.toastManager.showSuccess('Import Successful', `Successfully imported ${lyricsData.length} lyrics items!`);
+        } else {
+            alert(`Successfully imported ${lyricsData.length} lyrics items!`);
+        }
         
     } catch (error) {
-        alert('Error parsing JSON: ' + error.message);
+        if (window.toastManager) {
+            window.toastManager.showError('Import Error', 'Error parsing JSON: ' + error.message);
+        } else {
+            alert('Error parsing JSON: ' + error.message);
+        }
     }
 });
 const uploadArea = document.getElementById('upload-area');
@@ -274,6 +299,11 @@ function updateUploadDisplay(file) {
     uploadArea.style.background = 'rgba(56, 161, 105, 0.05)';
     
     sendAlbumArtToPlayer(file);
+    
+    // Show success toast
+    if (window.toastManager) {
+        window.toastManager.showSuccess('Album Art Uploaded', `Successfully uploaded ${file.name}`);
+    }
 }
 
 function updateAudioUploadDisplay(file) {
@@ -286,6 +316,11 @@ function updateAudioUploadDisplay(file) {
     audioUploadArea.style.background = 'rgba(56, 161, 105, 0.05)';
     
     startAutoPlay(file);
+    
+    // Show success toast
+    if (window.toastManager) {
+        window.toastManager.showSuccess('Audio File Uploaded', `Successfully uploaded ${file.name}`);
+    }
 }
 
 function startAutoPlay(file) {
@@ -449,7 +484,12 @@ function handleExportComplete(videoBlob, fileName) {
     progressFill.style.width = '0%';
     progressText.textContent = 'Preparing export...';
     
-    alert('WebM video exported successfully!');
+    // Show success toast
+    if (window.toastManager) {
+        window.toastManager.showSuccess('Export Complete', 'WebM video exported successfully!');
+    } else {
+        alert('WebM video exported successfully!');
+    }
     
     setTimeout(() => {
         isExportCompleted = false;
@@ -475,7 +515,13 @@ if (!window.exportMessageListenerAdded) {
                 handleExportComplete(videoBlob, fileName);
             } else if (data.type === 'EXPORT_ERROR') {
                 const error = data.error;
-                alert('Export failed: ' + error);
+                
+                // Show error toast
+                if (window.toastManager) {
+                    window.toastManager.showError('Export Failed', 'Export failed: ' + error);
+                } else {
+                    alert('Export failed: ' + error);
+                }
                 
                 exportProgress.style.display = 'none';
                 exportBtn.disabled = false;

@@ -63,6 +63,7 @@
     <noscript><link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet"></noscript>
     <link rel="preload" href="styles/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'" fetchpriority="high">
     <noscript><link rel="stylesheet" href="styles/index.css"></noscript>
+    <link rel="stylesheet" href="styles/toast.css">
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -260,7 +261,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay modal-overlay-hidden" id="dev-lyrics-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-overlay modal-overlay-hidden" id="dev-lyrics-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true" inert>
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title">For Dev - Import JSON Lyrics</h3>
@@ -288,6 +289,10 @@
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="js/toast.js" defer onerror="console.error('Failed to load toast.js')"></script>
     <script src="js/index.js" defer onerror="console.error('Failed to load index.js')"></script>
     <script src="js/settings.js" defer onerror="console.error('Failed to load settings.js')"></script>
     <script src="js/vinyl-player.js" defer onerror="console.error('Failed to load vinyl-player.js')"></script>

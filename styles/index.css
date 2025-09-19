@@ -1098,7 +1098,8 @@ html {
     border-radius: 50%;
     background: var(--gradient-vinyl);
     position: relative;
-    animation: none;
+    animation: spin 8s linear infinite;
+    animation-play-state: paused;
     box-shadow: 
         0 0 30px rgba(0, 0, 0, 0.6),
         inset 0 0 20px rgba(255, 255, 255, 0.1),
