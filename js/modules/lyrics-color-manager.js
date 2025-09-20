@@ -1,0 +1,342 @@
+/**
+ * Lyrics Color Manager Module
+ * Handles lyrics color selection, preview, and history
+ */
+class LyricsColorManager {
+    constructor() {
+        // Initialize with default color
+        this.currentColor = '#ffb3d1';
+        this.colorHistory = [];
+        this.maxHistorySize = 5;
+        
+        this.initializeElements();
+        this.setupEventListeners();
+        this.updateColorPreview();
+        this.renderColorHistory();
+        
+        // Apply default color to lyrics
+        this.sendColorToPlayer();
+    }
+    
+    initializeElements() {
+        this.colorPicker = document.getElementById('lyrics-color-picker');
+        this.colorPreviewInput = document.getElementById('color-preview-input');
+        this.colorHistoryContainer = document.getElementById('color-history');
+        this.copyHexBtn = document.getElementById('copy-hex-btn');
+        this.resetColorBtn = document.getElementById('reset-color-btn');
+        
+        // Ensure color preview is updated after DOM elements are ready
+        if (this.colorPreviewInput && this.colorPicker) {
+            this.updateColorPreview();
+        }
+    }
+    
+    setupEventListeners() {
+        if (this.colorPicker) {
+            this.colorPicker.addEventListener('input', (e) => {
+                this.updateColorPreviewOnly(e.target.value);
+            });
+            this.colorPicker.addEventListener('change', (e) => {
+                this.setCurrentColor(e.target.value);
+            });
+        }
+        
+        if (this.colorPreviewInput) {
+            this.colorPreviewInput.addEventListener('input', (e) => {
+                this.handleHexInput(e.target.value);
+            });
+            this.colorPreviewInput.addEventListener('blur', (e) => {
+                this.validateAndSetHexColor(e.target.value);
+            });
+            this.colorPreviewInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.validateAndSetHexColor(e.target.value);
+                }
+            });
+        }
+        
+        if (this.copyHexBtn) {
+            this.copyHexBtn.addEventListener('click', () => {
+                this.copyHexToClipboard();
+            });
+        }
+        
+        if (this.resetColorBtn) {
+            this.resetColorBtn.addEventListener('click', () => {
+                this.resetToDefault();
+                this.updateColorPreview();
+                this.renderColorHistory();
+                this.sendColorToPlayer();
+            });
+        }
+    }
+    
+    setCurrentColor(color, addToHistory = true) {
+        this.currentColor = color;
+        if (addToHistory) {
+            this.addToHistory(color);
+            // Lần đầu thay đổi màu: đảm bảo màu default có trong history
+            this.ensureDefaultColorInHistory();
+        }
+        this.updateColorPreview();
+        this.renderColorHistory();
+        this.saveCurrentColor();
+        this.sendColorToPlayer();
+    }
+    
+    updateColorPreviewOnly(color) {
+        this.currentColor = color;
+        this.updateColorPreview();
+        this.sendColorToPlayer();
+    }
+    
+    addToHistory(color) {
+        // Remove if already exists and add to front
+        this.colorHistory = this.colorHistory.filter(c => c !== color);
+        this.colorHistory.unshift(color);
+        
+        // Limit history size
+        if (this.colorHistory.length > this.maxHistorySize) {
+            this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
+        }
+        
+        this.saveColorHistory();
+    }
+    
+    updateColorPreview() {
+        if (this.colorPicker) {
+            this.colorPicker.value = this.currentColor;
+        }
+        
+        if (this.colorPreviewInput) {
+            this.colorPreviewInput.value = this.currentColor.toUpperCase();
+            this.colorPreviewInput.style.backgroundColor = this.currentColor;
+            this.colorPreviewInput.style.color = this.getContrastColor(this.currentColor);
+        }
+    }
+    
+    getContrastColor(hexColor) {
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
+        
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        return luminance > 0.5 ? '#000000' : '#ffffff';
+    }
+    
+    renderColorHistory() {
+        if (!this.colorHistoryContainer) return;
+        
+        this.colorHistoryContainer.innerHTML = '';
+        
+        const colorHistorySection = document.querySelector('.color-history-section');
+        if (colorHistorySection) {
+            colorHistorySection.style.display = this.colorHistory.length > 0 ? 'block' : 'none';
+        }
+        
+        this.colorHistory.forEach((color, index) => {
+            const colorItem = document.createElement('div');
+            colorItem.className = 'color-history-item';
+            colorItem.style.backgroundColor = color;
+            colorItem.title = color.toUpperCase();
+            
+            colorItem.addEventListener('click', () => {
+                this.setCurrentColor(color, false);
+            });
+            
+            this.colorHistoryContainer.appendChild(colorItem);
+        });
+    }
+    
+    copyHexToClipboard() {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(this.currentColor.toUpperCase()).then(() => {
+                if (window.toastManager) {
+                    window.toastManager.showSuccess('Copied!', `Color ${this.currentColor.toUpperCase()} copied to clipboard`);
+                }
+            }).catch(() => {
+                this.fallbackCopyToClipboard();
+            });
+        } else {
+            this.fallbackCopyToClipboard();
+        }
+    }
+    
+    fallbackCopyToClipboard() {
+        const textArea = document.createElement('textarea');
+        textArea.value = this.currentColor.toUpperCase();
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            if (window.toastManager) {
+                window.toastManager.showSuccess('Copied!', `Color ${this.currentColor.toUpperCase()} copied to clipboard`);
+            }
+        } catch (err) {
+            if (window.toastManager) {
+                window.toastManager.showError('Copy Failed', 'Failed to copy color to clipboard');
+            }
+        }
+        
+        document.body.removeChild(textArea);
+    }
+    
+    sendColorToPlayer() {
+        if (window.eventBus) {
+            window.eventBus.emit('lyrics:colorChanged', { color: this.currentColor });
+        }
+    }
+    
+    loadColorHistory() {
+        try {
+            const saved = localStorage.getItem('lyricsColorHistory');
+            return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+            console.warn('Failed to load color history:', error);
+            return [];
+        }
+    }
+    
+    saveColorHistory() {
+        try {
+            localStorage.setItem('lyricsColorHistory', JSON.stringify(this.colorHistory));
+        } catch (error) {
+            console.warn('Failed to save color history:', error);
+        }
+    }
+    
+    loadCurrentColor() {
+        try {
+            const saved = localStorage.getItem('lyricsCurrentColor');
+            return saved || '#ffb3d1';
+        } catch (error) {
+            console.warn('Failed to load current color:', error);
+            return '#ffb3d1';
+        }
+    }
+    
+    saveCurrentColor() {
+        try {
+            localStorage.setItem('lyricsCurrentColor', this.currentColor);
+        } catch (error) {
+            console.warn('Failed to save current color:', error);
+        }
+    }
+    
+    cleanupOldDefaultColors() {
+        // Remove old default colors from history
+        this.colorHistory = this.colorHistory.filter(color => 
+            color !== '#ffb3d1' && 
+            color !== '#ff69b4' && 
+            color !== '#ff1493'
+        );
+    }
+    
+    /**
+     * Reset to default color and ensure it's in history
+     */
+    resetToDefault() {
+        this.currentColor = '#ffb3d1'; // Default pink color
+        this.maxHistorySize = 5;
+        
+        // When resetting: move default color to front (or add if not exists)
+        this.moveDefaultColorToFront();
+        
+        // Save current color to localStorage
+        this.saveCurrentColor();
+    }
+    
+    /**
+     * Ensure default color is in history - only called when first color change
+     */
+    ensureDefaultColorInHistory() {
+        const defaultColor = '#ffb3d1';
+        
+        // Only add default color if it doesn't exist in history
+        if (!this.colorHistory.includes(defaultColor)) {
+            // Add default color to the end (right side)
+            this.colorHistory.push(defaultColor);
+            
+            // Limit history size
+            if (this.colorHistory.length > this.maxHistorySize) {
+                this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
+            }
+            
+            this.saveColorHistory();
+        }
+    }
+    
+    /**
+     * Move default color to front - only called when resetting
+     */
+    moveDefaultColorToFront() {
+        const defaultColor = '#ffb3d1';
+        
+        // Remove default color if it exists
+        this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
+        
+        // Add default color to the front
+        this.colorHistory.unshift(defaultColor);
+        
+        // Limit history size - but don't force default color to stay at front
+        if (this.colorHistory.length > this.maxHistorySize) {
+            this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
+        }
+        
+        this.saveColorHistory();
+    }
+    
+    /**
+     * Get current color
+     * @returns {string} Current color in hex format
+     */
+    getCurrentColor() {
+        return this.currentColor;
+    }
+    
+    /**
+     * Handle hex input changes
+     * @param {string} value - Hex input value
+     */
+    handleHexInput(value) {
+        // Auto-format hex input
+        let formattedValue = value.replace(/[^0-9A-Fa-f#]/g, '');
+        if (formattedValue && !formattedValue.startsWith('#')) {
+            formattedValue = '#' + formattedValue;
+        }
+        
+        if (this.colorPreviewInput) {
+            this.colorPreviewInput.value = formattedValue;
+        }
+    }
+    
+    /**
+     * Validate and set hex color
+     * @param {string} value - Hex color value
+     */
+    validateAndSetHexColor(value) {
+        const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+        
+        if (hexRegex.test(value)) {
+            this.setCurrentColor(value);
+        } else {
+            // Reset to current color if invalid
+            if (this.colorPreviewInput) {
+                this.colorPreviewInput.value = this.currentColor.toUpperCase();
+            }
+            
+            if (window.toastManager) {
+                window.toastManager.showWarning('Invalid Color', 'Please enter a valid hex color (e.g., #ffb3d1)');
+            }
+        }
+    }
+}
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = LyricsColorManager;
+}
+
+window.LyricsColorManager = LyricsColorManager;

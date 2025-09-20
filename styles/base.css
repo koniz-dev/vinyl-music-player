@@ -37,3 +37,30 @@ html {
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
+
+/* Noscript message styles */
+.noscript-message {
+    text-align: center;
+    padding: var(--spacing-lg);
+    background: var(--background-light);
+    margin: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.noscript-message h2 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+}
+
+.noscript-message p {
+    margin: 0;
+    line-height: 1.6;
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+}

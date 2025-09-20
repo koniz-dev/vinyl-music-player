@@ -176,10 +176,22 @@ vinyl-music-player/
 │   ├── android-chrome-512x512.png # Android Chrome icon (512x512)
 │   └── site.webmanifest          # PWA manifest file
 ├── js/                           # JavaScript modules
-│   ├── index.js                  # Main application logic and initialization
-│   ├── settings.js               # Settings panel and lyrics management
-│   ├── vinyl-player.js           # Vinyl player controls and animations
-│   └── vinyl-player-export.js    # Video export functionality
+│   ├── core/                     # Core application systems
+│   │   ├── app-state.js          # Application state management
+│   │   └── event-bus.js          # Event communication system
+│   ├── modules/                  # Feature modules
+│   │   ├── audio-player.js       # Audio playback and controls
+│   │   ├── lyrics-manager.js     # Lyrics timing and display
+│   │   ├── vinyl-renderer.js     # Vinyl player visual rendering
+│   │   ├── export-manager.js     # Video export functionality
+│   │   ├── export-manager-canvas.js # Canvas-based export rendering
+│   │   ├── lyrics-color-manager.js # Lyrics color customization
+│   │   └── settings-manager.js   # Settings panel management
+│   ├── utils/                    # Utility functions
+│   │   ├── time-utils.js         # Time formatting utilities
+│   │   └── file-utils.js         # File handling utilities
+│   ├── index.js                  # Main application entry point
+│   └── toast.js                  # Toast notification system
 └── styles/                       # CSS stylesheets
     ├── common.css                # Shared styles and utilities
     ├── index.css                 # Main page layout and styles

@@ -52,10 +52,9 @@
     <link rel="manifest" href="favicon/site.webmanifest">
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="js/index.js" as="script" fetchpriority="high">
-    <link rel="preload" href="js/settings.js" as="script">
-    <link rel="preload" href="js/vinyl-player.js" as="script">
-    <link rel="preload" href="js/vinyl-player-export.js" as="script">
+    <link rel="preload" href="js/core/app-state.js" as="script" fetchpriority="high">
+    <link rel="preload" href="js/core/event-bus.js" as="script">
+    <link rel="preload" href="js/index.js" as="script">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -178,9 +177,12 @@
                             <div class="color-settings-container">
                                 <div class="color-picker-section">
                                     <input type="color" class="color-picker" id="lyrics-color-picker" value="#ffb3d1" aria-label="Select lyrics color">
-                                    <span class="color-preview" id="color-preview">Current Color</span>
+                                    <input type="text" class="color-preview-input" id="color-preview-input" placeholder="#ffb3d1" maxlength="7" aria-label="Enter hex color code">
                                     <button type="button" class="copy-hex-btn" id="copy-hex-btn" title="Copy hex code">
                                         <span class="copy-icon">📋</span>
+                                    </button>
+                                    <button type="button" class="reset-color-btn" id="reset-color-btn" title="Reset to default color">
+                                        <span class="reset-icon">🔄</span>
                                     </button>
                                 </div>
                                 <div class="color-history-section">
@@ -259,7 +261,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay modal-overlay-hidden" id="dev-lyrics-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true" inert>
+    <div class="modal-overlay modal-overlay-hidden" id="dev-lyrics-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true" inert aria-modal="true" tabindex="-1">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title">For Dev - Import JSON Lyrics</h3>
@@ -290,15 +292,32 @@
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- Core systems first -->
+    <script src="js/core/app-state.js" defer onerror="console.error('Failed to load app-state.js')"></script>
+    <script src="js/core/event-bus.js" defer onerror="console.error('Failed to load event-bus.js')"></script>
+    
+    <!-- Utilities -->
+    <script src="js/utils/time-utils.js" defer onerror="console.error('Failed to load time-utils.js')"></script>
+    <script src="js/utils/file-utils.js" defer onerror="console.error('Failed to load file-utils.js')"></script>
+    
+    <!-- Modules -->
+    <script src="js/modules/audio-player.js" defer onerror="console.error('Failed to load audio-player.js')"></script>
+    <script src="js/modules/lyrics-manager.js" defer onerror="console.error('Failed to load lyrics-manager.js')"></script>
+    <script src="js/modules/vinyl-renderer.js" defer onerror="console.error('Failed to load vinyl-renderer.js')"></script>
+    <script src="js/modules/export-manager-canvas.js" defer onerror="console.error('Failed to load export-manager-canvas.js')"></script>
+    <script src="js/modules/export-manager.js" defer onerror="console.error('Failed to load export-manager.js')"></script>
+    <script src="js/modules/lyrics-color-manager.js" defer onerror="console.error('Failed to load lyrics-color-manager.js')"></script>
+    <script src="js/modules/settings-manager.js" defer onerror="console.error('Failed to load settings-manager.js')"></script>
+    
+    <!-- Toast system -->
     <script src="js/toast.js" defer onerror="console.error('Failed to load toast.js')"></script>
+    
+    <!-- Main app -->
     <script src="js/index.js" defer onerror="console.error('Failed to load index.js')"></script>
-    <script src="js/settings.js" defer onerror="console.error('Failed to load settings.js')"></script>
-    <script src="js/vinyl-player.js" defer onerror="console.error('Failed to load vinyl-player.js')"></script>
-    <script src="js/vinyl-player-export.js" defer onerror="console.error('Failed to load vinyl-player-export.js')"></script>
     
     <!-- Fallback for browsers that don't support modern features -->
     <noscript>
-        <div style="text-align: center; padding: 20px; background: #f0f0f0; margin: 20px; border-radius: 8px;">
+        <div class="noscript-message">
             <h2>JavaScript Required</h2>
             <p>This application requires JavaScript to function properly. Please enable JavaScript in your browser settings.</p>
         </div>
