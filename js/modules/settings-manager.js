@@ -51,8 +51,6 @@ class SettingsManager {
      * Initialize lyrics color manager
      */
     initializeLyricsColorManager() {
-        // LyricsColorManager is now initialized in index-new.js
-        // Just get reference to the existing instance
         if (window.lyricsColorManager) {
             this.lyricsColorManager = window.lyricsColorManager;
         }
@@ -247,12 +245,10 @@ class SettingsManager {
         const inputs = document.querySelectorAll('input, textarea');
         
         inputs.forEach(input => {
-            // Unified event handler with shared debouncing
             const handleInputChange = () => {
                 this.sendRealTimeUpdate(input);
             };
             
-            // Handle all input events with single debounced handler
             input.addEventListener('input', handleInputChange);
             input.addEventListener('change', handleInputChange);
             input.addEventListener('keyup', handleInputChange);
@@ -269,12 +265,10 @@ class SettingsManager {
     sendRealTimeUpdate(input) {
         const inputId = input.id;
         
-        // Clear existing timeout for this specific input
         if (this.updateTimeouts.has(inputId)) {
             clearTimeout(this.updateTimeouts.get(inputId));
         }
         
-        // Set new timeout for this specific input
         const timeoutId = setTimeout(() => {
             let updateData = {};
             
@@ -292,11 +286,9 @@ class SettingsManager {
                 this.eventBus.emit('ui:updateSongInfo', updateData);
             }
             
-            // Clean up timeout reference
             this.updateTimeouts.delete(inputId);
-        }, 500); // 500ms delay
+        }, 500);
         
-        // Store timeout reference
         this.updateTimeouts.set(inputId, timeoutId);
     }
     
@@ -314,7 +306,6 @@ class SettingsManager {
             });
         }
         
-        // Update export button state
         const updateExportButtonState = () => {
             const audioFile = audioFileInput?.files[0];
             const songTitle = songTitleInput?.value?.trim();
@@ -438,7 +429,6 @@ class SettingsManager {
                 }
             });
             
-            // Add focus trap for accessibility
             devLyricsModal.addEventListener('keydown', (e) => {
                 if (e.key === 'Tab') {
                     this.trapFocus(e, devLyricsModal);
@@ -459,14 +449,12 @@ class SettingsManager {
      * @param {HTMLElement} input - Input element
      */
     openLyricsModal(modal, input) {
-        // Store the element that opened the modal for focus return
         this.previousActiveElement = document.activeElement;
         
         modal.setAttribute('aria-hidden', 'false');
         modal.removeAttribute('inert');
         modal.style.display = 'flex';
         
-        // Focus input after modal is visible
         setTimeout(() => {
             input.focus();
         }, 100);
@@ -478,19 +466,16 @@ class SettingsManager {
      * @param {HTMLElement} input - Input element
      */
     closeLyricsModal(modal, input) {
-        // First, remove focus from any focused element inside modal
         const focusedElement = document.activeElement;
         if (focusedElement && modal.contains(focusedElement)) {
             focusedElement.blur();
         }
         
-        // Then hide the modal
         modal.setAttribute('aria-hidden', 'true');
         modal.setAttribute('inert', '');
         modal.style.display = 'none';
         input.value = '';
         
-        // Return focus to the element that opened the modal
         if (this.previousActiveElement) {
             this.previousActiveElement.focus();
         }
@@ -651,24 +636,17 @@ class SettingsManager {
      * Setup event listeners
      */
     setupEventListeners() {
-        // Listen for export progress updates
         this.eventBus.on('export:progress', (data) => {
             this.updateExportProgress(data);
         });
         
-        // Listen for export completion
         this.eventBus.on('export:complete', (data) => {
             this.handleExportComplete(data);
         });
         
-        // Listen for export errors
         this.eventBus.on('export:error', (data) => {
             this.handleExportError(data);
         });
-        
-        // Import JSON lyrics handled directly
-        
-        // Lyrics color is handled by LyricsManager
     }
     
     /**
@@ -693,9 +671,10 @@ class SettingsManager {
      * @param {Object} data - Export complete data
      */
     handleExportComplete(data) {
-        const { videoBlob, fileName } = data;
+        const { videoBlob, fileName, wasMainAudioPlaying } = data;
         
         this.fileUtils.downloadBlob(videoBlob, fileName);
+        this.resumeMainAudio(wasMainAudioPlaying);
         
         const exportProgress = document.getElementById('export-progress');
         const exportBtn = document.getElementById('export-btn');
@@ -723,6 +702,9 @@ class SettingsManager {
      * @param {Object} data - Error data
      */
     handleExportError(data) {
+        const { wasMainAudioPlaying } = data;
+        this.resumeMainAudio(wasMainAudioPlaying);
+        
         const exportProgress = document.getElementById('export-progress');
         const exportBtn = document.getElementById('export-btn');
         const progressFill = document.getElementById('progress-fill');
@@ -800,6 +782,46 @@ class SettingsManager {
     }
     
     /**
+     * Pause main audio and return whether it was playing
+     * @returns {boolean} Whether main audio was playing
+     */
+    pauseMainAudio() {
+        const audioElement = this.appState.get('audio.element');
+        const isPlaying = this.appState.get('audio.isPlaying');
+        
+        if (audioElement && isPlaying) {
+            audioElement.pause();
+            this.appState.set('audio.isPlaying', false);
+            this.appState.set('vinyl.isAnimating', false);
+            
+            this.eventBus.emit('audio:requestUpdateUI');
+            
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Resume main audio if it was playing
+     * @param {boolean} wasMainAudioPlaying - Whether main audio was playing
+     */
+    resumeMainAudio(wasMainAudioPlaying) {
+        if (wasMainAudioPlaying) {
+            const audioElement = this.appState.get('audio.element');
+            if (audioElement) {
+                audioElement.play().then(() => {
+                    this.appState.set('audio.isPlaying', true);
+                    this.appState.set('vinyl.isAnimating', true);
+                    
+                    this.eventBus.emit('audio:requestUpdateUI');
+                }).catch(error => {
+                    console.warn('Failed to resume audio:', error);
+                });
+            }
+        }
+    }
+    
+    /**
      * Cleanup resources
      */
     destroy() {
@@ -833,4 +855,3 @@ function updateLyricsData() {
     }
 }
 
-// Global settings manager is initialized by main app

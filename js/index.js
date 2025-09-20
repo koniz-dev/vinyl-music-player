@@ -34,7 +34,6 @@ class VinylMusicPlayerApp {
             this.isInitialized = true;
             
             console.log('[App] Initialization complete');
-            // App initialization complete
             
         } catch (error) {
             console.error('[App] Initialization failed:', error);
@@ -118,7 +117,6 @@ class VinylMusicPlayerApp {
      * Setup message handling for iframe communication
      */
     setupMessageHandling() {
-        // Export messages are handled by ExportManager directly
     }
     
     /**

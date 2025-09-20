@@ -75,7 +75,6 @@ class LyricsColorManager {
         this.currentColor = color;
         if (addToHistory) {
             this.addToHistory(color);
-            // Lần đầu thay đổi màu: đảm bảo màu default có trong history
             this.ensureDefaultColorInHistory();
         }
         this.updateColorPreview();
@@ -238,13 +237,10 @@ class LyricsColorManager {
      * Reset to default color and ensure it's in history
      */
     resetToDefault() {
-        this.currentColor = '#ffb3d1'; // Default pink color
+        this.currentColor = '#ffb3d1';
         this.maxHistorySize = 5;
         
-        // When resetting: move default color to front (or add if not exists)
         this.moveDefaultColorToFront();
-        
-        // Save current color to localStorage
         this.saveCurrentColor();
     }
     
@@ -254,12 +250,9 @@ class LyricsColorManager {
     ensureDefaultColorInHistory() {
         const defaultColor = '#ffb3d1';
         
-        // Only add default color if it doesn't exist in history
         if (!this.colorHistory.includes(defaultColor)) {
-            // Add default color to the end (right side)
             this.colorHistory.push(defaultColor);
             
-            // Limit history size
             if (this.colorHistory.length > this.maxHistorySize) {
                 this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
             }
@@ -274,13 +267,9 @@ class LyricsColorManager {
     moveDefaultColorToFront() {
         const defaultColor = '#ffb3d1';
         
-        // Remove default color if it exists
         this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
-        
-        // Add default color to the front
         this.colorHistory.unshift(defaultColor);
         
-        // Limit history size - but don't force default color to stay at front
         if (this.colorHistory.length > this.maxHistorySize) {
             this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
         }
@@ -301,7 +290,6 @@ class LyricsColorManager {
      * @param {string} value - Hex input value
      */
     handleHexInput(value) {
-        // Auto-format hex input
         let formattedValue = value.replace(/[^0-9A-Fa-f#]/g, '');
         if (formattedValue && !formattedValue.startsWith('#')) {
             formattedValue = '#' + formattedValue;
@@ -322,7 +310,6 @@ class LyricsColorManager {
         if (hexRegex.test(value)) {
             this.setCurrentColor(value);
         } else {
-            // Reset to current color if invalid
             if (this.colorPreviewInput) {
                 this.colorPreviewInput.value = this.currentColor.toUpperCase();
             }

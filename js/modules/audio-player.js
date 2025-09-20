@@ -25,8 +25,6 @@ class AudioPlayer {
             this.appState.set('audio.element', this.audioElement);
             this.isInitialized = true;
             
-            // AudioPlayer initialized
-            
         } catch (error) {
             this.eventBus.emit('audio:error', { error: error.message });
             throw error;
