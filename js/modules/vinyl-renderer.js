@@ -260,13 +260,6 @@ class VinylRenderer {
         }
     }
     
-    /**
-     * Get current rotation
-     * @returns {number} Current rotation in degrees
-     */
-    getRotation() {
-        return this.rotation;
-    }
     
     /**
      * Setup event listeners
@@ -306,17 +299,6 @@ class VinylRenderer {
         });
     }
     
-    /**
-     * Get vinyl state
-     * @returns {Object} Current vinyl state
-     */
-    getState() {
-        return {
-            isAnimating: this.isAnimating,
-            rotation: this.rotation,
-            hasAlbumArt: !!this.appState.get('ui.albumArt')
-        };
-    }
     
     /**
      * Cleanup resources

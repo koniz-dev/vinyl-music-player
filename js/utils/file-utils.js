@@ -257,24 +257,6 @@ class FileUtils {
         });
     }
     
-    /**
-     * Get file info object
-     * @param {File} file - File object
-     * @returns {Object} File information
-     */
-    static getFileInfo(file) {
-        if (!file) return null;
-        
-        return {
-            name: file.name,
-            size: file.size,
-            sizeFormatted: this.formatFileSize(file.size),
-            type: file.type,
-            extension: this.getFileExtension(file.name),
-            lastModified: new Date(file.lastModified),
-            sanitizedName: this.sanitizeFilename(file.name)
-        };
-    }
 }
 
 // Export for use in other modules

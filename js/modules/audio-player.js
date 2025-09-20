@@ -347,20 +347,6 @@ class AudioPlayer {
         }
     }
     
-    /**
-     * Get current audio state
-     * @returns {Object} Current audio state
-     */
-    getState() {
-        return {
-            isPlaying: this.appState.get('audio.isPlaying'),
-            currentTime: this.appState.get('audio.currentTime'),
-            totalTime: this.appState.get('audio.totalTime'),
-            isMuted: this.appState.get('audio.isMuted'),
-            isRepeat: this.appState.get('audio.isRepeat'),
-            volume: this.appState.get('audio.volume')
-        };
-    }
     
     /**
      * Setup audio element event listeners

@@ -39,7 +39,7 @@ class ExportManager {
             this.appState.set('export.progress', 0);
             this.appState.set('export.message', 'Initializing export...');
             
-            this.eventBus.emit('export:progress', { progress: 5, message: 'Initializing export...' });
+            this.eventBus.emit('export:progress', { progress: 0, message: 'Initializing export...' });
             
             // Pause main audio if playing
             this.wasMainAudioPlaying = this.pauseMainAudio();
@@ -154,7 +154,7 @@ class ExportManager {
      * @param {File} albumArtFile - Album art file
      */
     async loadAlbumArt(albumArtFile) {
-        this.eventBus.emit('export:progress', { progress: 15, message: 'Loading album art...' });
+        this.eventBus.emit('export:progress', { progress: 10, message: 'Loading album art...' });
         
         this.albumArtImage = new Image();
         this.albumArtImage.src = this.fileUtils.createObjectURL(albumArtFile);
@@ -197,7 +197,7 @@ class ExportManager {
      * Start recording
      */
     async startRecording() {
-        this.eventBus.emit('export:progress', { progress: 25, message: 'Setting up video recorder...' });
+        this.eventBus.emit('export:progress', { progress: 30, message: 'Setting up video recorder...' });
         
         const canvasStream = this.exportCanvas.captureStream(30);
         
@@ -229,7 +229,7 @@ class ExportManager {
         this.mediaRecorder.start();
         this.exportAudio.play();
         
-        this.eventBus.emit('export:progress', { progress: 30, message: 'Recording started...' });
+        this.eventBus.emit('export:progress', { progress: 40, message: 'Recording started...' });
     }
     
     /**
@@ -727,7 +727,7 @@ class ExportManager {
         
         const progressInterval = setInterval(() => {
             const elapsed = (Date.now() - startTime) / 1000;
-            const progress = Math.min(30 + (elapsed / duration) * 60, 90);
+            const progress = Math.min(40 + (elapsed / duration) * 55, 95);
             
             this.appState.set('export.progress', progress);
             this.appState.set('export.message', `Recording... ${Math.round(progress)}%`);
@@ -770,14 +770,25 @@ class ExportManager {
         const songTitle = this.appState.get('ui.songTitle') || 'untitled';
         const fileName = `${this.fileUtils.sanitizeFilename(songTitle)}.webm`;
         
-        this.appState.set('export.progress', 100);
-        this.appState.set('export.message', 'Export complete!');
+        this.appState.set('export.progress', 95);
+        this.appState.set('export.message', 'Processing video...');
         
-        this.eventBus.emit('export:complete', {
-            videoBlob: webmBlob,
-            fileName: fileName,
-            wasMainAudioPlaying: this.wasMainAudioPlaying
+        this.eventBus.emit('export:progress', { 
+            progress: 95, 
+            message: 'Processing video...' 
         });
+        
+        // Small delay to show processing step
+        setTimeout(() => {
+            this.appState.set('export.progress', 100);
+            this.appState.set('export.message', 'Export complete!');
+            
+            this.eventBus.emit('export:complete', {
+                videoBlob: webmBlob,
+                fileName: fileName,
+                wasMainAudioPlaying: this.wasMainAudioPlaying
+            });
+        }, 500);
         
         this.cleanup();
     }
@@ -1027,17 +1038,6 @@ class ExportManager {
         // Export events are handled internally
     }
     
-    /**
-     * Get export state
-     * @returns {Object} Current export state
-     */
-    getState() {
-        return {
-            isExporting: this.appState.get('export.isExporting'),
-            progress: this.appState.get('export.progress'),
-            message: this.appState.get('export.message')
-        };
-    }
     
     /**
      * Cleanup resources

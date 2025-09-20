@@ -31,7 +31,7 @@ class EventBus {
         this.events.get(eventName).add(subscription);
         
         if (this.debug) {
-            console.log(`[EventBus] Subscribed to "${eventName}"`, subscription.id);
+            // console.log(`[EventBus] Subscribed to "${eventName}"`, subscription.id);
         }
         
         // Return unsubscribe function
@@ -80,7 +80,7 @@ class EventBus {
         }
         
         if (this.debug) {
-            console.log(`[EventBus] Unsubscribed from "${eventName}"`);
+            // console.log(`[EventBus] Unsubscribed from "${eventName}"`);
         }
     }
     
@@ -94,7 +94,7 @@ class EventBus {
         const subscriptions = this.events.get(eventName);
         if (!subscriptions || subscriptions.size === 0) {
             if (this.debug) {
-                console.log(`[EventBus] No listeners for "${eventName}"`);
+                // console.log(`[EventBus] No listeners for "${eventName}"`);
             }
             return;
         }
@@ -109,7 +109,7 @@ class EventBus {
         const sortedSubscriptions = Array.from(subscriptions).sort((a, b) => b.priority - a.priority);
         
         if (this.debug && !eventName.includes('timeUpdate')) {
-            console.log(`[EventBus] Emitting "${eventName}" to ${sortedSubscriptions.length} listeners`, processedData);
+            // console.log(`[EventBus] Emitting "${eventName}" to ${sortedSubscriptions.length} listeners`, processedData);
         }
         
         // Execute callbacks

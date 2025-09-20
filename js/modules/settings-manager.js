@@ -10,7 +10,6 @@ class SettingsManager {
         this.timeUtils = window.TimeUtils;
         
         this.lyricsContainer = null;
-        this.lyricsCount = 0;
         this.lyricsColorManager = null;
         this.updateTimeouts = new Map(); // Per-input debouncing
         
@@ -275,11 +274,11 @@ class SettingsManager {
             if (inputId === 'song-title') {
                 updateData.type = 'UPDATE_SONG_TITLE';
                 updateData.songTitle = input.value;
-                console.log(`[SettingsManager] Song title updated: "${input.value}"`);
+                // console.log(`[SettingsManager] Song title updated: "${input.value}"`);
             } else if (inputId === 'artist-name') {
                 updateData.type = 'UPDATE_ARTIST_NAME';
                 updateData.artistName = input.value;
-                console.log(`[SettingsManager] Artist name updated: "${input.value}"`);
+                // console.log(`[SettingsManager] Artist name updated: "${input.value}"`);
             }
             
             if (updateData.type) {
@@ -541,7 +540,6 @@ class SettingsManager {
      */
     loadLyricsFromJSON(lyricsData) {
         this.lyricsContainer.innerHTML = '';
-        this.lyricsCount = 0;
         
         lyricsData.forEach((item) => {
             this.addLyricsItem(item);
@@ -555,7 +553,6 @@ class SettingsManager {
      * @param {Object} item - Lyrics item data (optional)
      */
     addLyricsItem(item = null) {
-        this.lyricsCount++;
         const lyricsItem = document.createElement('div');
         lyricsItem.className = 'lyrics-item';
         
@@ -563,9 +560,11 @@ class SettingsManager {
         const endTime = item ? item.end : '00:05';
         const text = item ? item.text : '';
         
+        const lyricsCount = this.lyricsContainer.children.length + 1;
+        
         lyricsItem.innerHTML = `
             <div class="lyrics-item-header">
-                <div class="lyrics-item-title">Lyrics ${this.lyricsCount}</div>
+                <div class="lyrics-item-title">Lyrics ${lyricsCount}</div>
                 <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)">×</button>
             </div>
             <div class="lyrics-inputs">
@@ -770,16 +769,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Get settings state
-     * @returns {Object} Current settings state
-     */
-    getState() {
-        return {
-            lyricsCount: this.lyricsCount,
-            hasLyricsColorManager: !!this.lyricsColorManager
-        };
-    }
     
     /**
      * Pause main audio and return whether it was playing

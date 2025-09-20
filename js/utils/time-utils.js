@@ -109,25 +109,7 @@ class TimeUtils {
         return result;
     }
     
-    /**
-     * Parse duration from audio element
-     * @param {HTMLAudioElement} audioElement - Audio element
-     * @returns {number} Duration in seconds
-     */
-    static getAudioDuration(audioElement) {
-        if (!audioElement || !audioElement.duration) return 0;
-        return Math.floor(audioElement.duration);
-    }
     
-    /**
-     * Get current time from audio element
-     * @param {HTMLAudioElement} audioElement - Audio element
-     * @returns {number} Current time in seconds
-     */
-    static getAudioCurrentTime(audioElement) {
-        if (!audioElement || isNaN(audioElement.currentTime)) return 0;
-        return audioElement.currentTime;
-    }
     
     /**
      * Calculate progress percentage

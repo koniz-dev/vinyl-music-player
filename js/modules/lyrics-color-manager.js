@@ -7,7 +7,6 @@ class LyricsColorManager {
         // Initialize with default color
         this.currentColor = '#ffb3d1';
         this.colorHistory = [];
-        this.maxHistorySize = 5;
         
         this.initializeElements();
         this.setupEventListeners();
@@ -95,8 +94,8 @@ class LyricsColorManager {
         this.colorHistory.unshift(color);
         
         // Limit history size
-        if (this.colorHistory.length > this.maxHistorySize) {
-            this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
+        if (this.colorHistory.length > 5) {
+            this.colorHistory = this.colorHistory.slice(0, 5);
         }
         
         this.saveColorHistory();
@@ -224,21 +223,12 @@ class LyricsColorManager {
         }
     }
     
-    cleanupOldDefaultColors() {
-        // Remove old default colors from history
-        this.colorHistory = this.colorHistory.filter(color => 
-            color !== '#ffb3d1' && 
-            color !== '#ff69b4' && 
-            color !== '#ff1493'
-        );
-    }
     
     /**
      * Reset to default color and ensure it's in history
      */
     resetToDefault() {
         this.currentColor = '#ffb3d1';
-        this.maxHistorySize = 5;
         
         this.moveDefaultColorToFront();
         this.saveCurrentColor();
@@ -270,8 +260,8 @@ class LyricsColorManager {
         this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
         this.colorHistory.unshift(defaultColor);
         
-        if (this.colorHistory.length > this.maxHistorySize) {
-            this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
+        if (this.colorHistory.length > 5) {
+            this.colorHistory = this.colorHistory.slice(0, 5);
         }
         
         this.saveColorHistory();

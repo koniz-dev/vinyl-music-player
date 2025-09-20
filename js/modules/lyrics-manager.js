@@ -276,32 +276,6 @@ class LyricsManager {
         return JSON.stringify(exportData, null, 2);
     }
     
-    /**
-     * Get lyrics statistics
-     * @returns {Object} Lyrics statistics
-     */
-    getLyricsStats() {
-        const lyrics = this.appState.get('lyrics.items');
-        
-        if (!lyrics || lyrics.length === 0) {
-            return {
-                count: 0,
-                totalDuration: 0,
-                averageDuration: 0
-            };
-        }
-        
-        const totalDuration = lyrics.reduce((sum, lyric) => sum + (lyric.end - lyric.start), 0);
-        const averageDuration = totalDuration / lyrics.length;
-        
-        return {
-            count: lyrics.length,
-            totalDuration,
-            averageDuration,
-            firstLyricTime: lyrics[0]?.start || 0,
-            lastLyricTime: lyrics[lyrics.length - 1]?.end || 0
-        };
-    }
     
     /**
      * Setup event listeners
@@ -359,28 +333,7 @@ class LyricsManager {
         });
     }
     
-    /**
-     * Get current lyric
-     * @returns {Object|null} Current lyric or null
-     */
-    getCurrentLyric() {
-        const lyrics = this.appState.get('lyrics.items');
-        const currentIndex = this.appState.get('lyrics.currentIndex');
-        
-        if (currentIndex >= 0 && lyrics && lyrics[currentIndex]) {
-            return lyrics[currentIndex];
-        }
-        
-        return null;
-    }
     
-    /**
-     * Get all lyrics
-     * @returns {Array} All lyrics
-     */
-    getAllLyrics() {
-        return this.appState.get('lyrics.items') || [];
-    }
     
     /**
      * Clear all lyrics

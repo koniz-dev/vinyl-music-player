@@ -20,7 +20,7 @@ class VinylMusicPlayerApp {
      */
     async initialize() {
         try {
-            console.log('[App] Initializing Vinyl Music Player...');
+            // console.log('[App] Initializing Vinyl Music Player...');
             
             // Initialize core modules
             await this.initializeModules();
@@ -33,7 +33,7 @@ class VinylMusicPlayerApp {
             
             this.isInitialized = true;
             
-            console.log('[App] Initialization complete');
+            // console.log('[App] Initialization complete');
             
         } catch (error) {
             console.error('[App] Initialization failed:', error);
@@ -83,7 +83,7 @@ class VinylMusicPlayerApp {
             this.modules.toastManager = window.toastManager;
         }
         
-        console.log('[App] All modules initialized');
+        // console.log('[App] All modules initialized');
     }
     
     /**
@@ -110,7 +110,7 @@ class VinylMusicPlayerApp {
             this.handleModuleError(data);
         });
         
-        console.log('[App] Global event listeners setup complete');
+        // console.log('[App] Global event listeners setup complete');
     }
     
     /**
@@ -264,7 +264,7 @@ class VinylMusicPlayerApp {
     handleStateChange(path, value, newState, oldState) {
         // Log significant state changes in development (exclude frequent updates)
         if (window.location.hostname === 'localhost' && !path.includes('currentTime')) {
-            console.log(`[App] State changed: ${path}`, value);
+            // console.log(`[App] State changed: ${path}`, value);
         }
         
         // Handle specific state changes
@@ -372,17 +372,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Get application status
-     * @returns {Object} Application status
-     */
-    getStatus() {
-        return {
-            isInitialized: this.isInitialized,
-            modules: Object.keys(this.modules),
-            state: this.appState.getSnapshot()
-        };
-    }
     
     /**
      * Cleanup application
@@ -403,7 +392,7 @@ class VinylMusicPlayerApp {
         
         this.isInitialized = false;
         
-        console.log('[App] Application destroyed');
+        // console.log('[App] Application destroyed');
     }
 }
 
