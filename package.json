@@ -9,7 +9,22 @@
     "type": "git",
     "url": "git+https://github.com/koniz-dev/vinyl-music-player.git"
   },
-  "keywords": [],
+  "keywords": [
+    "music-player",
+    "vinyl",
+    "audio-player",
+    "lyrics",
+    "video-export",
+    "webm",
+    "music-video",
+    "synchronized-lyrics",
+    "pwa",
+    "progressive-web-app",
+    "html5",
+    "javascript",
+    "canvas",
+    "media-recorder"
+  ],
   "author": "koniz-dev",
   "license": "MIT",
   "bugs": {

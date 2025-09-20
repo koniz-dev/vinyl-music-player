@@ -1,5 +1,9 @@
 # 🎵 Vinyl Music Player
 
+[![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://github.com/koniz-dev/vinyl-music-player)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-active-brightgreen.svg)](https://github.com/koniz-dev/vinyl-music-player)
+
 A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations and professional video export capabilities.
 
 ![Vinyl Music Player](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
@@ -62,7 +66,8 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 
 ### Prerequisites
 - Modern web browser (Chrome, Firefox, Edge, Safari)
-- Node.js (optional, for development server)
+- Python 3.x or Node.js (optional, for local development server)
+- No build tools or dependencies required
 
 ### Installation
 
@@ -72,19 +77,20 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
    cd vinyl-music-player
    ```
 
-2. **Install dependencies** (optional)
+2. **Start a local server** (optional)
    ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
+   # Using Python
+   python -m http.server 8000
+   
+   # Using Node.js (if you have http-server installed)
+   npx http-server -p 8000
+   
+   # Or simply open index.html directly in your browser
    ```
    Or simply open `index.html` in your browser.
 
-4. **Access the application**
-   - Open your browser and navigate to `http://localhost:3000`
+3. **Access the application**
+   - If using a server: Open your browser and navigate to `http://localhost:8000`
    - Or open `index.html` directly in your browser
 
 ## 📖 How to Use
@@ -146,13 +152,17 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ## 🛠️ Technical Details
 
 ### Architecture
-- **Frontend Only**: Pure HTML, CSS, and JavaScript
+- **Frontend Only**: Pure HTML, CSS, and JavaScript (ES6+)
 - **No Backend Required**: Everything runs in the browser
+- **Modular Design**: Organized into core, modules, and utilities
+- **Event-Driven**: Uses custom event bus for component communication
+- **State Management**: Centralized application state management
 - **MediaRecorder API**: For video export functionality
 - **Canvas API**: For rendering the vinyl player and effects
 - **Web Audio API**: For audio processing and visualization
 - **File API**: For handling audio and image uploads
 - **PWA Support**: Service worker and manifest for app-like experience
+- **Responsive Design**: Mobile-first approach with CSS Grid and Flexbox
 
 ### Browser Support
 - **Chrome**: Full support including video export
@@ -167,6 +177,7 @@ vinyl-music-player/
 ├── package.json                  # Project configuration and dependencies
 ├── package-lock.json             # Dependency lock file
 ├── README.md                     # Project documentation
+├── LICENSE                       # MIT License file
 ├── favicon/                      # Favicon and PWA icons
 │   ├── favicon.ico               # Main favicon
 │   ├── favicon-16x16.png         # 16x16 favicon
@@ -174,7 +185,8 @@ vinyl-music-player/
 │   ├── apple-touch-icon.png      # Apple touch icon
 │   ├── android-chrome-192x192.png # Android Chrome icon (192x192)
 │   ├── android-chrome-512x512.png # Android Chrome icon (512x512)
-│   └── site.webmanifest          # PWA manifest file
+│   ├── site.webmanifest          # PWA manifest file
+│   └── browserconfig.xml         # Browser configuration
 ├── js/                           # JavaScript modules
 │   ├── core/                     # Core application systems
 │   │   ├── app-state.js          # Application state management
@@ -193,23 +205,66 @@ vinyl-music-player/
 │   ├── index.js                  # Main application entry point
 │   └── toast.js                  # Toast notification system
 └── styles/                       # CSS stylesheets
-    ├── common.css                # Shared styles and utilities
-    ├── index.css                 # Main page layout and styles
-    ├── settings.css              # Settings panel styles
-    └── vinyl-player.css          # Vinyl player specific styles
+    ├── base.css                  # Base styles and CSS reset
+    ├── variables.css             # CSS custom properties
+    ├── layout.css                # Layout and grid systems
+    ├── components.css            # Reusable component styles
+    ├── forms.css                 # Form and input styles
+    ├── music-player.css          # Music player specific styles
+    ├── responsive.css            # Responsive design styles
+    ├── toast.css                 # Toast notification styles
+    └── index.css                 # Main page styles
 ```
+
+## 🛠️ Development
+
+### Development Setup
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/koniz-dev/vinyl-music-player.git
+   cd vinyl-music-player
+   ```
+
+2. **Start a local development server**
+   ```bash
+   # Using Python (recommended)
+   python -m http.server 8000
+   
+   # Using Node.js
+   npx http-server -p 8000
+   ```
+
+3. **Access the application**
+   - Open `http://localhost:8000` in your browser
+   - Refresh the page to see changes when you modify files
+
+### Project Structure
+- **Core Systems** (`js/core/`): Application state and event management
+- **Modules** (`js/modules/`): Feature-specific functionality
+- **Utilities** (`js/utils/`): Helper functions and utilities
+- **Styles** (`styles/`): Organized CSS with variables and components
+
+### Key Technologies
+- **ES6+ JavaScript**: Modern JavaScript features
+- **CSS Custom Properties**: For theming and customization
+- **Canvas API**: For vinyl player rendering
+- **MediaRecorder API**: For video export
+- **Web Audio API**: For audio processing
+- **File API**: For file uploads
 
 ## 🎨 Customization
 
 ### Styling
-- Modify CSS variables in the `<style>` sections
+- Modify CSS variables in `styles/variables.css`
 - Change colors, fonts, and animations
 - Adjust the vinyl player size and positioning
+- Customize responsive breakpoints in `styles/responsive.css`
 
 ### Functionality
-- Add new control buttons
-- Modify the lyrics timing system
-- Add new export formats
+- Add new control buttons in `js/modules/audio-player.js`
+- Modify the lyrics timing system in `js/modules/lyrics-manager.js`
+- Add new export formats in `js/modules/export-manager.js`
+- Extend the vinyl renderer in `js/modules/vinyl-renderer.js`
 
 ## 📁 Supported File Formats
 
@@ -282,6 +337,20 @@ We welcome contributions! Here's how you can help:
 - Add comments for complex functionality
 - Test your changes in multiple browsers
 - Update documentation if needed
+
+## 📋 Changelog
+
+### Version 0.0.1 (Current)
+- ✨ Initial release
+- 🎵 Vinyl music player with realistic animations
+- 📝 Synchronized lyrics system
+- 🎬 WebM video export functionality
+- 🎨 Beautiful UI with responsive design
+- 📱 Progressive Web App (PWA) support
+- 🎛️ Advanced controls and settings
+- 🌈 Lyrics color customization
+- 📁 Drag & drop file support
+- 🔧 Modular architecture
 
 ## 📝 License
 
