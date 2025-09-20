@@ -1,6 +1,6 @@
 # 🎵 Vinyl Music Player
 
-A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations and professional video export capabilities.
+A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations, dynamic gradient backgrounds, JSON lyrics import, and professional video export capabilities.
 
 ![Vinyl Music Player](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
@@ -33,9 +33,10 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 
 ### 🎨 Beautiful UI
 - **Modern Design**: Clean, minimalist interface with smooth animations
-- **Gradient Backgrounds**: Stunning visual effects and color schemes
+- **Dynamic Gradient Backgrounds**: Randomly generated stunning gradient backgrounds on each page load
 - **Interactive Elements**: Hover effects, smooth transitions, and responsive feedback
 - **Custom Fonts**: Beautiful typography with Patrick Hand font family
+- **Visual Effects**: Multiple gradient sets with warm, cool, and vibrant color schemes
 
 ### 📱 Progressive Web App (PWA)
 - **Offline Support**: Works without internet connection
@@ -48,6 +49,26 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Real-time Preview**: See changes instantly in the vinyl player
 - **Export Progress**: Detailed progress tracking during video export
 - **Error Handling**: Comprehensive error messages and recovery options
+- **Browser Support Check**: Built-in compatibility checker for video export features
+- **JSON Lyrics Import**: Developer-friendly bulk lyrics import from JSON format
+
+## 🛠️ Developer Features
+
+### 🔧 Advanced Tools
+- **JSON Lyrics Import**: Bulk import lyrics from JSON format for faster setup
+- **Browser Compatibility Check**: Built-in checker for MediaRecorder API support
+- **Dynamic Gradient System**: Random background generation with multiple color schemes
+- **Developer Console**: Enhanced debugging and error reporting
+- **Modular Architecture**: Clean separation of concerns for easy customization
+
+### 📝 JSON Lyrics Format
+```json
+[
+  {"start": "00:18", "end": "00:21", "text": "I wake up in the familiar room"},
+  {"start": "00:22", "end": "00:24", "text": "Where your hand once rested"},
+  {"start": "00:25", "end": "00:28", "text": "But now it's just an empty space"}
+]
+```
 
 ## 🔮 Future Features
 
@@ -109,6 +130,12 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - Lyrics will appear automatically during playback at the specified times
 - Use the "×" button to remove individual lyrics entries
 
+#### JSON Lyrics Import (Developer Feature)
+- Click **"🔧 For Dev - Import JSON Lyrics"** for bulk import
+- Paste JSON lyrics in the format: `[{"start": "00:18", "end": "00:21", "text": "Your lyrics here"}]`
+- Supports importing multiple lyrics at once for faster setup
+- Perfect for developers and power users with large lyrics datasets
+
 ### 4. Control Playback
 - **Play/Pause**: Click the play button to start/stop music
 - **Progress Bar**: Click anywhere on the progress bar to jump to that time
@@ -121,6 +148,11 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - The export process will create a 720x1280 WebM video with your audio and lyrics
 - Wait for the WebM export process to complete (progress is shown)
 - Download your custom WebM music video automatically when finished
+
+### 6. Browser Compatibility Check
+- Click **"🔧 Check Browser Support"** to verify video export compatibility
+- Ensures your browser supports MediaRecorder API for video export
+- Provides helpful information if your browser has limitations
 
 ## 🎯 Features in Detail
 
@@ -135,6 +167,8 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Real-time Updates**: Changes are immediately reflected in the player
 - **Lyrics Management**: Easy-to-use interface for adding and managing lyrics
 - **Export Controls**: One-click video export with progress tracking
+- **Developer Tools**: JSON lyrics import and browser compatibility checker
+- **Dynamic Backgrounds**: Fresh gradient backgrounds on every page load
 
 ### Video Export
 - **WebM Format**: Exports videos in WebM format for broad compatibility
@@ -153,6 +187,8 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Web Audio API**: For audio processing and visualization
 - **File API**: For handling audio and image uploads
 - **PWA Support**: Service worker and manifest for app-like experience
+- **Dynamic Gradient System**: Random gradient generation for visual variety
+- **JSON Processing**: Built-in JSON parsing for lyrics import functionality
 
 ### Browser Support
 - **Chrome**: Full support including video export
@@ -179,7 +215,8 @@ vinyl-music-player/
 │   ├── index.js                  # Main application logic and initialization
 │   ├── settings.js               # Settings panel and lyrics management
 │   ├── vinyl-player.js           # Vinyl player controls and animations
-│   └── vinyl-player-export.js    # Video export functionality
+│   ├── vinyl-player-export.js    # Video export functionality
+│   └── dynamic-gradient.js       # Dynamic background gradient generator
 └── styles/                       # CSS stylesheets
     ├── common.css                # Shared styles and utilities
     ├── index.css                 # Main page layout and styles
@@ -291,14 +328,17 @@ If you encounter any issues or have questions:
 
 ## 🌏 Multi-language Support
 
-### Vietnamese (Tiếng Việt)
-This project supports Vietnamese language and is developed by a Vietnamese developer. The interface and documentation are available in both English and Vietnamese.
+### International Support
+This project is developed by a Vietnamese developer and supports multiple languages. The interface and documentation are available in English with full internationalization support.
 
 ### Language Features
 - **Interface**: Clean, intuitive design that works in any language
-- **Lyrics Support**: Add lyrics in any language including Vietnamese
-- **Documentation**: README available in multiple languages
-- **Community**: Vietnamese developer community support
+- **Lyrics Support**: Add lyrics in any language including Vietnamese, English, and more
+- **Documentation**: Comprehensive English documentation with clear instructions
+- **Community**: International developer community support
+- **JSON Lyrics Import**: Bulk import lyrics from JSON format in any language
+- **Browser Compatibility**: Built-in MediaRecorder API support checker
+- **Unicode Support**: Full support for international characters and symbols
 
 ## 🎵 Enjoy Your Music!
 
