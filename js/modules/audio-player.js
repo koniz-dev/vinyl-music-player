@@ -268,8 +268,17 @@ class AudioPlayer {
         // Update mute button UI
         const muteBtn = document.querySelector('.vinyl-mute-btn');
         if (muteBtn) {
-            muteBtn.textContent = !isMuted ? '🔇' : '🔊';
-            muteBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            if (!isMuted) {
+                // Mute is being activated
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                muteBtn.style.background = 'rgba(139, 69, 19, 0.3)';
+                muteBtn.style.color = '#8B4513';
+            } else {
+                // Mute is being deactivated
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                muteBtn.style.background = 'transparent';
+                muteBtn.style.color = '#786d59';
+            }
         }
         
         this.eventBus.emit('audio:muteToggle', { isMuted: !isMuted });
@@ -286,11 +295,13 @@ class AudioPlayer {
         const repeatBtn = document.querySelector('.vinyl-repeat-btn');
         if (repeatBtn) {
             if (!isRepeat) {
-                repeatBtn.style.background = 'rgba(102, 126, 234, 0.3)';
-                repeatBtn.style.color = '#667eea';
+                // Activate repeat mode
+                repeatBtn.style.background = 'rgba(139, 69, 19, 0.3)';
+                repeatBtn.style.color = '#8B4513';
             } else {
-                repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-                repeatBtn.style.color = 'white';
+                // Deactivate repeat mode - return to default style
+                repeatBtn.style.background = 'transparent';
+                repeatBtn.style.color = '#786d59';
             }
         }
         
@@ -312,13 +323,14 @@ class AudioPlayer {
         });
         
         if (muteBtn) {
-            muteBtn.textContent = '🔊';
-            muteBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            muteBtn.style.background = 'transparent';
+            muteBtn.style.color = '#786d59';
         }
         
         if (repeatBtn) {
-            repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-            repeatBtn.style.color = 'white';
+            repeatBtn.style.background = 'transparent';
+            repeatBtn.style.color = '#786d59';
         }
         
         this.appState.set('audio.isRepeat', false);
@@ -328,21 +340,18 @@ class AudioPlayer {
      * Update player state in UI
      */
     updatePlayerState() {
-        const vinyl = document.getElementById('vinyl');
-        const tonearm = document.getElementById('tonearm');
+        const vinylAlbumArt = document.querySelector('.vinyl-album-art');
         const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
         const isPlaying = this.appState.get('audio.isPlaying');
         
-        if (vinyl && tonearm && playPauseBtn) {
+        if (vinylAlbumArt && playPauseBtn) {
             if (isPlaying) {
-                vinyl.style.animation = 'spin 8s linear infinite';
-                vinyl.style.animationPlayState = 'running';
-                tonearm.classList.add('playing');
-                playPauseBtn.textContent = '⏸';
+                vinylAlbumArt.style.animation = 'spin 8s linear infinite';
+                vinylAlbumArt.style.animationPlayState = 'running';
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
             } else {
-                vinyl.style.animationPlayState = 'paused';
-                tonearm.classList.remove('playing');
-                playPauseBtn.textContent = '▶';
+                vinylAlbumArt.style.animationPlayState = 'paused';
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
             }
         }
     }

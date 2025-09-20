@@ -565,7 +565,7 @@ class SettingsManager {
         lyricsItem.innerHTML = `
             <div class="lyrics-item-header">
                 <div class="lyrics-item-title">Lyrics ${lyricsCount}</div>
-                <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)">×</button>
+                <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)"><i class="fas fa-times"></i></button>
             </div>
             <div class="lyrics-inputs">
                 <div>

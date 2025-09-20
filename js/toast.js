@@ -53,7 +53,7 @@ class ToastManager {
                 <p class="toast-message">${message}</p>
             </div>
             <button class="toast-close" onclick="this.parentElement.remove()" aria-label="Close notification">
-                <span>×</span>
+                <span><i class="fas fa-times"></i></span>
             </button>
         `;
         
@@ -68,7 +68,7 @@ class ToastManager {
         }, duration);
 
         toast.addEventListener('click', (e) => {
-            if (e.target.classList.contains('toast-close') || e.target.textContent === '×') {
+            if (e.target.classList.contains('toast-close') || e.target.closest('.toast-close')) {
                 this.removeToast(toast);
             }
         });

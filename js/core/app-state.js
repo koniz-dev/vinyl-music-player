@@ -26,7 +26,7 @@ class AppState {
             lyrics: {
                 items: [],
                 currentIndex: -1,
-                color: '#ffb3d1'
+                color: '#8B4513'
             },
             
             // Export state
@@ -211,7 +211,7 @@ class AppState {
             lyrics: {
                 items: [],
                 currentIndex: -1,
-                color: '#ffb3d1'
+                color: '#8B4513'
             },
             export: {
                 isExporting: false,

@@ -28,7 +28,7 @@
 }
 
 .required-asterisk {
-    color: #e53e3e;
+    color: var(--error);
 }
 
 .upload-area {
@@ -140,7 +140,7 @@
     color: white;
     border: none;
     border-radius: var(--radius-sm);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--spacing-xs);
     font-size: var(--text-xs);
     cursor: pointer;
     transition: all var(--transition-fast);

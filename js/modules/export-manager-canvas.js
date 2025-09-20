@@ -214,8 +214,8 @@ class ExportManagerCanvas {
         const songInfoWidth = vinylSectionWidth;
         const songInfoHeight = 100;
         
-        const songTitle = document.querySelector('.vinyl-song-title')?.textContent || '';
-        const artistName = document.querySelector('.vinyl-artist-name')?.textContent || '';
+        const songTitle = document.querySelector('.song-title')?.textContent || '';
+        const artistName = document.querySelector('.artist-name')?.textContent || '';
         const lyricsText = document.querySelector('.vinyl-lyrics-text')?.textContent || '';
 
         exportCtx.fillStyle = '#ffffff';
@@ -338,8 +338,8 @@ class ExportManagerCanvas {
         
         const buttonY = controlsY + (controlsHeight - playButtonSize) / 2;
         
-        const playIcon = (exportAudio && !exportAudio.paused) ? '⏸' : '▶';
-        const buttonIcons = ['🔊', '⏮', playIcon, '⏭', '↻'];
+        const playIcon = (exportAudio && !exportAudio.paused) ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        const buttonIcons = ['<i class="fas fa-volume-up"></i>', '<i class="fas fa-step-backward"></i>', playIcon, '<i class="fas fa-step-forward"></i>', '<i class="fas fa-redo"></i>'];
         
         let currentX = startButtonX;
         

@@ -5,7 +5,7 @@
 class LyricsColorManager {
     constructor() {
         // Initialize with default color
-        this.currentColor = '#ffb3d1';
+        this.currentColor = '#8B4513';
         this.colorHistory = [];
         
         this.initializeElements();
@@ -208,10 +208,10 @@ class LyricsColorManager {
     loadCurrentColor() {
         try {
             const saved = localStorage.getItem('lyricsCurrentColor');
-            return saved || '#ffb3d1';
+            return saved || '#8B4513';
         } catch (error) {
             console.warn('Failed to load current color:', error);
-            return '#ffb3d1';
+            return '#8B4513';
         }
     }
     
@@ -228,7 +228,7 @@ class LyricsColorManager {
      * Reset to default color and ensure it's in history
      */
     resetToDefault() {
-        this.currentColor = '#ffb3d1';
+        this.currentColor = '#8B4513';
         
         this.moveDefaultColorToFront();
         this.saveCurrentColor();
@@ -238,7 +238,7 @@ class LyricsColorManager {
      * Ensure default color is in history - only called when first color change
      */
     ensureDefaultColorInHistory() {
-        const defaultColor = '#ffb3d1';
+        const defaultColor = '#8B4513';
         
         if (!this.colorHistory.includes(defaultColor)) {
             this.colorHistory.push(defaultColor);
@@ -255,7 +255,7 @@ class LyricsColorManager {
      * Move default color to front - only called when resetting
      */
     moveDefaultColorToFront() {
-        const defaultColor = '#ffb3d1';
+        const defaultColor = '#8B4513';
         
         this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
         this.colorHistory.unshift(defaultColor);
@@ -305,7 +305,7 @@ class LyricsColorManager {
             }
             
             if (window.toastManager) {
-                window.toastManager.showWarning('Invalid Color', 'Please enter a valid hex color (e.g., #ffb3d1)');
+                window.toastManager.showWarning('Invalid Color', 'Please enter a valid hex color (e.g., #8B4513)');
             }
         }
     }

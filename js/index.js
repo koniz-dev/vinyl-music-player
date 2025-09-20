@@ -298,8 +298,8 @@ class VinylMusicPlayerApp {
         const songTitle = this.appState.get('ui.songTitle');
         const artistName = this.appState.get('ui.artistName');
         
-        const songTitleElement = document.querySelector('.vinyl-song-title');
-        const artistNameElement = document.querySelector('.vinyl-artist-name');
+        const songTitleElement = document.querySelector('.song-title');
+        const artistNameElement = document.querySelector('.artist-name');
         
         if (songTitleElement) {
             songTitleElement.textContent = songTitle || '';

@@ -175,7 +175,7 @@ class LyricsManager {
     applySavedColor() {
         // Always apply default color on page load
         if (this.lyricsTextElement) {
-            this.setLyricsColor('#ffb3d1'); // Default pink color
+            this.setLyricsColor('#8B4513'); // Default brown color
         }
     }
     

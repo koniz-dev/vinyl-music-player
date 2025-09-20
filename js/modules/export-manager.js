@@ -13,7 +13,7 @@ class ExportManager {
         this.albumArtImage = null;
         this.exportAudio = null;
         this.exportLyrics = [];
-        this.exportLyricsColor = '#ffb3d1';
+        this.exportLyricsColor = '#8B4513';
         
         this.eventBus = window.eventBus;
         this.appState = window.appState;
@@ -675,8 +675,8 @@ class ExportManager {
         
         const buttonY = controlsY + (controlsHeight - playButtonSize) / 2;
         
-        const playIcon = (this.exportAudio && !this.exportAudio.paused) ? '⏸' : '▶';
-        const buttonIcons = ['🔊', '⏮', playIcon, '⏭', '↻'];
+        const playIcon = (this.exportAudio && !this.exportAudio.paused) ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        const buttonIcons = ['<i class="fas fa-volume-up"></i>', '<i class="fas fa-step-backward"></i>', playIcon, '<i class="fas fa-step-forward"></i>', '<i class="fas fa-redo"></i>'];
         
         let currentX = startButtonX;
         
