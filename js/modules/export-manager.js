@@ -1,7 +1,3 @@
-/**
- * Export Manager Module
- * Handles video export functionality with canvas rendering
- */
 class ExportManager {
     constructor() {
         this.mediaRecorder = null;
@@ -24,10 +20,6 @@ class ExportManager {
         this.setupEventListeners();
     }
     
-    /**
-     * Start video export
-     * @param {Object} exportData - Export data
-     */
     async startExport(exportData) {
         const { audioFile, songTitle, artistName, albumArtFile } = exportData;
         
@@ -83,9 +75,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Create export canvas
-     */
     createExportCanvas() {
         this.exportCanvas = document.createElement('canvas');
         
@@ -150,10 +139,6 @@ class ExportManager {
         this.exportCtx.imageSmoothingQuality = 'high';
     }
     
-    /**
-     * Load album art for export
-     * @param {File} albumArtFile - Album art file
-     */
     async loadAlbumArt(albumArtFile) {
         this.eventBus.emit('export:progress', { progress: 10, message: 'Loading album art...' });
         
@@ -166,10 +151,6 @@ class ExportManager {
         });
     }
     
-    /**
-     * Load audio for export
-     * @param {File} audioFile - Audio file
-     */
     async loadExportAudio(audioFile) {
         this.eventBus.emit('export:progress', { progress: 20, message: 'Loading audio...' });
         
@@ -183,9 +164,6 @@ class ExportManager {
         });
     }
     
-    /**
-     * Setup export lyrics
-     */
     setupExportLyrics() {
         this.exportLyrics = [...this.appState.get('lyrics.items')];
         
@@ -194,9 +172,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Start recording
-     */
     async startRecording() {
         this.eventBus.emit('export:progress', { progress: 30, message: 'Setting up video recorder...' });
         
@@ -251,10 +226,6 @@ class ExportManager {
         this.eventBus.emit('export:progress', { progress: 40, message: 'Recording started...' });
     }
     
-    /**
-     * Get supported MIME type for recording
-     * @returns {string} Supported MIME type
-     */
     getSupportedMimeType() {
         const mimeTypes = [
             'video/webm;codecs=vp9,opus',
@@ -273,9 +244,6 @@ class ExportManager {
         return 'video/webm';
     }
     
-    /**
-     * Start rendering loop
-     */
     startRenderingLoop() {
         let lastTime = performance.now();
         let animationStartTime = performance.now();
@@ -330,9 +298,6 @@ class ExportManager {
         this.exportAnimationId = requestAnimationFrame(renderLoop);
     }
     
-    /**
-     * Render frame to canvas
-     */
     renderToCanvas() {
         if (!this.exportCtx) return;
         
@@ -363,9 +328,6 @@ class ExportManager {
         this.drawControls();
     }
     
-    /**
-     * Draw background
-     */
     drawBackground() {
         // Background gradient (purple to pink)
         const bodyGradient = this.exportCtx.createLinearGradient(0, 0, this.exportCanvas.width, this.exportCanvas.height);
@@ -381,9 +343,6 @@ class ExportManager {
         this.exportCtx.fillRect(0, 0, this.exportCanvas.width, this.exportCanvas.height);
     }
     
-    /**
-     * Draw music player container
-     */
     drawMusicPlayer() {
         const musicPlayerWidth = Math.min(this.exportCanvas.width * 0.9, 350);
         const musicPlayerHeight = Math.min(this.exportCanvas.height * 0.9, 600);
@@ -423,9 +382,6 @@ class ExportManager {
         this.exportCtx.restore();
     }
     
-    /**
-     * Draw album art background
-     */
     drawAlbumArtBackground(x, y, width, height) {
         const imgAspect = this.albumArtImage.width / this.albumArtImage.height;
         const playerAspect = width / height;
@@ -447,9 +403,6 @@ class ExportManager {
         this.exportCtx.drawImage(this.albumArtImage, offsetX, offsetY, drawWidth, drawHeight);
     }
     
-    /**
-     * Draw vinyl
-     */
     drawVinyl() {
         const vinylContainerWidth = 200;
         const vinylContainerHeight = 200;
@@ -491,9 +444,6 @@ class ExportManager {
         this.exportCtx.restore();
     }
     
-    /**
-     * Draw vinyl grooves
-     */
     drawVinylGrooves(centerX, centerY, vinylRadius) {
         this.exportCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         this.exportCtx.lineWidth = 1;
@@ -507,9 +457,6 @@ class ExportManager {
         });
     }
     
-    /**
-     * Draw vinyl center
-     */
     drawVinylCenter(centerX, centerY, vinylRadius) {
         const centerRadius = vinylRadius * 0.48;
         
@@ -534,9 +481,6 @@ class ExportManager {
         this.exportCtx.fill();
     }
     
-    /**
-     * Draw vinyl album art
-     */
     drawVinylAlbumArt(centerX, centerY, vinylRadius) {
         const albumArtRadius = vinylRadius * 0.48 * 0.83;
         
@@ -551,9 +495,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Draw tonearm
-     */
     drawTonearm() {
         const tonearmX = this.exportCanvas.width / 2 + 84;
         const tonearmY = this.exportCanvas.height / 2 - 84;
@@ -583,9 +524,6 @@ class ExportManager {
         this.exportCtx.restore();
     }
     
-    /**
-     * Draw song info
-     */
     drawSongInfo() {
         const songInfoX = 0;
         const songInfoY = this.exportCanvas.height / 2 + 120;
@@ -611,9 +549,6 @@ class ExportManager {
         this.drawCurrentLyric(songInfoX, songInfoY, songInfoWidth);
     }
     
-    /**
-     * Draw current lyric
-     */
     drawCurrentLyric(x, y, width) {
         if (this.exportAudio && this.exportLyrics.length > 0) {
             const currentTime = this.exportAudio.currentTime;
@@ -627,9 +562,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Draw progress bar
-     */
     drawProgressBar() {
         const progressContainerWidth = this.exportCanvas.width;
         const progressContainerHeight = 50;
@@ -698,9 +630,6 @@ class ExportManager {
         this.drawTimeLabels(progressBarX, progressBarY, progressBarWidth);
     }
     
-    /**
-     * Draw time labels
-     */
     drawTimeLabels(x, y, width) {
         this.exportCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         this.exportCtx.font = `12px 'Patrick Hand', Arial, sans-serif`;
@@ -715,9 +644,6 @@ class ExportManager {
         this.exportCtx.fillText(this.timeUtils.formatTime(totalTime), x + width, y + 20);
     }
     
-    /**
-     * Draw controls
-     */
     drawControls() {
         const controlsWidth = this.exportCanvas.width;
         const controlsHeight = 80;
@@ -795,9 +721,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Setup progress tracking
-     */
     setupProgressTracking() {
         const duration = this.exportAudio.duration;
         const startTime = Date.now();
@@ -821,9 +744,6 @@ class ExportManager {
         }, 100);
     }
     
-    /**
-     * Stop recording
-     */
     stopRecording() {
         if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
@@ -839,9 +759,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Handle recording complete
-     */
     handleRecordingComplete() {
         // Clear export timeout since export is successful
         if (this.exportTimeout) {
@@ -876,10 +793,6 @@ class ExportManager {
         this.cleanup();
     }
     
-    /**
-     * Pause main audio if playing
-     * @returns {boolean} Whether main audio was playing
-     */
     pauseMainAudio() {
         const audioElement = this.appState.get('audio.element');
         if (audioElement && !audioElement.paused) {
@@ -895,10 +808,6 @@ class ExportManager {
         return false;
     }
     
-    /**
-     * Resume main audio if it was playing
-     * @param {boolean} wasMainAudioPlaying - Whether main audio was playing
-     */
     resumeMainAudio(wasMainAudioPlaying) {
         if (wasMainAudioPlaying) {
             const audioElement = this.appState.get('audio.element');
@@ -917,9 +826,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Disable controls during export
-     */
     disableControls() {
         // Disable audio control buttons
         const controls = document.querySelectorAll('.control-btn');
@@ -938,9 +844,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Enable controls after export
-     */
     enableControls() {
         // Enable audio control buttons
         const controls = document.querySelectorAll('.control-btn');
@@ -959,9 +862,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Scroll to export progress component
-     */
     scrollToExportProgress() {
         const exportProgress = document.getElementById('export-progress');
         if (exportProgress) {
@@ -972,10 +872,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Update export progress in UI
-     * @param {Object} data - Progress data
-     */
     updateExportProgress(data) {
         const exportProgress = document.getElementById('export-progress');
         const progressFill = document.getElementById('progress-fill');
@@ -988,10 +884,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Handle export complete in UI
-     * @param {Object} data - Export complete data
-     */
     handleExportComplete(data) {
         const { videoBlob, fileName, wasMainAudioPlaying } = data;
         
@@ -1023,10 +915,6 @@ class ExportManager {
         }
     }
     
-    /**
-     * Handle export error in UI
-     * @param {Object} data - Error data
-     */
     handleExportError(data) {
         const { wasMainAudioPlaying } = data;
         
@@ -1056,21 +944,12 @@ class ExportManager {
         }
     }
     
-    /**
-     * Setup export timeout
-     * @param {boolean} wasMainAudioPlaying - Whether main audio was playing
-     * @returns {number} Timeout ID
-     */
     setupExportTimeout(wasMainAudioPlaying) {
         return setTimeout(() => {
             this.handleExportError(new Error('Export timeout. Please try again with a shorter audio file.'));
         }, 5 * 60 * 1000);
     }
     
-    /**
-     * Handle export error
-     * @param {Error} error - Error object
-     */
     async handleExportError(error) {
         this.cleanup();
         
@@ -1084,9 +963,6 @@ class ExportManager {
         });
     }
     
-    /**
-     * Cleanup export resources
-     */
     cleanup() {
         // Clear export timeout
         if (this.exportTimeout) {
@@ -1113,9 +989,6 @@ class ExportManager {
         this.appState.set('export.isExporting', false);
     }
     
-    /**
-     * Setup event listeners
-     */
     setupEventListeners() {
         // Listen for export requests
         this.eventBus.on('export:requestStart', (data) => {
@@ -1128,16 +1001,12 @@ class ExportManager {
     }
     
     
-    /**
-     * Cleanup resources
-     */
     destroy() {
         this.cleanup();
         this.eventBus.emit('export:destroyed');
     }
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ExportManager;
 }

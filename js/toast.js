@@ -1,7 +1,3 @@
-/**
- * Toast Notification System
- * Provides a modern, accessible toast notification system similar to json-formatter
- */
 
 class ToastManager {
     constructor() {
@@ -21,9 +17,6 @@ class ToastManager {
         }
     }
 
-    /**
-     * Create toast container if it doesn't exist
-     */
     createToastContainer() {
         this.toastContainer = document.createElement('div');
         this.toastContainer.id = 'toast-container';
@@ -31,13 +24,6 @@ class ToastManager {
         document.body.appendChild(this.toastContainer);
     }
 
-    /**
-     * Show a toast notification
-     * @param {string} type - Type of toast (success, error, info, warning)
-     * @param {string} title - Toast title
-     * @param {string} message - Toast message
-     * @param {number} duration - Duration in milliseconds (default: 4000)
-     */
     showToast(type, title, message, duration = 4000) {
         if (this.toastContainer.children.length >= this.maxToasts) {
             this.removeOldestToast();
@@ -76,10 +62,6 @@ class ToastManager {
         return toast;
     }
 
-    /**
-     * Remove a specific toast
-     * @param {HTMLElement} toast - Toast element to remove
-     */
     removeToast(toast) {
         if (!toast || !toast.parentElement) return;
         
@@ -91,9 +73,6 @@ class ToastManager {
         }, 300);
     }
 
-    /**
-     * Remove the oldest toast
-     */
     removeOldestToast() {
         const oldestToast = this.toastContainer.firstElementChild;
         if (oldestToast) {
@@ -101,58 +80,27 @@ class ToastManager {
         }
     }
 
-    /**
-     * Show success toast
-     * @param {string} title - Toast title
-     * @param {string} message - Toast message
-     * @param {number} duration - Duration in milliseconds
-     */
     showSuccess(title, message, duration = 4000) {
         return this.showToast('success', title, message, duration);
     }
 
-    /**
-     * Show error toast
-     * @param {string} title - Toast title
-     * @param {string} message - Toast message
-     * @param {number} duration - Duration in milliseconds
-     */
     showError(title, message, duration = 5000) {
         return this.showToast('error', title, message, duration);
     }
 
-    /**
-     * Show info toast
-     * @param {string} title - Toast title
-     * @param {string} message - Toast message
-     * @param {number} duration - Duration in milliseconds
-     */
     showInfo(title, message, duration = 4000) {
         return this.showToast('info', title, message, duration);
     }
 
-    /**
-     * Show warning toast
-     * @param {string} title - Toast title
-     * @param {string} message - Toast message
-     * @param {number} duration - Duration in milliseconds
-     */
     showWarning(title, message, duration = 4500) {
         return this.showToast('warning', title, message, duration);
     }
 
-    /**
-     * Clear all toasts
-     */
     clearAll() {
         const toasts = this.toastContainer.querySelectorAll('.toast');
         toasts.forEach(toast => this.removeToast(toast));
     }
 
-    /**
-     * Update toast icon mapping
-     * @param {Object} newIcons - New icon mapping
-     */
     updateIcons(newIcons) {
         this.iconMap = { ...this.iconMap, ...newIcons };
     }

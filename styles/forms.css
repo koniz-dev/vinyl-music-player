@@ -240,7 +240,6 @@
     flex-wrap: wrap;
 }
 
-/* Responsive form improvements */
 @media (max-width: 768px) {
     .lyrics-inputs {
         flex-direction: column;

@@ -1,7 +1,3 @@
-/**
- * Vinyl Renderer Module
- * Handles vinyl animation, album art, and visual effects
- */
 class VinylRenderer {
     constructor() {
         this.vinylElement = null;
@@ -20,9 +16,6 @@ class VinylRenderer {
         this.initializeElements();
     }
     
-    /**
-     * Initialize DOM elements
-     */
     initializeElements() {
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
@@ -34,9 +27,6 @@ class VinylRenderer {
         }
     }
     
-    /**
-     * Setup DOM elements
-     */
     setupElements() {
         this.vinylElement = document.querySelector('.vinyl-album-art');
         this.tonearmElement = null; // No tonearm in new design
@@ -48,9 +38,6 @@ class VinylRenderer {
         }
     }
     
-    /**
-     * Start vinyl animation
-     */
     startAnimation() {
         if (this.isAnimating) return;
         
@@ -63,9 +50,6 @@ class VinylRenderer {
         }
     }
     
-    /**
-     * Stop vinyl animation
-     */
     stopAnimation() {
         if (!this.isAnimating) return;
         
@@ -77,10 +61,6 @@ class VinylRenderer {
         }
     }
     
-    /**
-     * Update album art
-     * @param {string} imageUrl - Album art URL
-     */
     updateAlbumArt(imageUrl) {
         if (!imageUrl) {
             this.removeAlbumArt();
@@ -100,9 +80,6 @@ class VinylRenderer {
         this.eventBus.emit('vinyl:albumArtUpdated', { imageUrl });
     }
     
-    /**
-     * Remove album art
-     */
     removeAlbumArt() {
         // Only remove vinyl album art (the circular disc)
         if (this.albumArtElement) {
@@ -118,10 +95,6 @@ class VinylRenderer {
     }
     
     
-    /**
-     * Update vinyl rotation
-     * @param {number} rotation - Rotation angle in degrees
-     */
     updateRotation(rotation) {
         this.rotation = rotation;
         this.appState.set('vinyl.rotation', rotation);
@@ -136,9 +109,6 @@ class VinylRenderer {
     }
     
     
-    /**
-     * Setup event listeners
-     */
     setupEventListeners() {
         // Animation is controlled by AppState changes, not direct audio events
         
@@ -175,9 +145,6 @@ class VinylRenderer {
     }
     
     
-    /**
-     * Cleanup resources
-     */
     destroy() {
         this.stopAnimation();
         
@@ -192,7 +159,6 @@ class VinylRenderer {
     }
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = VinylRenderer;
 }

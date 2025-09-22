@@ -1,7 +1,3 @@
-/**
- * Main Application Entry Point
- * Initializes and coordinates all modules
- */
 class VinylMusicPlayerApp {
     constructor() {
         this.modules = {};
@@ -15,9 +11,6 @@ class VinylMusicPlayerApp {
         this.initialize();
     }
     
-    /**
-     * Initialize the application
-     */
     async initialize() {
         try {
             // console.log('[App] Initializing Vinyl Music Player...');
@@ -41,9 +34,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Initialize all modules
-     */
     async initializeModules() {
         // Initialize Audio Player
         if (window.AudioPlayer) {
@@ -86,9 +76,6 @@ class VinylMusicPlayerApp {
         // console.log('[App] All modules initialized');
     }
     
-    /**
-     * Setup global event listeners
-     */
     setupGlobalEventListeners() {
         // Handle window messages for iframe communication
         window.addEventListener('message', (event) => {
@@ -113,16 +100,9 @@ class VinylMusicPlayerApp {
         // console.log('[App] Global event listeners setup complete');
     }
     
-    /**
-     * Setup message handling for iframe communication
-     */
     setupMessageHandling() {
     }
     
-    /**
-     * Handle window messages from parent frame
-     * @param {MessageEvent} event - Message event
-     */
     handleWindowMessage(event) {
         const { type, ...data } = event.data;
         
@@ -168,10 +148,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Handle start play request
-     * @param {Object} data - Play data
-     */
     handleStartPlay(data) {
         if (this.modules.audioPlayer) {
             this.modules.audioPlayer.loadAudio(data).then(() => {
@@ -180,26 +156,14 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Handle song title update
-     * @param {Object} data - Title data
-     */
     handleUpdateSongTitle(data) {
         this.appState.set('ui.songTitle', data.songTitle || '');
     }
     
-    /**
-     * Handle artist name update
-     * @param {Object} data - Artist data
-     */
     handleUpdateArtistName(data) {
         this.appState.set('ui.artistName', data.artistName || '');
     }
     
-    /**
-     * Handle album art update
-     * @param {Object} data - Album art data
-     */
     handleUpdateAlbumArt(data) {
         this.appState.set('ui.albumArt', data.imageUrl);
         if (this.modules.vinylRenderer) {
@@ -207,9 +171,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Handle album art removal
-     */
     handleRemoveAlbumArt() {
         this.appState.set('ui.albumArt', null);
         if (this.modules.vinylRenderer) {
@@ -217,50 +178,28 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Handle lyrics update
-     * @param {Object} data - Lyrics data
-     */
     handleUpdateLyrics(data) {
         if (this.modules.lyricsManager) {
             this.modules.lyricsManager.loadLyrics(data.lyrics);
         }
     }
     
-    /**
-     * Handle lyrics color update
-     * @param {Object} data - Color data
-     */
     handleUpdateLyricsColor(data) {
         if (this.modules.lyricsManager) {
             this.modules.lyricsManager.setLyricsColor(data.color);
         }
     }
     
-    /**
-     * Handle WebM export request
-     * @param {Object} data - Export data
-     */
     handleExportWebM(data) {
         if (this.modules.exportManager) {
             this.modules.exportManager.startExport(data);
         }
     }
     
-    /**
-     * Handle debug browser support request
-     */
     handleDebugBrowserSupport() {
         this.eventBus.emit('debug:checkSupport');
     }
     
-    /**
-     * Handle state changes
-     * @param {string} path - State path
-     * @param {any} value - New value
-     * @param {Object} newState - New state
-     * @param {Object} oldState - Old state
-     */
     handleStateChange(path, value, newState, oldState) {
         // Log significant state changes in development (exclude frequent updates)
         if (window.location.hostname === 'localhost' && !path.includes('currentTime')) {
@@ -291,9 +230,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Update song info in UI
-     */
     updateSongInfoInUI() {
         const songTitle = this.appState.get('ui.songTitle');
         const artistName = this.appState.get('ui.artistName');
@@ -310,9 +246,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Update progress display
-     */
     updateProgressDisplay() {
         const currentTime = this.appState.get('audio.currentTime');
         const totalTime = this.appState.get('audio.totalTime');
@@ -335,21 +268,12 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Format time for display
-     * @param {number} seconds - Time in seconds
-     * @returns {string} Formatted time
-     */
     formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
-    /**
-     * Handle module errors
-     * @param {Object} data - Error data
-     */
     handleModuleError(data) {
         console.error('[App] Module error:', data);
         
@@ -361,11 +285,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    /**
-     * Forward message to parent frame
-     * @param {string} type - Message type
-     * @param {Object} data - Message data
-     */
     forwardMessageToParent(type, data) {
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({ type, ...data }, '*');
@@ -373,9 +292,6 @@ class VinylMusicPlayerApp {
     }
     
     
-    /**
-     * Cleanup application
-     */
     destroy() {
         // Destroy all modules
         Object.values(this.modules).forEach(module => {
@@ -396,15 +312,12 @@ class VinylMusicPlayerApp {
     }
 }
 
-// Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait a bit for all modules to load
     setTimeout(() => {
         window.vinylMusicPlayerApp = new VinylMusicPlayerApp();
     }, 100);
 });
 
-// Export for testing
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = VinylMusicPlayerApp;
 }

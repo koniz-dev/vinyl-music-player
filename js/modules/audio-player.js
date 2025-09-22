@@ -1,7 +1,3 @@
-/**
- * Audio Player Module
- * Handles audio playback, controls, and state management
- */
 class AudioPlayer {
     constructor() {
         this.audioElement = null;
@@ -13,10 +9,6 @@ class AudioPlayer {
         this.setupDOMEventListeners();
     }
     
-    /**
-     * Initialize audio player
-     * @param {Object} options - Initialization options
-     */
     async initialize(options = {}) {
         try {
             this.audioElement = new Audio();
@@ -31,9 +23,6 @@ class AudioPlayer {
         }
     }
     
-    /**
-     * Setup DOM event listeners for controls
-     */
     setupDOMEventListeners() {
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
@@ -45,9 +34,6 @@ class AudioPlayer {
         }
     }
     
-    /**
-     * Attach control listeners
-     */
     attachControlListeners() {
         const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
         const muteBtn = document.querySelector('.vinyl-mute-btn');
@@ -77,10 +63,6 @@ class AudioPlayer {
         }
     }
     
-    /**
-     * Setup progress bar click handler
-     * @param {HTMLElement} progressBar - Progress bar element
-     */
     setupProgressBarClick(progressBar) {
         let isProgressUpdating = false;
         
@@ -101,10 +83,6 @@ class AudioPlayer {
         });
     }
     
-    /**
-     * Load and play audio file
-     * @param {Object} audioData - Audio data object
-     */
     async loadAudio(audioData) {
         if (!this.isInitialized) {
             await this.initialize();
@@ -139,9 +117,6 @@ class AudioPlayer {
         }
     }
     
-    /**
-     * Play audio
-     */
     async play() {
         if (!this.audioElement) {
             throw new Error('Audio not loaded');
@@ -161,9 +136,6 @@ class AudioPlayer {
         }
     }
     
-    /**
-     * Pause audio
-     */
     pause() {
         if (!this.audioElement) return;
         
@@ -173,9 +145,6 @@ class AudioPlayer {
         this.eventBus.emit('audio:pause');
     }
     
-    /**
-     * Toggle play/pause
-     */
     async togglePlayPause() {
         const isPlaying = this.appState.get('audio.isPlaying');
         
@@ -190,9 +159,6 @@ class AudioPlayer {
         }
     }
     
-    /**
-     * Stop audio and reset position
-     */
     stop() {
         if (!this.audioElement) return;
         
@@ -204,9 +170,6 @@ class AudioPlayer {
         this.eventBus.emit('audio:stop');
     }
     
-    /**
-     * Restart audio from beginning
-     */
     async restartAudio() {
         if (!this.audioElement) return;
         
@@ -227,10 +190,6 @@ class AudioPlayer {
         }, 100);
     }
     
-    /**
-     * Seek to specific time
-     * @param {number} time - Time in seconds
-     */
     seekTo(time) {
         if (!this.audioElement) return;
         
@@ -242,10 +201,6 @@ class AudioPlayer {
         this.eventBus.emit('audio:seek', { time: clampedTime });
     }
     
-    /**
-     * Set volume
-     * @param {number} volume - Volume level (0-1)
-     */
     setVolume(volume) {
         if (!this.audioElement) return;
         
@@ -255,9 +210,6 @@ class AudioPlayer {
         this.eventBus.emit('audio:volumeChange', { volume: clampedVolume });
     }
     
-    /**
-     * Toggle mute
-     */
     toggleMute() {
         if (!this.audioElement) return;
         
@@ -284,9 +236,6 @@ class AudioPlayer {
         this.eventBus.emit('audio:muteToggle', { isMuted: !isMuted });
     }
     
-    /**
-     * Toggle repeat mode
-     */
     toggleRepeat() {
         const isRepeat = this.appState.get('audio.isRepeat');
         this.appState.set('audio.isRepeat', !isRepeat);
@@ -308,9 +257,6 @@ class AudioPlayer {
         this.eventBus.emit('audio:repeatToggle', { isRepeat: !isRepeat });
     }
     
-    /**
-     * Enable controls
-     */
     enableControls() {
         const controls = document.querySelectorAll('.control-btn');
         const muteBtn = document.querySelector('.vinyl-mute-btn');
@@ -336,9 +282,6 @@ class AudioPlayer {
         this.appState.set('audio.isRepeat', false);
     }
     
-    /**
-     * Update player state in UI
-     */
     updatePlayerState() {
         const vinylAlbumArt = document.querySelector('.vinyl-album-art');
         const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
@@ -357,9 +300,6 @@ class AudioPlayer {
     }
     
     
-    /**
-     * Setup audio element event listeners
-     */
     setupAudioEventListeners() {
         if (!this.audioElement) return;
         
@@ -409,9 +349,6 @@ class AudioPlayer {
         });
     }
     
-    /**
-     * Setup module event listeners
-     */
     setupEventListeners() {
         // Listen for external play requests
         this.eventBus.on('audio:requestPlay', (data) => {
@@ -429,10 +366,6 @@ class AudioPlayer {
         this.eventBus.on('audio:requestUpdateUI', () => this.updatePlayerState());
     }
     
-    /**
-     * Wait for audio to load
-     * @returns {Promise} Promise that resolves when audio is loaded
-     */
     waitForAudioLoad() {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -458,9 +391,6 @@ class AudioPlayer {
         });
     }
     
-    /**
-     * Cleanup resources
-     */
     destroy() {
         if (this.audioElement) {
             this.audioElement.pause();
@@ -475,7 +405,6 @@ class AudioPlayer {
     }
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AudioPlayer;
 }

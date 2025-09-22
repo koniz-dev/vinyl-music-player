@@ -1,7 +1,3 @@
-/**
- * Centralized Application State Management
- * Manages all application state in a single, predictable location
- */
 class AppState {
     constructor() {
         this.state = {
@@ -59,23 +55,12 @@ class AppState {
         this.maxHistorySize = 50;
     }
     
-    /**
-     * Get current state
-     * @param {string} path - Dot notation path to specific state (e.g., 'audio.isPlaying')
-     * @returns {any} State value
-     */
     get(path = null) {
         if (!path) return this.state;
         
         return path.split('.').reduce((obj, key) => obj?.[key], this.state);
     }
     
-    /**
-     * Update state and notify listeners
-     * @param {string} path - Dot notation path
-     * @param {any} value - New value
-     * @param {boolean} silent - Skip notifications if true
-     */
     set(path, value, silent = false) {
         const oldState = JSON.parse(JSON.stringify(this.state));
         
@@ -94,10 +79,6 @@ class AppState {
         }
     }
     
-    /**
-     * Update multiple state properties at once
-     * @param {Object} updates - Object with path-value pairs
-     */
     batchUpdate(updates) {
         const oldState = JSON.parse(JSON.stringify(this.state));
         
@@ -112,12 +93,6 @@ class AppState {
         this.notifyListeners('batch', updates, oldState);
     }
     
-    /**
-     * Subscribe to state changes
-     * @param {string} path - Path to watch
-     * @param {Function} callback - Callback function
-     * @returns {Function} Unsubscribe function
-     */
     subscribe(path, callback) {
         if (!this.listeners.has(path)) {
             this.listeners.set(path, new Set());
@@ -137,12 +112,6 @@ class AppState {
         };
     }
     
-    /**
-     * Notify all listeners of state changes
-     * @param {string} path - Changed path
-     * @param {any} value - New value
-     * @param {Object} oldState - Previous state
-     */
     notifyListeners(path, value, oldState) {
         // Notify specific path listeners
         const specificListeners = this.listeners.get(path);
@@ -169,11 +138,6 @@ class AppState {
         }
     }
     
-    /**
-     * Save state to history for undo/redo functionality
-     * @param {Object} oldState - Previous state
-     * @param {Object} newState - New state
-     */
     saveToHistory(oldState, newState) {
         this.history.push({
             timestamp: Date.now(),
@@ -187,9 +151,6 @@ class AppState {
         }
     }
     
-    /**
-     * Reset state to initial values
-     */
     reset() {
         const oldState = JSON.parse(JSON.stringify(this.state));
         
@@ -236,10 +197,6 @@ class AppState {
         this.notifyListeners('*', this.state, oldState);
     }
     
-    /**
-     * Get state snapshot for debugging
-     * @returns {Object} State snapshot
-     */
     getSnapshot() {
         return {
             state: JSON.parse(JSON.stringify(this.state)),
@@ -249,10 +206,8 @@ class AppState {
     }
 }
 
-// Create singleton instance
 const appState = new AppState();
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { AppState, appState };
 }

@@ -1,11 +1,4 @@
-/**
- * Export Manager Canvas Rendering
- * Clean canvas-based rendering for video export functionality
- */
 class ExportManagerCanvas {
-    /**
-     * Render frame to canvas (clean version)
-     */
     static renderToCanvas(exportCtx, exportCanvas, vinylRotation, albumArtImage, exportAudio, exportLyrics, exportLyricsColor) {
         if (!exportCtx) return;
 
@@ -523,7 +516,6 @@ class ExportManagerCanvas {
     }
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ExportManagerCanvas;
 }

@@ -1,7 +1,3 @@
-/**
- * Lyrics Color Manager Module
- * Handles lyrics color selection, preview, and history
- */
 class LyricsColorManager {
     constructor() {
         // Initialize with default color
@@ -224,9 +220,6 @@ class LyricsColorManager {
     }
     
     
-    /**
-     * Reset to default color and ensure it's in history
-     */
     resetToDefault() {
         this.currentColor = '#8B4513';
         
@@ -234,9 +227,6 @@ class LyricsColorManager {
         this.saveCurrentColor();
     }
     
-    /**
-     * Ensure default color is in history - only called when first color change
-     */
     ensureDefaultColorInHistory() {
         const defaultColor = '#8B4513';
         
@@ -251,9 +241,6 @@ class LyricsColorManager {
         }
     }
     
-    /**
-     * Move default color to front - only called when resetting
-     */
     moveDefaultColorToFront() {
         const defaultColor = '#8B4513';
         
@@ -267,18 +254,10 @@ class LyricsColorManager {
         this.saveColorHistory();
     }
     
-    /**
-     * Get current color
-     * @returns {string} Current color in hex format
-     */
     getCurrentColor() {
         return this.currentColor;
     }
     
-    /**
-     * Handle hex input changes
-     * @param {string} value - Hex input value
-     */
     handleHexInput(value) {
         let formattedValue = value.replace(/[^0-9A-Fa-f#]/g, '');
         if (formattedValue && !formattedValue.startsWith('#')) {
@@ -290,10 +269,6 @@ class LyricsColorManager {
         }
     }
     
-    /**
-     * Validate and set hex color
-     * @param {string} value - Hex color value
-     */
     validateAndSetHexColor(value) {
         const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
         
@@ -311,7 +286,6 @@ class LyricsColorManager {
     }
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = LyricsColorManager;
 }

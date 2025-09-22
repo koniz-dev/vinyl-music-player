@@ -38,7 +38,6 @@ html {
     background: rgba(255, 255, 255, 0.5);
 }
 
-/* Noscript message styles */
 .noscript-message {
     text-align: center;
     padding: var(--spacing-lg);

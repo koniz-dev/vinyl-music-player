@@ -1,14 +1,4 @@
-/**
- * File Utilities
- * Handles file operations, validation, and processing
- */
 class FileUtils {
-    /**
-     * Validate file type
-     * @param {File} file - File object
-     * @param {Array<string>} allowedTypes - Allowed MIME types
-     * @returns {Object} Validation result
-     */
     static validateFileType(file, allowedTypes) {
         const result = {
             isValid: true,
@@ -40,12 +30,6 @@ class FileUtils {
         return result;
     }
     
-    /**
-     * Validate file size
-     * @param {File} file - File object
-     * @param {number} maxSizeMB - Maximum size in MB
-     * @returns {Object} Validation result
-     */
     static validateFileSize(file, maxSizeMB) {
         const result = {
             isValid: true,
@@ -68,11 +52,6 @@ class FileUtils {
         return result;
     }
     
-    /**
-     * Format file size for display
-     * @param {number} bytes - File size in bytes
-     * @returns {string} Formatted file size
-     */
     static formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         
@@ -83,21 +62,11 @@ class FileUtils {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
-    /**
-     * Get file extension
-     * @param {string} filename - File name
-     * @returns {string} File extension
-     */
     static getFileExtension(filename) {
         if (!filename) return '';
         return filename.split('.').pop().toLowerCase();
     }
     
-    /**
-     * Sanitize filename for safe usage
-     * @param {string} filename - Original filename
-     * @returns {string} Sanitized filename
-     */
     static sanitizeFilename(filename) {
         if (!filename) return 'untitled';
         
@@ -105,31 +74,17 @@ class FileUtils {
         return filename.replace(/[<>:"/\\|?*]/g, '').trim();
     }
     
-    /**
-     * Create object URL for file
-     * @param {File} file - File object
-     * @returns {string} Object URL
-     */
     static createObjectURL(file) {
         if (!file) return null;
         return URL.createObjectURL(file);
     }
     
-    /**
-     * Revoke object URL
-     * @param {string} url - Object URL to revoke
-     */
     static revokeObjectURL(url) {
         if (url && url.startsWith('blob:')) {
             URL.revokeObjectURL(url);
         }
     }
     
-    /**
-     * Download file from blob
-     * @param {Blob} blob - File blob
-     * @param {string} filename - Download filename
-     */
     static downloadBlob(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -141,11 +96,6 @@ class FileUtils {
         URL.revokeObjectURL(url);
     }
     
-    /**
-     * Read file as text
-     * @param {File} file - File object
-     * @returns {Promise<string>} File content as text
-     */
     static readAsText(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -155,11 +105,6 @@ class FileUtils {
         });
     }
     
-    /**
-     * Read file as data URL
-     * @param {File} file - File object
-     * @returns {Promise<string>} File content as data URL
-     */
     static readAsDataURL(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -169,11 +114,6 @@ class FileUtils {
         });
     }
     
-    /**
-     * Validate audio file
-     * @param {File} file - Audio file
-     * @returns {Object} Validation result
-     */
     static validateAudioFile(file) {
         const allowedTypes = [
             'audio/mpeg',
@@ -201,11 +141,6 @@ class FileUtils {
         return { isValid: true, error: null };
     }
     
-    /**
-     * Validate image file
-     * @param {File} file - Image file
-     * @returns {Object} Validation result
-     */
     static validateImageFile(file) {
         const allowedTypes = [
             'image/jpeg',
@@ -229,11 +164,6 @@ class FileUtils {
         return { isValid: true, error: null };
     }
     
-    /**
-     * Load image from file
-     * @param {File} file - Image file
-     * @returns {Promise<HTMLImageElement>} Loaded image element
-     */
     static loadImageFromFile(file) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -243,11 +173,6 @@ class FileUtils {
         });
     }
     
-    /**
-     * Create audio element from file
-     * @param {File} file - Audio file
-     * @returns {Promise<HTMLAudioElement>} Audio element
-     */
     static createAudioFromFile(file) {
         return new Promise((resolve, reject) => {
             const audio = new Audio();
@@ -259,7 +184,6 @@ class FileUtils {
     
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = FileUtils;
 }

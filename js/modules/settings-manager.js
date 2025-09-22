@@ -1,7 +1,3 @@
-/**
- * Settings Manager Module
- * Handles settings UI, file uploads, and user interactions
- */
 class SettingsManager {
     constructor() {
         this.eventBus = window.eventBus;
@@ -18,9 +14,6 @@ class SettingsManager {
         this.initializeLyricsColorManager();
     }
     
-    /**
-     * Initialize DOM elements
-     */
     initializeElements() {
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
@@ -32,9 +25,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Setup DOM elements
-     */
     setupElements() {
         this.lyricsContainer = document.getElementById('lyrics-container');
         this.addLyricsItem(); // Add initial lyrics item
@@ -46,18 +36,12 @@ class SettingsManager {
         this.setupLyricsModal();
     }
     
-    /**
-     * Initialize lyrics color manager
-     */
     initializeLyricsColorManager() {
         if (window.lyricsColorManager) {
             this.lyricsColorManager = window.lyricsColorManager;
         }
     }
     
-    /**
-     * Setup file upload functionality
-     */
     setupFileUploads() {
         const uploadArea = document.getElementById('upload-area');
         const fileInput = document.getElementById('album-art');
@@ -73,11 +57,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Setup album art upload
-     * @param {HTMLElement} uploadArea - Upload area element
-     * @param {HTMLElement} fileInput - File input element
-     */
     setupAlbumArtUpload(uploadArea, fileInput) {
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -109,11 +88,6 @@ class SettingsManager {
         });
     }
     
-    /**
-     * Setup audio upload
-     * @param {HTMLElement} uploadArea - Upload area element
-     * @param {HTMLElement} fileInput - File input element
-     */
     setupAudioUpload(uploadArea, fileInput) {
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -145,10 +119,6 @@ class SettingsManager {
         });
     }
     
-    /**
-     * Handle album art file
-     * @param {File} file - Album art file
-     */
     handleAlbumArtFile(file) {
         const validation = this.fileUtils.validateImageFile(file);
         
@@ -162,10 +132,6 @@ class SettingsManager {
         this.showSuccess('Album Art Uploaded', `Successfully uploaded ${file.name}`);
     }
     
-    /**
-     * Handle audio file
-     * @param {File} file - Audio file
-     */
     handleAudioFile(file) {
         const validation = this.fileUtils.validateAudioFile(file);
         
@@ -179,11 +145,6 @@ class SettingsManager {
         this.showSuccess('Audio File Uploaded', `Successfully uploaded ${file.name}`);
     }
     
-    /**
-     * Update upload display
-     * @param {File} file - Uploaded file
-     * @param {string} type - Upload type ('album-art' or 'audio')
-     */
     updateUploadDisplay(file, type) {
         const uploadArea = document.getElementById(type === 'album-art' ? 'upload-area' : 'audio-upload-area');
         const uploadText = uploadArea.querySelector('.upload-text');
@@ -197,10 +158,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Send album art to player
-     * @param {File} file - Album art file
-     */
     sendAlbumArtToPlayer(file) {
         if (file) {
             const imageUrl = this.fileUtils.createObjectURL(file);
@@ -208,10 +165,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Start auto play with uploaded audio
-     * @param {File} file - Audio file
-     */
     startAutoPlay(file) {
         const audioUrl = this.fileUtils.createObjectURL(file);
         const songTitle = document.getElementById('song-title')?.value || '';
@@ -237,9 +190,6 @@ class SettingsManager {
         this.eventBus.emit('audio:requestPlay', messageData);
     }
     
-    /**
-     * Setup form inputs
-     */
     setupFormInputs() {
         const inputs = document.querySelectorAll('input, textarea');
         
@@ -257,10 +207,6 @@ class SettingsManager {
         });
     }
     
-    /**
-     * Send real-time update for form inputs
-     * @param {HTMLElement} input - Input element
-     */
     sendRealTimeUpdate(input) {
         const inputId = input.id;
         
@@ -291,9 +237,6 @@ class SettingsManager {
         this.updateTimeouts.set(inputId, timeoutId);
     }
     
-    /**
-     * Setup export button
-     */
     setupExportButton() {
         const exportBtn = document.getElementById('export-btn');
         const audioFileInput = document.getElementById('audio-file');
@@ -323,9 +266,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Handle export request
-     */
     handleExport() {
         const audioFile = document.getElementById('audio-file')?.files[0];
         const songTitle = document.getElementById('song-title')?.value?.trim();
@@ -352,9 +292,6 @@ class SettingsManager {
         this.eventBus.emit('export:requestStart', exportData);
     }
     
-    /**
-     * Setup debug button
-     */
     setupDebugButton() {
         const debugBtn = document.getElementById('debug-btn');
         
@@ -365,9 +302,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Handle debug browser support
-     */
     handleDebugBrowserSupport() {
         const support = {
             mediaRecorder: !!window.MediaRecorder,
@@ -391,9 +325,6 @@ class SettingsManager {
         alert(message);
     }
     
-    /**
-     * Setup lyrics modal
-     */
     setupLyricsModal() {
         const devLyricsBtn = document.getElementById('dev-lyrics-btn');
         const devLyricsModal = document.getElementById('dev-lyrics-modal');
@@ -447,11 +378,6 @@ class SettingsManager {
         });
     }
     
-    /**
-     * Open lyrics modal
-     * @param {HTMLElement} modal - Modal element
-     * @param {HTMLElement} input - Input element
-     */
     openLyricsModal(modal, input) {
         this.previousActiveElement = document.activeElement;
         
@@ -464,11 +390,6 @@ class SettingsManager {
         }, 100);
     }
     
-    /**
-     * Close lyrics modal
-     * @param {HTMLElement} modal - Modal element
-     * @param {HTMLElement} input - Input element
-     */
     closeLyricsModal(modal, input) {
         const focusedElement = document.activeElement;
         if (focusedElement && modal.contains(focusedElement)) {
@@ -485,11 +406,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Trap focus within modal for accessibility
-     * @param {KeyboardEvent} e - Keyboard event
-     * @param {HTMLElement} modal - Modal element
-     */
     trapFocus(e, modal) {
         const focusableElements = modal.querySelectorAll(
             'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -510,11 +426,6 @@ class SettingsManager {
         }
     }
 
-    /**
-     * Handle lyrics import
-     * @param {HTMLElement} input - Input element
-     * @param {HTMLElement} modal - Modal element
-     */
     handleLyricsImport(input, modal) {
         const jsonText = input.value.trim();
         
@@ -539,10 +450,6 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Load lyrics from JSON data
-     * @param {Array} lyricsData - Lyrics data array
-     */
     loadLyricsFromJSON(lyricsData) {
         this.lyricsContainer.innerHTML = '';
         
@@ -553,10 +460,6 @@ class SettingsManager {
         this.updateLyricsData();
     }
     
-    /**
-     * Add lyrics item
-     * @param {Object} item - Lyrics item data (optional)
-     */
     addLyricsItem(item = null) {
         const lyricsItem = document.createElement('div');
         lyricsItem.className = 'lyrics-item';
@@ -591,10 +494,6 @@ class SettingsManager {
         this.lyricsContainer.appendChild(lyricsItem);
     }
     
-    /**
-     * Remove lyrics item
-     * @param {HTMLElement} button - Remove button element
-     */
     removeLyricsItem(button) {
         const lyricsItem = button.closest('.lyrics-item');
         lyricsItem.remove();
@@ -602,9 +501,6 @@ class SettingsManager {
         this.showInfo('Lyrics Removed', 'Lyrics item has been removed successfully');
     }
     
-    /**
-     * Update lyrics data
-     */
     updateLyricsData() {
         const lyricsItems = this.lyricsContainer.querySelectorAll('.lyrics-item');
         const lyricsData = [];
@@ -636,9 +532,6 @@ class SettingsManager {
         this.eventBus.emit('lyrics:requestLoad', { lyrics: lyricsData });
     }
     
-    /**
-     * Setup event listeners
-     */
     setupEventListeners() {
         this.eventBus.on('export:progress', (data) => {
             this.updateExportProgress(data);
@@ -653,10 +546,6 @@ class SettingsManager {
         });
     }
     
-    /**
-     * Update export progress
-     * @param {Object} data - Progress data
-     */
     updateExportProgress(data) {
         const exportProgress = document.getElementById('export-progress');
         const progressFill = document.getElementById('progress-fill');
@@ -670,10 +559,6 @@ class SettingsManager {
     }
     
     
-    /**
-     * Handle export complete
-     * @param {Object} data - Export complete data
-     */
     handleExportComplete(data) {
         const { videoBlob, fileName, wasMainAudioPlaying } = data;
         
@@ -701,10 +586,6 @@ class SettingsManager {
         this.showSuccess('Export Complete', 'WebM video exported successfully!');
     }
     
-    /**
-     * Handle export error
-     * @param {Object} data - Error data
-     */
     handleExportError(data) {
         const { wasMainAudioPlaying } = data;
         this.resumeMainAudio(wasMainAudioPlaying);
@@ -730,44 +611,24 @@ class SettingsManager {
         this.showError('Export Failed', 'Export failed: ' + data.error);
     }
     
-    /**
-     * Show success message
-     * @param {string} title - Message title
-     * @param {string} message - Message content
-     */
     showSuccess(title, message) {
         if (window.toastManager) {
             window.toastManager.showSuccess(title, message);
         }
     }
     
-    /**
-     * Show error message
-     * @param {string} title - Message title
-     * @param {string} message - Message content
-     */
     showError(title, message) {
         if (window.toastManager) {
             window.toastManager.showError(title, message);
         }
     }
     
-    /**
-     * Show warning message
-     * @param {string} title - Message title
-     * @param {string} message - Message content
-     */
     showWarning(title, message) {
         if (window.toastManager) {
             window.toastManager.showWarning(title, message);
         }
     }
     
-    /**
-     * Show info message
-     * @param {string} title - Message title
-     * @param {string} message - Message content
-     */
     showInfo(title, message) {
         if (window.toastManager) {
             window.toastManager.showInfo(title, message);
@@ -775,10 +636,6 @@ class SettingsManager {
     }
     
     
-    /**
-     * Pause main audio and return whether it was playing
-     * @returns {boolean} Whether main audio was playing
-     */
     pauseMainAudio() {
         const audioElement = this.appState.get('audio.element');
         const isPlaying = this.appState.get('audio.isPlaying');
@@ -795,10 +652,6 @@ class SettingsManager {
         return false;
     }
     
-    /**
-     * Resume main audio if it was playing
-     * @param {boolean} wasMainAudioPlaying - Whether main audio was playing
-     */
     resumeMainAudio(wasMainAudioPlaying) {
         if (wasMainAudioPlaying) {
             const audioElement = this.appState.get('audio.element');
@@ -815,22 +668,17 @@ class SettingsManager {
         }
     }
     
-    /**
-     * Cleanup resources
-     */
     destroy() {
         this.eventBus.emit('settings:destroyed');
     }
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = SettingsManager;
 }
 
 window.SettingsManager = SettingsManager;
 
-// Global functions for HTML compatibility
 function addLyricsItem() {
     if (window.settingsManager) {
         window.settingsManager.addLyricsItem();

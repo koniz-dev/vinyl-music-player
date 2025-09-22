@@ -1,13 +1,4 @@
-/**
- * Time Utilities
- * Handles time formatting, parsing, and validation
- */
 class TimeUtils {
-    /**
-     * Convert time string (mm:ss) to seconds
-     * @param {string} timeString - Time in mm:ss format
-     * @returns {number} Time in seconds
-     */
     static timeToSeconds(timeString) {
         if (!timeString || timeString === '') return 0;
         
@@ -20,11 +11,6 @@ class TimeUtils {
         return minutes * 60 + seconds;
     }
     
-    /**
-     * Convert seconds to time string (mm:ss)
-     * @param {number} seconds - Time in seconds
-     * @returns {string} Time in mm:ss format
-     */
     static secondsToTime(seconds) {
         if (isNaN(seconds) || seconds < 0) return '00:00';
         
@@ -33,11 +19,6 @@ class TimeUtils {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
-    /**
-     * Format time for display (with hours if needed)
-     * @param {number} seconds - Time in seconds
-     * @returns {string} Formatted time string
-     */
     static formatTime(seconds) {
         if (isNaN(seconds) || seconds < 0) return '00:00';
         
@@ -52,11 +33,6 @@ class TimeUtils {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
-    /**
-     * Validate time string format
-     * @param {string} timeString - Time string to validate
-     * @returns {boolean} True if valid
-     */
     static isValidTimeFormat(timeString) {
         if (!timeString || typeof timeString !== 'string') return false;
         
@@ -64,12 +40,6 @@ class TimeUtils {
         return timeRegex.test(timeString);
     }
     
-    /**
-     * Validate time range
-     * @param {string} startTime - Start time string
-     * @param {string} endTime - End time string
-     * @returns {Object} Validation result
-     */
     static validateTimeRange(startTime, endTime) {
         const result = {
             isValid: true,
@@ -111,35 +81,16 @@ class TimeUtils {
     
     
     
-    /**
-     * Calculate progress percentage
-     * @param {number} currentTime - Current time in seconds
-     * @param {number} totalTime - Total time in seconds
-     * @returns {number} Progress percentage (0-100)
-     */
     static calculateProgress(currentTime, totalTime) {
         if (!totalTime || totalTime <= 0) return 0;
         return Math.min((currentTime / totalTime) * 100, 100);
     }
     
-    /**
-     * Calculate time from progress percentage
-     * @param {number} progress - Progress percentage (0-100)
-     * @param {number} totalTime - Total time in seconds
-     * @returns {number} Time in seconds
-     */
     static timeFromProgress(progress, totalTime) {
         if (!totalTime || totalTime <= 0) return 0;
         return Math.floor((progress / 100) * totalTime);
     }
     
-    /**
-     * Create time range object
-     * @param {string} startTime - Start time string
-     * @param {string} endTime - End time string
-     * @param {string} text - Text content
-     * @returns {Object} Time range object
-     */
     static createTimeRange(startTime, endTime, text) {
         const validation = this.validateTimeRange(startTime, endTime);
         
@@ -154,12 +105,6 @@ class TimeUtils {
         };
     }
     
-    /**
-     * Find current lyric index based on time
-     * @param {Array} lyrics - Array of lyric objects
-     * @param {number} currentTime - Current time in seconds
-     * @returns {number} Lyric index (-1 if not found)
-     */
     static findCurrentLyricIndex(lyrics, currentTime) {
         if (!lyrics || !Array.isArray(lyrics)) return -1;
         
@@ -177,22 +122,11 @@ class TimeUtils {
         return -1;
     }
     
-    /**
-     * Get current lyric based on time
-     * @param {Array} lyrics - Array of lyric objects
-     * @param {number} currentTime - Current time in seconds
-     * @returns {Object|null} Current lyric object or null
-     */
     static getCurrentLyric(lyrics, currentTime) {
         const index = this.findCurrentLyricIndex(lyrics, currentTime);
         return index >= 0 ? lyrics[index] : null;
     }
     
-    /**
-     * Validate JSON lyrics data
-     * @param {Array} lyricsData - Lyrics data array
-     * @returns {Object} Validation result
-     */
     static validateLyricsData(lyricsData) {
         const result = {
             isValid: true,
@@ -241,7 +175,6 @@ class TimeUtils {
     
 }
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = TimeUtils;
 }

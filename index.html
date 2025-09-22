@@ -35,12 +35,9 @@
     <meta name="msapplication-TileColor" content="#1e1b4b">
     <meta name="msapplication-config" content="favicon/browserconfig.xml">
     
-    <!-- Additional PWA and Performance -->
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-touch-fullscreen" content="yes">
-    
-    <!-- Performance and Security -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -51,7 +48,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
     <link rel="manifest" href="favicon/site.webmanifest">
     
-    <!-- Preload critical resources -->
     <link rel="preload" href="js/core/app-state.js" as="script" fetchpriority="high">
     <link rel="preload" href="js/core/event-bus.js" as="script">
     <link rel="preload" href="js/index.js" as="script">
@@ -63,7 +59,6 @@
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/toast.css">
 
-    <!-- Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -289,18 +284,14 @@
         </div>
     </div>
 
-    <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- Core systems first -->
     <script src="js/core/app-state.js" defer onerror="console.error('Failed to load app-state.js')"></script>
     <script src="js/core/event-bus.js" defer onerror="console.error('Failed to load event-bus.js')"></script>
     
-    <!-- Utilities -->
     <script src="js/utils/time-utils.js" defer onerror="console.error('Failed to load time-utils.js')"></script>
     <script src="js/utils/file-utils.js" defer onerror="console.error('Failed to load file-utils.js')"></script>
     
-    <!-- Modules -->
     <script src="js/modules/audio-player.js" defer onerror="console.error('Failed to load audio-player.js')"></script>
     <script src="js/modules/lyrics-manager.js" defer onerror="console.error('Failed to load lyrics-manager.js')"></script>
     <script src="js/modules/vinyl-renderer.js" defer onerror="console.error('Failed to load vinyl-renderer.js')"></script>
@@ -309,13 +300,9 @@
     <script src="js/modules/lyrics-color-manager.js" defer onerror="console.error('Failed to load lyrics-color-manager.js')"></script>
     <script src="js/modules/settings-manager.js" defer onerror="console.error('Failed to load settings-manager.js')"></script>
     
-    <!-- Toast system -->
     <script src="js/toast.js" defer onerror="console.error('Failed to load toast.js')"></script>
     
-    <!-- Main app -->
     <script src="js/index.js" defer onerror="console.error('Failed to load index.js')"></script>
-    
-    <!-- Fallback for browsers that don't support modern features -->
     <noscript>
         <div class="noscript-message">
             <h2>JavaScript Required</h2>
