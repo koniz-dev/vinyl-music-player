@@ -9,8 +9,10 @@ class MusicPlayerColorManager {
         this.updateColorPreview();
         this.renderColorHistory();
         
-        // Apply default color to music player
-        this.sendColorToPlayer();
+        // Apply default color to music player - delay to ensure other managers are ready
+        setTimeout(() => {
+            this.sendColorToPlayer();
+        }, 100);
     }
     
     initializeElements() {
@@ -58,6 +60,11 @@ class MusicPlayerColorManager {
         
         if (this.resetColorBtn) {
             this.resetColorBtn.addEventListener('click', () => {
+                // Reset the lyrics color manually set flag FIRST so theme manager can update lyrics color
+                if (window.musicPlayerThemeManager) {
+                    window.musicPlayerThemeManager.setLyricsColorManuallySet(false);
+                }
+                
                 this.resetToDefault();
                 this.updateColorPreview();
                 this.renderColorHistory();

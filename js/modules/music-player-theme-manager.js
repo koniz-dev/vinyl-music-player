@@ -1,6 +1,7 @@
 class MusicPlayerThemeManager {
     constructor() {
         this.currentPrimaryColor = '#8B4513';
+        this.lyricsColorManuallySet = false;
         this.setupEventListeners();
     }
     
@@ -10,6 +11,18 @@ class MusicPlayerThemeManager {
             window.eventBus.on('musicPlayer:colorChanged', (data) => {
                 this.updateMusicPlayerTheme(data.color);
             });
+        } else {
+            // If eventBus is not ready, wait for it
+            const checkEventBus = () => {
+                if (window.eventBus) {
+                    window.eventBus.on('musicPlayer:colorChanged', (data) => {
+                        this.updateMusicPlayerTheme(data.color);
+                    });
+                } else {
+                    setTimeout(checkEventBus, 50);
+                }
+            };
+            checkEventBus();
         }
     }
     
@@ -37,13 +50,42 @@ class MusicPlayerThemeManager {
     calculateColorVariants(primaryColor) {
         const rgb = this.hexToRgb(primaryColor);
         
+        // Use predefined color palette for better design consistency
+        // These colors are manually crafted for optimal contrast and aesthetics
+        const colorPalette = {
+            '#8B4513': {
+                light80: '#E8DAD0',
+                light40: '#c8bda9',
+                light35: '#d9cdbd',
+                light35Alt: '#d8cdb9',
+                light25: '#c4b5a0',
+                light20: '#ada28e',
+                light15: '#b0a591',
+                dark15: '#766142',
+                dark20: '#786d59',
+                dark30: '#6b5d4a',
+                dark40: '#7a6e70',
+                dark80: '#1C0E04'
+            }
+        };
+        
+        // If we have a predefined palette for this color, use it
+        if (colorPalette[primaryColor]) {
+            return {
+                primary: primaryColor,
+                primary80: this.rgbToRgba(rgb, 0.8),
+                ...colorPalette[primaryColor]
+            };
+        }
+        
+        // Fallback to calculated colors for other colors
         return {
             primary: primaryColor,
             primary80: this.rgbToRgba(rgb, 0.8),
             light80: this.lightenColor(rgb, 0.8),
             light40: this.lightenColor(rgb, 0.4),
             light35: this.lightenColor(rgb, 0.35),
-            light35Alt: this.lightenColor(rgb, 0.35), // Slightly different calculation
+            light35Alt: this.lightenColor(rgb, 0.35),
             light25: this.lightenColor(rgb, 0.25),
             light20: this.lightenColor(rgb, 0.2),
             light15: this.lightenColor(rgb, 0.15),
@@ -109,29 +151,36 @@ class MusicPlayerThemeManager {
         // Use dark-15 variant as default lyrics color for good contrast
         const defaultLyricsColor = variants.dark15;
         
-        // Update lyrics color manager if it exists
-        if (window.lyricsColorManager) {
-            window.lyricsColorManager.setCurrentColor(defaultLyricsColor, false);
+        // Only update if this is the first time or if lyrics color hasn't been manually changed
+        if (!this.lyricsColorManuallySet) {
+            // Update lyrics color manager if it exists
+            if (window.lyricsColorManager) {
+                window.lyricsColorManager.setCurrentColor(defaultLyricsColor, false);
+            }
+            
+            // Update the color picker value
+            const lyricsColorPicker = document.getElementById('lyrics-color-picker');
+            const lyricsColorPreview = document.getElementById('color-preview-input');
+            
+            if (lyricsColorPicker) {
+                lyricsColorPicker.value = defaultLyricsColor;
+            }
+            
+            if (lyricsColorPreview) {
+                lyricsColorPreview.value = defaultLyricsColor.toUpperCase();
+                lyricsColorPreview.style.backgroundColor = defaultLyricsColor;
+                lyricsColorPreview.style.color = this.getContrastColor(defaultLyricsColor);
+            }
+            
+            // Notify lyrics manager to update the display
+            if (window.eventBus) {
+                window.eventBus.emit('lyrics:colorChanged', { color: defaultLyricsColor });
+            }
         }
-        
-        // Update the color picker value
-        const lyricsColorPicker = document.getElementById('lyrics-color-picker');
-        const lyricsColorPreview = document.getElementById('color-preview-input');
-        
-        if (lyricsColorPicker) {
-            lyricsColorPicker.value = defaultLyricsColor;
-        }
-        
-        if (lyricsColorPreview) {
-            lyricsColorPreview.value = defaultLyricsColor.toUpperCase();
-            lyricsColorPreview.style.backgroundColor = defaultLyricsColor;
-            lyricsColorPreview.style.color = this.getContrastColor(defaultLyricsColor);
-        }
-        
-        // Notify lyrics manager to update the display
-        if (window.eventBus) {
-            window.eventBus.emit('lyrics:colorChanged', { color: defaultLyricsColor });
-        }
+    }
+    
+    setLyricsColorManuallySet(manuallySet) {
+        this.lyricsColorManuallySet = manuallySet;
     }
     
     getContrastColor(hexColor) {

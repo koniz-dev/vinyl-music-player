@@ -71,6 +71,10 @@ class LyricsColorManager {
         if (addToHistory) {
             this.addToHistory(color);
             this.ensureDefaultColorInHistory();
+            // Notify theme manager that lyrics color was manually changed
+            if (window.musicPlayerThemeManager) {
+                window.musicPlayerThemeManager.setLyricsColorManuallySet(true);
+            }
         }
         this.updateColorPreview();
         this.renderColorHistory();
