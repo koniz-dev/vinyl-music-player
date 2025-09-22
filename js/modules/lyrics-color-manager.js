@@ -188,7 +188,11 @@ class LyricsColorManager {
             const saved = localStorage.getItem('lyricsColorHistory');
             return saved ? JSON.parse(saved) : [];
         } catch (error) {
-            console.warn('Failed to load color history:', error);
+            if (window.logger) {
+                window.logger.warn('Failed to load color history:', error);
+            } else {
+                console.warn('Failed to load color history:', error);
+            }
             return [];
         }
     }
@@ -197,7 +201,11 @@ class LyricsColorManager {
         try {
             localStorage.setItem('lyricsColorHistory', JSON.stringify(this.colorHistory));
         } catch (error) {
-            console.warn('Failed to save color history:', error);
+            if (window.logger) {
+                window.logger.warn('Failed to save color history:', error);
+            } else {
+                console.warn('Failed to save color history:', error);
+            }
         }
     }
     
@@ -206,7 +214,11 @@ class LyricsColorManager {
             const saved = localStorage.getItem('lyricsCurrentColor');
             return saved || '#8B4513';
         } catch (error) {
-            console.warn('Failed to load current color:', error);
+            if (window.logger) {
+                window.logger.warn('Failed to load current color:', error);
+            } else {
+                console.warn('Failed to load current color:', error);
+            }
             return '#8B4513';
         }
     }
@@ -215,7 +227,11 @@ class LyricsColorManager {
         try {
             localStorage.setItem('lyricsCurrentColor', this.currentColor);
         } catch (error) {
-            console.warn('Failed to save current color:', error);
+            if (window.logger) {
+                window.logger.warn('Failed to save current color:', error);
+            } else {
+                console.warn('Failed to save current color:', error);
+            }
         }
     }
     

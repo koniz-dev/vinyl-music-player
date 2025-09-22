@@ -4,6 +4,9 @@ class AudioPlayer {
         this.isInitialized = false;
         this.eventBus = window.eventBus;
         this.appState = window.appState;
+        this.logger = window.logger?.module('AudioPlayer') || console;
+        this.errorHandler = window.errorHandler;
+        this.constants = window.Constants;
         
         this.setupEventListeners();
         this.setupDOMEventListeners();
@@ -11,14 +14,17 @@ class AudioPlayer {
     
     async initialize(options = {}) {
         try {
+            this.logger.debug('Initializing AudioPlayer');
             this.audioElement = new Audio();
             this.setupAudioEventListeners();
             
             this.appState.set('audio.element', this.audioElement);
             this.isInitialized = true;
             
+            this.logger.debug('AudioPlayer initialized successfully');
+            
         } catch (error) {
-            this.eventBus.emit('audio:error', { error: error.message });
+            this.errorHandler.handleAudioError(error, 'AudioPlayer initialization');
             throw error;
         }
     }
@@ -119,19 +125,23 @@ class AudioPlayer {
     
     async play() {
         if (!this.audioElement) {
-            throw new Error('Audio not loaded');
+            const error = new Error('Audio not loaded');
+            this.errorHandler.handleAudioError(error, 'AudioPlayer play');
+            throw error;
         }
         
         try {
+            this.logger.debug('Starting audio playback');
             await this.audioElement.play();
             this.appState.set('audio.isPlaying', true);
             this.updatePlayerState();
             this.eventBus.emit('audio:play');
+            this.logger.debug('Audio playback started');
             
         } catch (error) {
             this.appState.set('audio.isPlaying', false);
             this.updatePlayerState();
-            this.eventBus.emit('audio:error', { error: error.message });
+            this.errorHandler.handleAudioError(error, 'AudioPlayer play');
             throw error;
         }
     }
@@ -369,13 +379,16 @@ class AudioPlayer {
     waitForAudioLoad() {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
-                reject(new Error('Audio loading timeout'));
-            }, 10000);
+                const error = new Error('Audio loading timeout');
+                this.errorHandler.handleAudioError(error, 'AudioPlayer waitForAudioLoad');
+                reject(error);
+            }, this.constants?.AUDIO.LOADING_TIMEOUT || 10000);
             
             const onLoadedMetadata = () => {
                 clearTimeout(timeout);
                 this.audioElement.removeEventListener('loadedmetadata', onLoadedMetadata);
                 this.audioElement.removeEventListener('error', onError);
+                this.logger.debug('Audio metadata loaded successfully');
                 resolve();
             };
             
@@ -383,7 +396,9 @@ class AudioPlayer {
                 clearTimeout(timeout);
                 this.audioElement.removeEventListener('loadedmetadata', onLoadedMetadata);
                 this.audioElement.removeEventListener('error', onError);
-                reject(new Error('Failed to load audio'));
+                const error = new Error('Failed to load audio');
+                this.errorHandler.handleAudioError(error, 'AudioPlayer waitForAudioLoad');
+                reject(error);
             };
             
             this.audioElement.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -392,6 +407,8 @@ class AudioPlayer {
     }
     
     destroy() {
+        this.logger.debug('Destroying AudioPlayer');
+        
         if (this.audioElement) {
             this.audioElement.pause();
             this.audioElement.src = '';
@@ -402,6 +419,7 @@ class AudioPlayer {
         this.isInitialized = false;
         
         this.eventBus.emit('audio:destroyed');
+        this.logger.debug('AudioPlayer destroyed');
     }
 }
 

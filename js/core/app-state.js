@@ -120,7 +120,11 @@ class AppState {
                 try {
                     callback(value, this.get(path), oldState);
                 } catch (error) {
-                    console.error('State listener error:', error);
+                    if (window.logger) {
+                        window.logger.error('State listener error:', error);
+                    } else {
+                        console.error('State listener error:', error);
+                    }
                 }
             });
         }
@@ -132,7 +136,11 @@ class AppState {
                 try {
                     callback(path, value, this.state, oldState);
                 } catch (error) {
-                    console.error('State listener error:', error);
+                    if (window.logger) {
+                        window.logger.error('State listener error:', error);
+                    } else {
+                        console.error('State listener error:', error);
+                    }
                 }
             });
         }

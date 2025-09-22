@@ -34,7 +34,11 @@ class VinylRenderer {
         this.musicPlayerElement = document.querySelector('.music-player');
         
         if (!this.vinylElement) {
-            console.warn('Vinyl album art element not found');
+            if (window.logger) {
+                window.logger.warn('Vinyl album art element not found');
+            } else {
+                console.warn('Vinyl album art element not found');
+            }
         }
     }
     

@@ -32,12 +32,16 @@ class ExportManager {
         this.exportAudio = null;
         this.exportLyrics = [];
         this.exportLyricsColor = '#8B4513';
-        this.exportTimeout = null; // Store timeout ID to clear it later
+        this.exportTimeout = null;
+        this.wasMainAudioPlaying = false;
         
         this.eventBus = window.eventBus;
         this.appState = window.appState;
         this.fileUtils = window.FileUtils;
         this.timeUtils = window.TimeUtils;
+        this.logger = window.logger?.module('ExportManager') || console;
+        this.errorHandler = window.errorHandler;
+        this.constants = window.Constants;
         
         this.setupEventListeners();
     }
@@ -46,10 +50,13 @@ class ExportManager {
         const { audioFile, songTitle, artistName, albumArtFile } = exportData;
         
         if (this.appState.get('export.isExporting')) {
-            throw new Error('Export already in progress');
+            const error = new Error('Export already in progress');
+            this.errorHandler.handleExportError(error, 'ExportManager startExport');
+            throw error;
         }
         
         try {
+            this.logger.debug('Starting export process', { songTitle, artistName });
             this.appState.set('export.isExporting', true);
             this.appState.set('export.progress', 0);
             this.appState.set('export.message', 'Initializing export...');
@@ -91,7 +98,10 @@ class ExportManager {
             // Setup progress tracking
             this.setupProgressTracking();
             
+            this.logger.debug('Export process started successfully');
+            
         } catch (error) {
+            this.errorHandler.handleExportError(error, 'ExportManager startExport');
             await this.handleExportError(error);
             throw error;
         }
@@ -100,8 +110,8 @@ class ExportManager {
     createExportCanvas() {
         this.exportCanvas = document.createElement('canvas');
         
-        let canvasWidth = 720;
-        let canvasHeight = 1280;
+        let canvasWidth = this.constants?.EXPORT.DEFAULT_CANVAS_WIDTH || 720;
+        let canvasHeight = this.constants?.EXPORT.DEFAULT_CANVAS_HEIGHT || 1280;
         
         // Try to get dimensions from various sources
         const dimensionSources = [
@@ -153,8 +163,8 @@ class ExportManager {
             }
         }
         
-        this.exportCanvas.width = Math.max(canvasWidth, 400);
-        this.exportCanvas.height = Math.max(canvasHeight, 600);
+        this.exportCanvas.width = Math.max(canvasWidth, this.constants?.EXPORT.CANVAS_MIN_WIDTH || 400);
+        this.exportCanvas.height = Math.max(canvasHeight, this.constants?.EXPORT.CANVAS_MIN_HEIGHT || 600);
         
         this.exportCtx = this.exportCanvas.getContext('2d');
         this.exportCtx.imageSmoothingEnabled = true;
@@ -226,7 +236,7 @@ class ExportManager {
         
         // Add error handling for media recorder
         this.mediaRecorder.onerror = (event) => {
-            console.error('MediaRecorder error:', event.error);
+            this.logger.error('MediaRecorder error:', event.error);
             this.handleExportError(new Error('Recording failed: ' + event.error));
         };
         
@@ -236,11 +246,11 @@ class ExportManager {
         try {
             await this.exportAudio.play();
         } catch (error) {
-            console.warn('Audio play failed, trying fallback:', error);
+            this.logger.warn('Audio play failed, trying fallback:', error);
             // Fallback: try to play after a short delay
             setTimeout(() => {
                 this.exportAudio.play().catch(e => {
-                    console.error('Fallback audio play failed:', e);
+                    this.logger.error('Fallback audio play failed:', e);
                 });
             }, 100);
         }
@@ -278,11 +288,11 @@ class ExportManager {
                 lastTime = currentTime;
                 frameCount++;
                 
-                // Update vinyl rotation based on time (12s per full rotation)
-                // 360 degrees / 12000ms = 0.03 degrees per millisecond
-                // Use absolute time to prevent rotation drift
+                // Update vinyl rotation based on time
+                // Use constants for rotation speed
+                const rotationSpeed = this.constants?.ANIMATION.VINYL_ROTATION_SPEED || 0.03;
                 const totalElapsed = currentTime - animationStartTime;
-                this.vinylRotation = (totalElapsed * 0.03) % 360;
+                this.vinylRotation = (totalElapsed * rotationSpeed) % 360;
                 
                 // Ensure rotation is always positive and continuous
                 if (this.vinylRotation < 0) {
@@ -303,11 +313,11 @@ class ExportManager {
                 }
                 
                 if (frameCount % 100 === 0) {
-                    // console.log(`Export frame ${frameCount}, rotation: ${this.vinylRotation.toFixed(2)}°, audio time: ${this.exportAudio?.currentTime || 0}s`);
+                    this.logger.debug(`Export frame ${frameCount}, rotation: ${this.vinylRotation.toFixed(2)}°, audio time: ${this.exportAudio?.currentTime || 0}s`);
                 }
                 
             } catch (error) {
-                console.error('Error in render loop:', error);
+                this.logger.error('Error in render loop:', error);
                 // Continue animation even if there's an error
             }
             
@@ -319,35 +329,6 @@ class ExportManager {
         this.exportAnimationId = requestAnimationFrame(renderLoop);
     }
     
-    async renderToCanvas() {
-        if (!this.exportCtx) return;
-        
-        // This function is deprecated - use startRenderingLoop() instead
-        
-        // Clear canvas
-        this.exportCtx.clearRect(0, 0, this.exportCanvas.width, this.exportCanvas.height);
-        
-        // Draw background
-        this.drawBackground();
-        
-        // Draw music player
-        this.drawMusicPlayer();
-        
-        // Draw vinyl
-        this.drawVinyl();
-        
-        // Draw tonearm
-        this.drawTonearm();
-        
-        // Draw song info
-        this.drawSongInfo();
-        
-        // Draw progress bar
-        this.drawProgressBar();
-        
-        // Draw controls
-        await this.drawControls();
-    }
     
     drawBackground() {
         // Background gradient (purple to pink)
@@ -843,7 +824,7 @@ class ExportManager {
                     // Trigger UI update
                     this.eventBus.emit('audio:requestUpdateUI');
                 }).catch(error => {
-                    console.warn('Failed to resume audio:', error);
+                    this.logger.warn('Failed to resume audio:', error);
                 });
             }
         }
@@ -968,9 +949,12 @@ class ExportManager {
     }
     
     setupExportTimeout(wasMainAudioPlaying) {
+        const timeout = this.constants?.EXPORT.EXPORT_TIMEOUT || 5 * 60 * 1000;
         return setTimeout(() => {
-            this.handleExportError(new Error('Export timeout. Please try again with a shorter audio file.'));
-        }, 5 * 60 * 1000);
+            const error = new Error('Export timeout. Please try again with a shorter audio file.');
+            this.errorHandler.handleExportError(error, 'ExportManager timeout');
+            this.handleExportError(error);
+        }, timeout);
     }
     
     async handleExportError(error) {
@@ -987,29 +971,54 @@ class ExportManager {
     }
     
     cleanup() {
+        this.logger.debug('Cleaning up ExportManager resources');
+        
         // Clear export timeout
         if (this.exportTimeout) {
             clearTimeout(this.exportTimeout);
             this.exportTimeout = null;
         }
         
+        // Stop and cleanup audio
         if (this.exportAudio) {
             this.exportAudio.pause();
+            this.exportAudio.src = '';
             this.exportAudio = null;
         }
         
+        // Cleanup album art image and revoke object URL
         if (this.albumArtImage) {
-            this.fileUtils.revokeObjectURL(this.albumArtImage.src);
+            if (this.albumArtImage.src && this.albumArtImage.src.startsWith('blob:')) {
+                this.fileUtils.revokeObjectURL(this.albumArtImage.src);
+            }
             this.albumArtImage = null;
         }
         
+        // Stop animation loop
         if (this.exportAnimationId) {
             cancelAnimationFrame(this.exportAnimationId);
             this.exportAnimationId = null;
         }
         
+        // Cleanup media recorder
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+            this.mediaRecorder = null;
+        }
+        
+        // Clear recorded chunks
+        this.recordedChunks = [];
+        
+        // Cleanup canvas
+        if (this.exportCanvas) {
+            this.exportCanvas = null;
+            this.exportCtx = null;
+        }
+        
         this.enableControls();
         this.appState.set('export.isExporting', false);
+        
+        this.logger.debug('ExportManager cleanup completed');
     }
     
     setupEventListeners() {

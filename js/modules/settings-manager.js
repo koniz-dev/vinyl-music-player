@@ -220,11 +220,9 @@ class SettingsManager {
              if (inputId === 'song-title') {
                  updateData.type = 'UPDATE_SONG_TITLE';
                  updateData.songTitle = input.value;
-                 // console.log(`[SettingsManager] Song title updated: "${input.value}"`);
              } else if (inputId === 'artist-name') {
                  updateData.type = 'UPDATE_ARTIST_NAME';
                  updateData.artistName = input.value;
-                 // console.log(`[SettingsManager] Artist name updated: "${input.value}"`);
              }
              
              if (updateData.type) {
@@ -662,7 +660,7 @@ class SettingsManager {
                     
                     this.eventBus.emit('audio:requestUpdateUI');
                 }).catch(error => {
-                    console.warn('Failed to resume audio:', error);
+                    this.logger?.warn('Failed to resume audio:', error);
                 });
             }
         }

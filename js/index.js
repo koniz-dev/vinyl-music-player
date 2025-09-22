@@ -6,6 +6,9 @@ class VinylMusicPlayerApp {
         // Core systems
         this.appState = window.appState;
         this.eventBus = window.eventBus;
+        this.logger = window.logger?.module('VinylMusicPlayerApp') || console;
+        this.errorHandler = window.errorHandler;
+        this.constants = window.Constants;
         
         // Initialize app
         this.initialize();
@@ -13,7 +16,7 @@ class VinylMusicPlayerApp {
     
     async initialize() {
         try {
-            // console.log('[App] Initializing Vinyl Music Player...');
+            this.logger.debug('Initializing Vinyl Music Player...');
             
             // Initialize core modules
             await this.initializeModules();
@@ -21,16 +24,14 @@ class VinylMusicPlayerApp {
             // Setup global event listeners
             this.setupGlobalEventListeners();
             
-            // Setup message handling for iframe communication
-            this.setupMessageHandling();
             
             this.isInitialized = true;
             
-            // console.log('[App] Initialization complete');
+            this.logger.debug('Vinyl Music Player initialization complete');
+            this.eventBus.emit('app:initialized');
             
         } catch (error) {
-            console.error('[App] Initialization failed:', error);
-            this.eventBus.emit('app:error', { error: error.message });
+            this.errorHandler.handleError('App Initialization', error);
         }
     }
     
@@ -73,7 +74,7 @@ class VinylMusicPlayerApp {
             this.modules.toastManager = window.toastManager;
         }
         
-        // console.log('[App] All modules initialized');
+        this.logger.debug('All modules initialized successfully');
     }
     
     setupGlobalEventListeners() {
@@ -97,11 +98,9 @@ class VinylMusicPlayerApp {
             this.handleModuleError(data);
         });
         
-        // console.log('[App] Global event listeners setup complete');
+        this.logger.debug('Global event listeners setup complete');
     }
     
-    setupMessageHandling() {
-    }
     
     handleWindowMessage(event) {
         const { type, ...data } = event.data;
@@ -144,7 +143,7 @@ class VinylMusicPlayerApp {
                 break;
                 
             default:
-                console.warn('[App] Unknown message type:', type);
+                this.logger.warn('Unknown message type:', type);
         }
     }
     
@@ -203,7 +202,7 @@ class VinylMusicPlayerApp {
     handleStateChange(path, value, newState, oldState) {
         // Log significant state changes in development (exclude frequent updates)
         if (window.location.hostname === 'localhost' && !path.includes('currentTime')) {
-            // console.log(`[App] State changed: ${path}`, value);
+            this.logger.debug(`State changed: ${path}`, value);
         }
         
         // Handle specific state changes
@@ -275,7 +274,7 @@ class VinylMusicPlayerApp {
     }
     
     handleModuleError(data) {
-        console.error('[App] Module error:', data);
+        this.logger.error('Module error occurred', data);
         
         // Show error toast
         if (this.modules.toastManager) {
@@ -308,7 +307,7 @@ class VinylMusicPlayerApp {
         
         this.isInitialized = false;
         
-        // console.log('[App] Application destroyed');
+        this.logger.debug('Application destroyed');
     }
 }
 

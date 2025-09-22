@@ -115,7 +115,7 @@ class FileUtils {
     }
     
     static validateAudioFile(file) {
-        const allowedTypes = [
+        const allowedTypes = window.Constants?.AUDIO.SUPPORTED_FORMATS || [
             'audio/mpeg',
             'audio/mp3',
             'audio/wav',
@@ -133,7 +133,8 @@ class FileUtils {
             return typeValidation;
         }
         
-        const sizeValidation = this.validateFileSize(file, 100); // 100MB max
+        const maxSizeMB = window.Constants?.EXPORT.MAX_FILE_SIZE_MB || 100;
+        const sizeValidation = this.validateFileSize(file, maxSizeMB);
         if (!sizeValidation.isValid) {
             return sizeValidation;
         }
@@ -142,7 +143,7 @@ class FileUtils {
     }
     
     static validateImageFile(file) {
-        const allowedTypes = [
+        const allowedTypes = window.Constants?.IMAGE.SUPPORTED_FORMATS || [
             'image/jpeg',
             'image/jpg',
             'image/png',
@@ -156,7 +157,8 @@ class FileUtils {
             return typeValidation;
         }
         
-        const sizeValidation = this.validateFileSize(file, 10); // 10MB max
+        const maxSizeMB = window.Constants?.EXPORT.MAX_IMAGE_SIZE_MB || 10;
+        const sizeValidation = this.validateFileSize(file, maxSizeMB);
         if (!sizeValidation.isValid) {
             return sizeValidation;
         }
