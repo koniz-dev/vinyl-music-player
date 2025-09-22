@@ -280,9 +280,8 @@ class ExportManager {
                     );
                 }
                 
-                // Log every 100 frames for debugging
                 if (frameCount % 100 === 0) {
-                    console.log(`Export frame ${frameCount}, rotation: ${this.vinylRotation.toFixed(2)}°, audio time: ${this.exportAudio?.currentTime || 0}s`);
+                    // console.log(`Export frame ${frameCount}, rotation: ${this.vinylRotation.toFixed(2)}°, audio time: ${this.exportAudio?.currentTime || 0}s`);
                 }
                 
             } catch (error) {
