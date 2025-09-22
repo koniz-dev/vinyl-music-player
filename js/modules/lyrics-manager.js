@@ -27,11 +27,7 @@ class LyricsManager {
         this.lyricsTextElement = document.querySelector('.vinyl-lyrics-text');
         
         if (!this.lyricsTextElement) {
-            if (window.logger) {
-                window.logger.warn('Lyrics text element not found');
-            } else {
-                console.warn('Lyrics text element not found');
-            }
+            window.safeLog.warn('Lyrics text element not found');
         } else {
             // Apply saved color when elements are ready
             this.applySavedColor();
@@ -40,11 +36,7 @@ class LyricsManager {
     
     loadLyrics(lyricsData) {
         if (!Array.isArray(lyricsData)) {
-            if (window.logger) {
-                window.logger.error('Lyrics data must be an array');
-            } else {
-                console.error('Lyrics data must be an array');
-            }
+            window.safeLog.error('Lyrics data must be an array');
             return;
         }
         

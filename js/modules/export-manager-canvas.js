@@ -29,17 +29,8 @@ class ExportManagerCanvas {
         // Clear canvas
         exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-        // Background gradient (purple to pink)
-        const bodyGradient = exportCtx.createLinearGradient(0, 0, exportCanvas.width, exportCanvas.height);
-        bodyGradient.addColorStop(0, '#667eea');
-        bodyGradient.addColorStop(0.5, '#f093fb');
-        bodyGradient.addColorStop(1, '#f5576c');
-        exportCtx.fillStyle = bodyGradient;
-        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-        
-        // Semi-transparent overlay
-        exportCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        // Draw background using utility
+        window.CanvasUtils.drawBackground(exportCtx, exportCanvas.width, exportCanvas.height);
 
         // Main music player card - EXACT HTML laptop view dimensions
         const musicPlayerWidth = 350; // Fixed width like HTML
@@ -141,44 +132,10 @@ class ExportManagerCanvas {
         const grilleHeight = 50;
         const grilleY = deviceContainerY + deviceContainerHeight/2 - grilleHeight/2; // center of device container
         
-        // Left grille with CSS gradient and rounded corners - EXACT CSS values
-        const leftGradient = exportCtx.createLinearGradient(0, grilleY, 0, grilleY + grilleHeight);
-        leftGradient.addColorStop(0, 'rgba(0, 0, 0, 0.1)'); // CSS: rgba(0, 0, 0, 0.1) 0%
-        leftGradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.05)'); // CSS: rgba(0, 0, 0, 0.05) 50%
-        leftGradient.addColorStop(1, 'rgba(0, 0, 0, 0.1)'); // CSS: rgba(0, 0, 0, 0.1) 100%
-        
-        exportCtx.fillStyle = leftGradient;
-        exportCtx.beginPath();
+        // Draw speaker grilles using utility
         const grilleRadius = 4; // --radius-sm
-        exportCtx.moveTo(leftGrilleX + grilleRadius, grilleY);
-        exportCtx.lineTo(leftGrilleX + grilleWidth - grilleRadius, grilleY);
-        exportCtx.quadraticCurveTo(leftGrilleX + grilleWidth, grilleY, leftGrilleX + grilleWidth, grilleY + grilleRadius);
-        exportCtx.lineTo(leftGrilleX + grilleWidth, grilleY + grilleHeight - grilleRadius);
-        exportCtx.quadraticCurveTo(leftGrilleX + grilleWidth, grilleY + grilleHeight, leftGrilleX + grilleWidth - grilleRadius, grilleY + grilleHeight);
-        exportCtx.lineTo(leftGrilleX + grilleRadius, grilleY + grilleHeight);
-        exportCtx.quadraticCurveTo(leftGrilleX, grilleY + grilleHeight, leftGrilleX, grilleY + grilleHeight - grilleRadius);
-        exportCtx.lineTo(leftGrilleX, grilleY + grilleRadius);
-        exportCtx.quadraticCurveTo(leftGrilleX, grilleY, leftGrilleX + grilleRadius, grilleY);
-        exportCtx.fill();
-        
-        // Right grille with CSS gradient and rounded corners - EXACT CSS values
-        const rightGradient = exportCtx.createLinearGradient(0, grilleY, 0, grilleY + grilleHeight);
-        rightGradient.addColorStop(0, 'rgba(0, 0, 0, 0.1)'); // CSS: rgba(0, 0, 0, 0.1) 0%
-        rightGradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.05)'); // CSS: rgba(0, 0, 0, 0.05) 50%
-        rightGradient.addColorStop(1, 'rgba(0, 0, 0, 0.1)'); // CSS: rgba(0, 0, 0, 0.1) 100%
-        
-        exportCtx.fillStyle = rightGradient;
-        exportCtx.beginPath();
-        exportCtx.moveTo(rightGrilleX + grilleRadius, grilleY);
-        exportCtx.lineTo(rightGrilleX + grilleWidth - grilleRadius, grilleY);
-        exportCtx.quadraticCurveTo(rightGrilleX + grilleWidth, grilleY, rightGrilleX + grilleWidth, grilleY + grilleRadius);
-        exportCtx.lineTo(rightGrilleX + grilleWidth, grilleY + grilleHeight - grilleRadius);
-        exportCtx.quadraticCurveTo(rightGrilleX + grilleWidth, grilleY + grilleHeight, rightGrilleX + grilleWidth - grilleRadius, grilleY + grilleHeight);
-        exportCtx.lineTo(rightGrilleX + grilleRadius, grilleY + grilleHeight);
-        exportCtx.quadraticCurveTo(rightGrilleX, grilleY + grilleHeight, rightGrilleX, grilleY + grilleHeight - grilleRadius);
-        exportCtx.lineTo(rightGrilleX, grilleY + grilleRadius);
-        exportCtx.quadraticCurveTo(rightGrilleX, grilleY, rightGrilleX + grilleRadius, grilleY);
-        exportCtx.fill();
+        window.CanvasUtils.drawSpeakerGrille(exportCtx, leftGrilleX, grilleY, grilleWidth, grilleHeight, grilleY, grilleHeight);
+        window.CanvasUtils.drawSpeakerGrille(exportCtx, rightGrilleX, grilleY, grilleWidth, grilleHeight, grilleY, grilleHeight);
         
         // Grille dots - CENTERED and MORE DOTS for fuller look
         // Increased density: 5 columns x 12 rows, perfectly centered
@@ -268,9 +225,7 @@ class ExportManagerCanvas {
                                   albumArtRadius * 2, albumArtRadius * 2);
             } else {
                 // Fallback to gradient if image not loaded yet
-                const gradient = exportCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, albumArtRadius);
-                gradient.addColorStop(0, '#ff6b6b');
-                gradient.addColorStop(1, '#4ecdc4');
+                const gradient = window.CanvasUtils.createFallbackAlbumArtGradient(exportCtx, centerX, centerY, albumArtRadius);
                 exportCtx.fillStyle = gradient;
                 exportCtx.beginPath();
                 exportCtx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);

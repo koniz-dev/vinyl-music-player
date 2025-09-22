@@ -11,12 +11,12 @@ class ExportManager {
                         resolve();
                     }).catch(() => {
                         // Fallback: wait a bit and resolve anyway
-                        setTimeout(resolve, 100);
+                        setTimeout(resolve, this.constants?.ANIMATION.TIMEOUT_DELAY || 100);
                     });
                 }
             } else {
                 // Fallback for older browsers
-                setTimeout(resolve, 100);
+                setTimeout(resolve, this.constants?.ANIMATION.TIMEOUT_DELAY || 100);
             }
         });
     }
@@ -252,7 +252,7 @@ class ExportManager {
                 this.exportAudio.play().catch(e => {
                     this.logger.error('Fallback audio play failed:', e);
                 });
-            }, 100);
+            }, this.constants?.ANIMATION.TIMEOUT_DELAY || 100);
         }
         
         this.eventBus.emit('export:progress', { progress: 40, message: 'Recording started...' });
@@ -331,18 +331,7 @@ class ExportManager {
     
     
     drawBackground() {
-        // Background gradient (purple to pink)
-        const bodyGradient = this.exportCtx.createLinearGradient(0, 0, this.exportCanvas.width, this.exportCanvas.height);
-        bodyGradient.addColorStop(0, '#667eea');
-        bodyGradient.addColorStop(0.5, '#f093fb');
-        bodyGradient.addColorStop(1, '#f5576c');
-        
-        this.exportCtx.fillStyle = bodyGradient;
-        this.exportCtx.fillRect(0, 0, this.exportCanvas.width, this.exportCanvas.height);
-        
-        // Semi-transparent overlay
-        this.exportCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-        this.exportCtx.fillRect(0, 0, this.exportCanvas.width, this.exportCanvas.height);
+        window.CanvasUtils.drawBackground(this.exportCtx, this.exportCanvas.width, this.exportCanvas.height);
     }
     
     drawMusicPlayer() {
@@ -422,108 +411,31 @@ class ExportManager {
         this.exportCtx.translate(-centerX, -centerY);
         
         // Draw vinyl disc
-        const vinylGradient = this.exportCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, vinylRadius);
-        vinylGradient.addColorStop(0, '#2a2a2a');
-        vinylGradient.addColorStop(0.2, '#2a2a2a');
-        vinylGradient.addColorStop(0.4, '#1a1a1a');
-        vinylGradient.addColorStop(0.8, '#000000');
-        vinylGradient.addColorStop(1, '#000000');
-        
+        const vinylGradient = window.CanvasUtils.createVinylGradient(this.exportCtx, centerX, centerY, vinylRadius);
         this.exportCtx.fillStyle = vinylGradient;
         this.exportCtx.beginPath();
         this.exportCtx.arc(centerX, centerY, vinylRadius, 0, 2 * Math.PI);
         this.exportCtx.fill();
         
         // Draw grooves
-        this.drawVinylGrooves(centerX, centerY, vinylRadius);
+        window.CanvasUtils.drawVinylGrooves(this.exportCtx, centerX, centerY, vinylRadius);
         
         // Draw center
-        this.drawVinylCenter(centerX, centerY, vinylRadius);
+        window.CanvasUtils.drawVinylCenter(this.exportCtx, centerX, centerY, vinylRadius);
         
         // Draw album art in center
-        this.drawVinylAlbumArt(centerX, centerY, vinylRadius);
+        window.CanvasUtils.drawVinylAlbumArt(this.exportCtx, centerX, centerY, vinylRadius, this.albumArtImage);
         
         this.exportCtx.restore();
     }
     
-    drawVinylGrooves(centerX, centerY, vinylRadius) {
-        this.exportCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-        this.exportCtx.lineWidth = 1;
-        
-        const grooveRadii = [vinylRadius * 0.8, vinylRadius * 0.68, vinylRadius * 0.56];
-        
-        grooveRadii.forEach(radius => {
-            this.exportCtx.beginPath();
-            this.exportCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            this.exportCtx.stroke();
-        });
-    }
-    
-    drawVinylCenter(centerX, centerY, vinylRadius) {
-        const centerRadius = vinylRadius * 0.48;
-        
-        const centerGradient = this.exportCtx.createLinearGradient(centerX - centerRadius, centerY - centerRadius, centerX + centerRadius, centerY + centerRadius);
-        centerGradient.addColorStop(0, '#667eea');
-        centerGradient.addColorStop(1, '#764ba2');
-        
-        this.exportCtx.fillStyle = centerGradient;
-        this.exportCtx.beginPath();
-        this.exportCtx.arc(centerX, centerY, centerRadius, 0, 2 * Math.PI);
-        this.exportCtx.fill();
-        
-        // Add highlight
-        const centerHighlight = this.exportCtx.createRadialGradient(centerX - centerRadius * 0.3, centerY - centerRadius * 0.3, 0, centerX - centerRadius * 0.3, centerY - centerRadius * 0.3, centerRadius * 0.8);
-        centerHighlight.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-        centerHighlight.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
-        centerHighlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        
-        this.exportCtx.fillStyle = centerHighlight;
-        this.exportCtx.beginPath();
-        this.exportCtx.arc(centerX, centerY, centerRadius, 0, 2 * Math.PI);
-        this.exportCtx.fill();
-    }
-    
-    drawVinylAlbumArt(centerX, centerY, vinylRadius) {
-        const albumArtRadius = vinylRadius * 0.48 * 0.83;
-        
-        if (this.albumArtImage) {
-            this.exportCtx.save();
-            this.exportCtx.beginPath();
-            this.exportCtx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);
-            this.exportCtx.clip();
-            
-            this.exportCtx.drawImage(this.albumArtImage, centerX - albumArtRadius, centerY - albumArtRadius, albumArtRadius * 2, albumArtRadius * 2);
-            this.exportCtx.restore();
-        }
-    }
     
     drawTonearm() {
         const tonearmX = this.exportCanvas.width / 2 + 84;
         const tonearmY = this.exportCanvas.height / 2 - 84;
-        const tonearmLength = 96;
+        const tonearmLength = this.constants?.DIMENSIONS.CONTROLS.TONEARM_LENGTH || 96;
         
-        this.exportCtx.save();
-        this.exportCtx.translate(tonearmX, tonearmY);
-        this.exportCtx.rotate(25 * Math.PI / 180);
-        
-        const tonearmGradient = this.exportCtx.createLinearGradient(0, 0, 0, tonearmLength);
-        tonearmGradient.addColorStop(0, '#fff');
-        tonearmGradient.addColorStop(1, '#ccc');
-        
-        this.exportCtx.fillStyle = tonearmGradient;
-        this.exportCtx.fillRect(-1.5, 0, 3, tonearmLength);
-        
-        // Draw tonearm base
-        this.exportCtx.fillStyle = '#fff';
-        this.exportCtx.beginPath();
-        this.exportCtx.arc(-1.5, 0, 5, 0, 2 * Math.PI);
-        this.exportCtx.fill();
-        
-        // Draw tonearm tip
-        this.exportCtx.fillStyle = '#666';
-        this.exportCtx.fillRect(-2, tonearmLength - 5, 6, 10);
-        
-        this.exportCtx.restore();
+        window.CanvasUtils.drawTonearm(this.exportCtx, tonearmX, tonearmY, tonearmLength);
     }
     
     drawSongInfo() {
@@ -575,58 +487,14 @@ class ExportManager {
         const progressBarX = 30;
         const progressBarY = progressContainerY + 10;
         
-        // Draw progress bar background
-        this.exportCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        this.exportCtx.save();
-        this.exportCtx.beginPath();
-        const bgRadius = 2;
-        this.exportCtx.moveTo(progressBarX + bgRadius, progressBarY);
-        this.exportCtx.lineTo(progressBarX + progressBarWidth - bgRadius, progressBarY);
-        this.exportCtx.quadraticCurveTo(progressBarX + progressBarWidth, progressBarY, progressBarX + progressBarWidth, progressBarY + bgRadius);
-        this.exportCtx.lineTo(progressBarX + progressBarWidth, progressBarY + progressBarHeight - bgRadius);
-        this.exportCtx.quadraticCurveTo(progressBarX + progressBarWidth, progressBarY + progressBarHeight, progressBarX + progressBarWidth - bgRadius, progressBarY + progressBarHeight);
-        this.exportCtx.lineTo(progressBarX + bgRadius, progressBarY + progressBarHeight);
-        this.exportCtx.quadraticCurveTo(progressBarX, progressBarY + progressBarHeight, progressBarX, progressBarY + progressBarHeight - bgRadius);
-        this.exportCtx.lineTo(progressBarX, progressBarY + bgRadius);
-        this.exportCtx.quadraticCurveTo(progressBarX, progressBarY, progressBarX + bgRadius, progressBarY);
-        this.exportCtx.fill();
-        this.exportCtx.restore();
-        
-        // Draw progress
+        // Calculate progress
         let progressPercent = 0.0;
         if (this.exportAudio && this.exportAudio.readyState >= 2 && !isNaN(this.exportAudio.currentTime) && !isNaN(this.exportAudio.duration) && this.exportAudio.duration > 0) {
             progressPercent = Math.min(this.exportAudio.currentTime / this.exportAudio.duration, 1.0);
         }
         
-        const progressWidth = progressBarWidth * progressPercent;
-        const progressGradient = this.exportCtx.createLinearGradient(progressBarX, progressBarY, progressBarX + progressWidth, progressBarY);
-        progressGradient.addColorStop(0, '#667eea');
-        progressGradient.addColorStop(1, '#764ba2');
-        
-        this.exportCtx.fillStyle = progressGradient;
-        this.exportCtx.save();
-        this.exportCtx.beginPath();
-        const fillRadius = 2;
-        this.exportCtx.moveTo(progressBarX + fillRadius, progressBarY);
-        this.exportCtx.lineTo(progressBarX + progressWidth - fillRadius, progressBarY);
-        this.exportCtx.quadraticCurveTo(progressBarX + progressWidth, progressBarY, progressBarX + progressWidth, progressBarY + fillRadius);
-        this.exportCtx.lineTo(progressBarX + progressWidth, progressBarY + progressBarHeight - fillRadius);
-        this.exportCtx.quadraticCurveTo(progressBarX + progressWidth, progressBarY + progressBarHeight, progressBarX + progressWidth - fillRadius, progressBarY + progressBarHeight);
-        this.exportCtx.lineTo(progressBarX + fillRadius, progressBarY + progressBarHeight);
-        this.exportCtx.quadraticCurveTo(progressBarX, progressBarY + progressBarHeight, progressBarX, progressBarY + progressBarHeight - fillRadius);
-        this.exportCtx.lineTo(progressBarX, progressBarY + bgRadius);
-        this.exportCtx.quadraticCurveTo(progressBarX, progressBarY, progressBarX + fillRadius, progressBarY);
-        this.exportCtx.fill();
-        this.exportCtx.restore();
-        
-        // Draw progress thumb
-        const thumbX = progressBarX + progressWidth;
-        const thumbY = progressBarY + progressBarHeight / 2;
-        const thumbRadius = 4;
-        this.exportCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        this.exportCtx.beginPath();
-        this.exportCtx.arc(thumbX, thumbY, thumbRadius, 0, 2 * Math.PI);
-        this.exportCtx.fill();
+        // Draw progress bar using utility
+        window.CanvasUtils.drawProgressBar(this.exportCtx, progressBarX, progressBarY, progressBarWidth, progressBarHeight, progressPercent);
         
         // Draw time labels
         this.drawTimeLabels(progressBarX, progressBarY, progressBarWidth);

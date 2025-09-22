@@ -193,6 +193,38 @@ window.log = {
 window.enableDebugMode = () => logger.enableDebugMode();
 window.disableDebugMode = () => logger.disableDebugMode();
 
+// Utility functions to avoid code duplication
+window.safeLog = {
+    debug: (message, data) => {
+        if (window.logger) {
+            window.logger.debug(message, data);
+        } else {
+            console.log(message, data);
+        }
+    },
+    info: (message, data) => {
+        if (window.logger) {
+            window.logger.info(message, data);
+        } else {
+            console.info(message, data);
+        }
+    },
+    warn: (message, data) => {
+        if (window.logger) {
+            window.logger.warn(message, data);
+        } else {
+            console.warn(message, data);
+        }
+    },
+    error: (message, data) => {
+        if (window.logger) {
+            window.logger.error(message, data);
+        } else {
+            console.error(message, data);
+        }
+    }
+};
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Logger, logger };
 }

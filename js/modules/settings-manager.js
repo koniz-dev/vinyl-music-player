@@ -660,7 +660,7 @@ class SettingsManager {
                     
                     this.eventBus.emit('audio:requestUpdateUI');
                 }).catch(error => {
-                    this.logger?.warn('Failed to resume audio:', error);
+                    window.safeLog.warn('Failed to resume audio:', error);
                 });
             }
         }

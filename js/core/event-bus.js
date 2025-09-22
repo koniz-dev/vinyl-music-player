@@ -94,11 +94,7 @@ class EventBus {
                     toRemove.push(subscription);
                 }
             } catch (error) {
-                if (window.logger) {
-                    window.logger.error(`[EventBus] Error in event handler for "${eventName}":`, error);
-                } else {
-                    console.error(`[EventBus] Error in event handler for "${eventName}":`, error);
-                }
+                window.safeLog.error(`[EventBus] Error in event handler for "${eventName}":`, error);
             }
         }
         
