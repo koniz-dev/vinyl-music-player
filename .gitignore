@@ -152,10 +152,6 @@ dist/
 *.svg
 *.webp
 
-# Exception: Allow favicon images
-!favicon/*.png
-!favicon/*.ico
-
 # Backup files
 *.bak
 *.backup
