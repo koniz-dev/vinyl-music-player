@@ -5,21 +5,22 @@
 class Constants {
     static ANIMATION = {
         VINYL_ROTATION_SPEED: 0.03, // degrees per millisecond
-        VINYL_ROTATION_DURATION: 12000, // 12 seconds per full rotation
         FADE_DURATION: 150, // milliseconds
         TIMEOUT_DELAY: 100, // milliseconds
-        FRAME_RATE: 30 // FPS for export
+        PROGRESS_UPDATE_INTERVAL: 100, // milliseconds
+        FRAME_DEBUG_INTERVAL: 100 // frames
     };
 
     static EXPORT = {
         MAX_FILE_SIZE_MB: 100, // Maximum audio file size in MB
         MAX_IMAGE_SIZE_MB: 10, // Maximum image file size in MB
         EXPORT_TIMEOUT: 5 * 60 * 1000, // 5 minutes timeout
-        PROGRESS_UPDATE_INTERVAL: 100, // milliseconds
         CANVAS_MIN_WIDTH: 400,
         CANVAS_MIN_HEIGHT: 600,
         DEFAULT_CANVAS_WIDTH: 720,
-        DEFAULT_CANVAS_HEIGHT: 1280
+        DEFAULT_CANVAS_HEIGHT: 1280,
+        PROGRESS_UPDATE_INTERVAL: 100, // milliseconds
+        PROCESSING_DELAY: 100 // milliseconds
     };
 
     static AUDIO = {
@@ -35,8 +36,7 @@ class Constants {
             'audio/m4a',
             'audio/x-m4a',
             'audio/mp4a-latm'
-        ],
-        SUPPORTED_EXTENSIONS: ['.mp3', '.wav', '.ogg', '.mp4', '.aac', '.flac', '.m4a']
+        ]
     };
 
     static IMAGE = {
@@ -50,48 +50,16 @@ class Constants {
         ]
     };
 
-    static UI = {
-        TOAST_DURATION: {
-            SUCCESS: 4000,
-            ERROR: 5000,
-            INFO: 4000,
-            WARNING: 4500
-        },
-        MAX_TOASTS: 5,
-        DEBOUNCE_DELAY: 300, // milliseconds
-        PROGRESS_UPDATE_DELAY: 100 // milliseconds
-    };
 
     static LYRICS = {
         DEFAULT_COLOR: '#8B4513',
-        TIME_FORMAT_REGEX: /^[0-9]{1,2}:[0-9]{2}$/,
-        MAX_LYRICS_ITEMS: 1000
+        FADE_DURATION: 150 // milliseconds
     };
 
-    static STATE = {
-        MAX_HISTORY_SIZE: 50,
-        BATCH_UPDATE_DELAY: 16 // ~60fps
-    };
 
-    static MEDIA_RECORDER = {
-        MIME_TYPES: [
-            'video/webm;codecs=vp9,opus',
-            'video/webm;codecs=vp8,opus',
-            'video/webm;codecs=vp9',
-            'video/webm;codecs=vp8',
-            'video/webm'
-        ],
-        DEFAULT_MIME_TYPE: 'video/webm'
-    };
 
-    static FONTS = {
-        PRIMARY: "'Patrick Hand', Arial, sans-serif",
-        FONT_AWESOME: 'FontAwesome'
-    };
 
     static COLORS = {
-        PRIMARY: '#8B4513',
-        SECONDARY: '#c8bda9',
         BACKGROUND_GRADIENT: {
             START: '#667eea',
             MIDDLE: '#f093fb',
@@ -105,55 +73,31 @@ class Constants {
 
     static DIMENSIONS = {
         VINYL: {
-            RADIUS: 100, // pixels
             CENTER_RADIUS_RATIO: 0.48,
             ALBUM_ART_RADIUS_RATIO: 0.83
         },
         CONTROLS: {
-            BUTTON_SIZE: 45,
-            PLAY_BUTTON_SIZE: 70,
             TONEARM_LENGTH: 96,
             TONEARM_ANGLE: 25 // degrees
         }
     };
 
     static ERRORS = {
-        AUDIO_LOAD_FAILED: 'Failed to load audio file',
-        IMAGE_LOAD_FAILED: 'Failed to load image file',
-        EXPORT_TIMEOUT: 'Export timeout. Please try again with a shorter audio file.',
-        INVALID_FILE_TYPE: 'Invalid file type',
-        FILE_TOO_LARGE: 'File size exceeds maximum limit',
-        LYRICS_INVALID_FORMAT: 'Invalid lyrics format',
-        BROWSER_NOT_SUPPORTED: 'Your browser does not support this feature'
+        INVALID_FILE_TYPE: 'Invalid file type'
     };
 
-    static EVENTS = {
-        // Audio events
-        AUDIO_LOADED: 'audio:loaded',
-        AUDIO_PLAY: 'audio:play',
-        AUDIO_PAUSE: 'audio:pause',
-        AUDIO_STOP: 'audio:stop',
-        AUDIO_ERROR: 'audio:error',
-        AUDIO_TIME_UPDATE: 'audio:timeUpdate',
-        
-        // Export events
-        EXPORT_START: 'export:start',
-        EXPORT_PROGRESS: 'export:progress',
-        EXPORT_COMPLETE: 'export:complete',
-        EXPORT_ERROR: 'export:error',
-        
-        // Lyrics events
-        LYRICS_LOADED: 'lyrics:loaded',
-        LYRICS_CURRENT_CHANGED: 'lyrics:currentChanged',
-        LYRICS_COLOR_CHANGED: 'lyrics:colorChanged',
-        
-        // UI events
-        UI_UPDATE_SONG_INFO: 'ui:updateSongInfo',
-        
-        // App events
-        APP_ERROR: 'app:error',
-        APP_INITIALIZED: 'app:initialized'
+    static UI = {
+        FOCUS_DELAY: 100, // milliseconds
+        TOAST_SHOW_DELAY: 100, // milliseconds
+        PROGRESS_MAX: 100, // percentage
+        LOGGER_MAX_HISTORY: 100 // entries
     };
+
+    static TIME = {
+        RETRY_DELAY: 1000, // milliseconds
+        INIT_DELAY: 100 // milliseconds
+    };
+
 }
 
 if (typeof module !== 'undefined' && module.exports) {

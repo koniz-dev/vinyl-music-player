@@ -83,12 +83,12 @@ class TimeUtils {
     
     static calculateProgress(currentTime, totalTime) {
         if (!totalTime || totalTime <= 0) return 0;
-        return Math.min((currentTime / totalTime) * 100, 100);
+        return Math.min((currentTime / totalTime) * (window.Constants?.UI.PROGRESS_MAX || 100), window.Constants?.UI.PROGRESS_MAX || 100);
     }
     
     static timeFromProgress(progress, totalTime) {
         if (!totalTime || totalTime <= 0) return 0;
-        return Math.floor((progress / 100) * totalTime);
+        return Math.floor((progress / (window.Constants?.UI.PROGRESS_MAX || 100)) * totalTime);
     }
     
     static createTimeRange(startTime, endTime, text) {

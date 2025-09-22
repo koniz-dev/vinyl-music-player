@@ -192,7 +192,7 @@ class ExportManager {
         await new Promise((resolve, reject) => {
             this.exportAudio.addEventListener('loadedmetadata', resolve);
             this.exportAudio.addEventListener('error', reject);
-            setTimeout(() => reject(new Error('Audio loading timeout')), 10000);
+            setTimeout(() => reject(new Error('Audio loading timeout')), this.constants?.AUDIO.LOADING_TIMEOUT || 10000);
         });
     }
     
@@ -283,8 +283,7 @@ class ExportManager {
         
         const renderLoop = (currentTime) => {
             try {
-                // Calculate time delta for consistent rotation speed
-                const deltaTime = currentTime - lastTime;
+                // Update time tracking
                 lastTime = currentTime;
                 frameCount++;
                 
@@ -312,7 +311,7 @@ class ExportManager {
                     );
                 }
                 
-                if (frameCount % 100 === 0) {
+                if (frameCount % (this.constants?.ANIMATION.FRAME_DEBUG_INTERVAL || 100) === 0) {
                     this.logger.debug(`Export frame ${frameCount}, rotation: ${this.vinylRotation.toFixed(2)}°, audio time: ${this.exportAudio?.currentTime || 0}s`);
                 }
                 
@@ -478,8 +477,6 @@ class ExportManager {
     
     drawProgressBar() {
         const progressContainerWidth = this.exportCanvas.width;
-        const progressContainerHeight = 50;
-        const progressContainerX = 0;
         const progressContainerY = this.exportCanvas.height / 2 + 200;
         
         const progressBarWidth = progressContainerWidth - 60;
@@ -519,8 +516,7 @@ class ExportManager {
         await ExportManager.ensureFontAwesomeLoaded();
         const controlsWidth = this.exportCanvas.width;
         const controlsHeight = 80;
-        const controlsX = 0;
-        const controlsY = this.exportCanvas.height / 2 + 230;
+         const controlsY = this.exportCanvas.height / 2 + 230;
         
         const buttonSize = 45;
         const playButtonSize = 70;
@@ -613,7 +609,7 @@ class ExportManager {
                 clearInterval(progressInterval);
                 this.stopRecording();
             }
-        }, 100);
+        }, this.constants?.EXPORT.PROGRESS_UPDATE_INTERVAL || 100);
     }
     
     stopRecording() {
@@ -652,7 +648,7 @@ class ExportManager {
         
         // Small delay to show processing step
         setTimeout(() => {
-            this.appState.set('export.progress', 100);
+            this.appState.set('export.progress', this.constants?.UI.PROGRESS_MAX || 100);
             this.appState.set('export.message', 'Export complete!');
             
             this.eventBus.emit('export:complete', {
@@ -765,7 +761,6 @@ class ExportManager {
         this.resumeMainAudio(wasMainAudioPlaying);
         
         const exportProgress = document.getElementById('export-progress');
-        const exportBtn = document.getElementById('export-btn');
         const progressFill = document.getElementById('progress-fill');
         const progressText = document.getElementById('progress-text');
         
@@ -794,7 +789,6 @@ class ExportManager {
         this.resumeMainAudio(wasMainAudioPlaying);
         
         const exportProgress = document.getElementById('export-progress');
-        const exportBtn = document.getElementById('export-btn');
         const progressFill = document.getElementById('progress-fill');
         const progressText = document.getElementById('progress-text');
         

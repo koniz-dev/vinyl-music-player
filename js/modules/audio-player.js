@@ -85,7 +85,7 @@ class AudioPlayer {
             
             setTimeout(() => {
                 isProgressUpdating = false;
-            }, 100);
+            }, this.constants?.ANIMATION.TIMEOUT_DELAY || 100);
         });
     }
     
@@ -197,7 +197,7 @@ class AudioPlayer {
                 this.updatePlayerState();
                 this.eventBus.emit('audio:error', { error: error.message });
             }
-        }, 100);
+        }, this.constants?.ANIMATION.TIMEOUT_DELAY || 100);
     }
     
     seekTo(time) {

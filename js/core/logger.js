@@ -7,7 +7,7 @@ class Logger {
         this.logLevel = this.getLogLevel();
         this.isDevelopment = this.isDevelopmentMode();
         this.logHistory = [];
-        this.maxHistorySize = 100;
+        this.maxHistorySize = window.Constants?.UI.LOGGER_MAX_HISTORY || 100;
     }
 
     getLogLevel() {

@@ -107,7 +107,7 @@ class LyricsManager {
         setTimeout(() => {
             this.lyricsTextElement.textContent = newText;
             this.lyricsTextElement.style.opacity = '1';
-        }, 150);
+        }, this.constants?.LYRICS.FADE_DURATION || 150);
     }
     
     clearLyricsDisplay() {

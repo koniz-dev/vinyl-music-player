@@ -47,7 +47,7 @@ class ToastManager {
         
         setTimeout(() => {
             toast.classList.add('show');
-        }, 100);
+        }, window.Constants?.UI.TOAST_SHOW_DELAY || 100);
         
         setTimeout(() => {
             this.removeToast(toast);

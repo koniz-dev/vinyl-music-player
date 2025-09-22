@@ -11,7 +11,7 @@ class ExportManagerCanvas {
                         resolve();
                     }).catch(() => {
                         // Fallback: wait a bit and resolve anyway
-                        setTimeout(resolve, 100);
+                        setTimeout(resolve, window.Constants?.ANIMATION.TIMEOUT_DELAY || 100);
                     });
                 }
             } else {
@@ -133,7 +133,6 @@ class ExportManagerCanvas {
         const grilleY = deviceContainerY + deviceContainerHeight/2 - grilleHeight/2; // center of device container
         
         // Draw speaker grilles using utility
-        const grilleRadius = 4; // --radius-sm
         window.CanvasUtils.drawSpeakerGrille(exportCtx, leftGrilleX, grilleY, grilleWidth, grilleHeight, grilleY, grilleHeight);
         window.CanvasUtils.drawSpeakerGrille(exportCtx, rightGrilleX, grilleY, grilleWidth, grilleHeight, grilleY, grilleHeight);
         
@@ -144,8 +143,6 @@ class ExportManagerCanvas {
         // Calculate centered positioning
         const totalColumns = 5;
         const totalRows = 12;
-        const grilleCenterX = leftGrilleX + grilleWidth / 2;
-        const grilleCenterY = grilleY + grilleHeight / 2;
         const columnSpacing = grilleWidth / (totalColumns + 1); // Even spacing
         const rowSpacing = grilleHeight / (totalRows + 1); // Even spacing
         
@@ -167,8 +164,6 @@ class ExportManagerCanvas {
         
         // Circular screen - CSS: 180px x 180px with border and shadow
         const circularScreenSize = 180;
-        const circularScreenX = centerX - circularScreenSize/2;
-        const circularScreenY = centerY - circularScreenSize/2;
         
         // Draw circular screen background with CSS styling - WITH BORDER like HTML
         exportCtx.save();

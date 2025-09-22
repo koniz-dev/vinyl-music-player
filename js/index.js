@@ -254,8 +254,8 @@ class VinylMusicPlayerApp {
         const totalTimeEl = document.querySelector('.vinyl-total-time');
         
         if (progress && totalTime > 0) {
-            const progressPercent = (currentTime / totalTime) * 100;
-            progress.style.width = `${Math.min(progressPercent, 100)}%`;
+            const progressPercent = (currentTime / totalTime) * (this.constants?.UI.PROGRESS_MAX || 100);
+            progress.style.width = `${Math.min(progressPercent, this.constants?.UI.PROGRESS_MAX || 100)}%`;
         }
         
         if (currentTimeEl) {
@@ -314,7 +314,7 @@ class VinylMusicPlayerApp {
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         window.vinylMusicPlayerApp = new VinylMusicPlayerApp();
-    }, 100);
+    }, window.Constants?.TIME.INIT_DELAY || 100);
 });
 
 if (typeof module !== 'undefined' && module.exports) {

@@ -385,7 +385,7 @@ class SettingsManager {
         
         setTimeout(() => {
             input.focus();
-        }, 100);
+        }, this.constants?.UI.FOCUS_DELAY || 100);
     }
     
     closeLyricsModal(modal, input) {

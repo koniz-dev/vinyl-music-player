@@ -161,7 +161,7 @@ class ErrorHandler {
     }
 
     // Retry mechanism with error handling
-    async retry(fn, maxRetries = 3, delay = 1000, context = 'Retry Operation') {
+    async retry(fn, maxRetries = 3, delay = window.Constants?.TIME.RETRY_DELAY || 1000, context = 'Retry Operation') {
         let lastError;
         
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
