@@ -2,6 +2,7 @@
 
 A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Create stunning music videos with synchronized lyrics and export them as WebM files. Features realistic vinyl record animations and professional video export capabilities.
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-blue?style=for-the-badge&logo=github)](https://koniz-dev.github.io/vinyl-music-player/)
 ![Vinyl Music Player](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
@@ -21,6 +22,9 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Multiple Lyrics Tracks**: Add multiple lyrics with custom timing
 - **Real-time Updates**: Lyrics appear and disappear based on audio timing
 - **Easy Management**: Add, edit, and remove lyrics through the settings panel
+- **Color Customization**: Customize lyrics color with color picker and hex input
+- **Color History**: Save and reuse recently used colors
+- **Developer Import**: Import lyrics from JSON format for bulk operations
 
 ### 🎬 Video Export
 - **WebM Format Only**: Create professional music videos with your audio and lyrics (WebM format)
@@ -28,8 +32,9 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Synchronized Lyrics**: Lyrics appear at exact timing with smooth transitions
 - **Progress Tracking**: Real-time export progress with detailed status updates
 - **No Conversion**: Direct WebM export without format conversion for faster processing
-- **Canvas Rendering**: High-quality canvas-based video rendering
+- **Canvas Rendering**: High-quality canvas-based video rendering with custom colors
 - **Cross-browser Support**: Works with modern browsers supporting MediaRecorder API
+- **Custom Colors**: Export videos with your customized lyrics colors
 
 ### 🎨 Beautiful UI
 - **Modern Design**: Clean, minimalist interface with smooth animations
@@ -48,6 +53,9 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Real-time Preview**: See changes instantly in the vinyl player
 - **Export Progress**: Detailed progress tracking during video export
 - **Error Handling**: Comprehensive error messages and recovery options
+- **Color Management**: Advanced color picker with hex input and history
+- **Developer Tools**: JSON import for bulk lyrics management
+- **Browser Support Check**: Built-in compatibility testing
 
 ## 🔮 Future Features
 
@@ -59,6 +67,9 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Video Templates**: Pre-designed templates for different social media platforms
 
 ## 🚀 Quick Start
+
+### 🌐 Live Demo
+**Try it now!** Visit the live demo: [https://koniz-dev.github.io/vinyl-music-player/](https://koniz-dev.github.io/vinyl-music-player/)
 
 ### Prerequisites
 - Modern web browser (Chrome, Firefox, Edge, Safari)
@@ -84,8 +95,8 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
    Or simply open `index.html` in your browser.
 
 4. **Access the application**
-   - Open your browser and navigate to `http://localhost:3000`
-   - Or open `index.html` directly in your browser
+   - **Local Development**: Open your browser and navigate to `http://localhost:3000`
+   - **Direct File**: Open `index.html` directly in your browser
 
 ## 📖 How to Use
 
@@ -108,17 +119,26 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - Add multiple lyrics entries to cover the entire song
 - Lyrics will appear automatically during playback at the specified times
 - Use the "×" button to remove individual lyrics entries
+- **Developer Option**: Click **"For Dev"** to import lyrics from JSON format for bulk operations
 
-### 4. Control Playback
+### 4. Customize Lyrics Color
+- Use the **Color Picker** to select a custom color for your lyrics
+- Enter a **Hex Color Code** directly in the text input (e.g., #FF5733)
+- **Copy** hex codes with the copy button for easy sharing
+- **Reset** to default color (#8B4513) anytime
+- **Recent Colors** are saved automatically for quick access
+
+### 5. Control Playback
 - **Play/Pause**: Click the play button to start/stop music
 - **Progress Bar**: Click anywhere on the progress bar to jump to that time
 - **Mute**: Toggle audio on/off
 - **Repeat**: Enable/disable repeat mode
 - **Volume**: Adjust using your system volume controls
 
-### 5. Export Video
+### 6. Export Video
 - Click **"Export WebM Video"** when ready
 - The export process will create a 720x1280 WebM video with your audio and lyrics
+- Your custom lyrics colors will be preserved in the exported video
 - Wait for the WebM export process to complete (progress is shown)
 - Download your custom WebM music video automatically when finished
 
@@ -142,6 +162,25 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Synchronized Content**: Lyrics appear at the exact timing you specify
 - **Album Art Background**: Beautiful blurred album art as background
 - **Professional Quality**: Suitable for social media and sharing
+
+## 🚀 Deployment
+
+### GitHub Pages
+This project is deployed on GitHub Pages and is available at:
+**Live Demo**: [https://koniz-dev.github.io/vinyl-music-player/](https://koniz-dev.github.io/vinyl-music-player/)
+
+#### Deployment Steps:
+1. **Enable GitHub Pages** in your repository settings
+2. **Select Source**: Choose "Deploy from a branch" → "main" branch
+3. **Automatic Deployment**: Every push to main branch automatically updates the live site
+4. **Custom Domain** (optional): Configure a custom domain in Pages settings
+
+#### Benefits:
+- **Free Hosting**: No cost for static site hosting
+- **Automatic Updates**: Deploys automatically on code changes
+- **HTTPS**: Secure connection by default
+- **Global CDN**: Fast loading worldwide
+- **Custom 404**: Support for custom error pages
 
 ## 🛠️ Technical Details
 
@@ -167,6 +206,7 @@ vinyl-music-player/
 ├── package.json                  # Project configuration and dependencies
 ├── package-lock.json             # Dependency lock file
 ├── README.md                     # Project documentation
+├── LICENSE                       # MIT License file
 ├── favicon/                      # Favicon and PWA icons
 │   ├── favicon.ico               # Main favicon
 │   ├── favicon-16x16.png         # 16x16 favicon
@@ -193,23 +233,57 @@ vinyl-music-player/
 │   ├── index.js                  # Main application entry point
 │   └── toast.js                  # Toast notification system
 └── styles/                       # CSS stylesheets
-    ├── common.css                # Shared styles and utilities
+    ├── variables.css             # CSS custom properties and variables
+    ├── base.css                  # Base styles and resets
+    ├── layout.css                # Layout and grid systems
+    ├── components.css            # Reusable component styles
+    ├── forms.css                 # Form and input styles
+    ├── music-player.css          # Vinyl player specific styles
+    ├── responsive.css            # Responsive design styles
     ├── index.css                 # Main page layout and styles
-    ├── settings.css              # Settings panel styles
-    └── vinyl-player.css          # Vinyl player specific styles
+    └── toast.css                 # Toast notification styles
 ```
 
 ## 🎨 Customization
 
 ### Styling
-- Modify CSS variables in the `<style>` sections
+- Modify CSS variables in the `variables.css` file
 - Change colors, fonts, and animations
 - Adjust the vinyl player size and positioning
+- Customize lyrics colors with the built-in color picker
 
 ### Functionality
 - Add new control buttons
 - Modify the lyrics timing system
 - Add new export formats
+- Use developer tools for bulk lyrics import
+
+## 🛠️ Developer Features
+
+### JSON Lyrics Import
+- **Bulk Import**: Import multiple lyrics at once using JSON format
+- **Developer Modal**: Access via "For Dev" button in the lyrics section
+- **JSON Format**: Use array of objects with `start`, `end`, and `text` properties
+- **Example Format**:
+  ```json
+  [
+    {"start": "00:18", "end": "00:21", "text": "I wake up in the familiar room"},
+    {"start": "00:22", "end": "00:24", "text": "Where your hand once rested"}
+  ]
+  ```
+
+### Color Management System
+- **Color Picker**: Visual color selection with real-time preview
+- **Hex Input**: Direct hex color code input with validation
+- **Color History**: Automatic saving of recently used colors
+- **Local Storage**: Persistent color preferences across sessions
+- **Export Integration**: Custom colors are preserved in video exports
+
+### Browser Compatibility Check
+- **Built-in Testing**: Check browser support for video export features
+- **MediaRecorder API**: Verify WebM export compatibility
+- **Canvas Support**: Test canvas rendering capabilities
+- **Error Handling**: Comprehensive error messages and fallbacks
 
 ## 📁 Supported File Formats
 
@@ -246,11 +320,25 @@ vinyl-music-player/
 - Check that start time is before end time
 - Ensure lyrics content is not empty
 - Make sure the audio is playing when the lyrics should appear
+- Check if lyrics color is set to a visible color
+- Verify JSON import format if using developer features
 
 **Vinyl Not Spinning**
 - Ensure audio is loaded and playing
 - Check that the vinyl player is visible on screen
 - Try refreshing the page
+
+**Color Customization Issues**
+- Check that hex color codes are valid (e.g., #FF5733)
+- Ensure color picker is working in your browser
+- Try resetting to default color if custom colors don't work
+- Clear browser cache if color history isn't saving
+
+**JSON Import Problems**
+- Verify JSON format is valid (use JSON validator)
+- Check that start/end times are in MM:SS format
+- Ensure all required fields (start, end, text) are present
+- Make sure text content is not empty
 
 ### Browser Compatibility
 - **Chrome 60+**: Full support
