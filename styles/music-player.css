@@ -20,20 +20,6 @@
     margin-bottom: var(--spacing-xl);
 }
 
-.player-panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
-    margin-bottom: var(--spacing-xl);
-    position: relative;
-    box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(10px);
-    flex-shrink: 0;
-}
-
 .vinyl-section {
     flex: 1;
     display: flex;
@@ -154,14 +140,14 @@
 .cord-line {
     width: var(--spacing-xs);
     height: 38px;
-    background: #c8bda9;
+    background: #d9cdbd;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .cord-handle {
     width: 12px;
     height: 18px;
-    background: #c8bda9;
+    background: #d9cdbd;
     border-radius: 16px 16px 3px 3px;
     box-shadow: 
         0 2px 4px rgba(0, 0, 0, 0.2),
@@ -197,7 +183,7 @@
 
 .artist-name {
     font-size: var(--text-sm);
-    color: rgba(139, 69, 19, 0.8);
+    color: #8B4513;
     font-weight: var(--font-normal);
     letter-spacing: 0.5px;
     height: 18px;
@@ -212,7 +198,6 @@
     transition: var(--transition-normal);
     min-height: 20px;
     font-weight: var(--font-medium);
-    color: #8B4513;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 

@@ -1,7 +1,7 @@
 class LyricsColorManager {
     constructor() {
         // Initialize with default color
-        this.currentColor = '#8B4513';
+        this.currentColor = '#766142';
         this.colorHistory = [];
         
         this.initializeElements();
@@ -204,10 +204,10 @@ class LyricsColorManager {
     loadCurrentColor() {
         try {
             const saved = localStorage.getItem('lyricsCurrentColor');
-            return saved || '#8B4513';
+            return saved || '#766142';
         } catch (error) {
             window.safeLog.warn('Failed to load current color:', error);
-            return '#8B4513';
+            return '#766142';
         }
     }
     
@@ -221,14 +221,14 @@ class LyricsColorManager {
     
     
     resetToDefault() {
-        this.currentColor = '#8B4513';
+        this.currentColor = '#766142';
         
         this.moveDefaultColorToFront();
         this.saveCurrentColor();
     }
     
     ensureDefaultColorInHistory() {
-        const defaultColor = '#8B4513';
+        const defaultColor = '#766142';
         
         if (!this.colorHistory.includes(defaultColor)) {
             this.colorHistory.push(defaultColor);
@@ -242,7 +242,7 @@ class LyricsColorManager {
     }
     
     moveDefaultColorToFront() {
-        const defaultColor = '#8B4513';
+        const defaultColor = '#766142';
         
         this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
         this.colorHistory.unshift(defaultColor);
