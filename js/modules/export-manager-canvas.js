@@ -21,10 +21,33 @@ class ExportManagerCanvas {
         });
     }
 
-    static async renderToCanvas(exportCtx, exportCanvas, vinylRotation, albumArtImage, exportAudio, exportLyrics, exportLyricsColor) {
+    static async renderToCanvas(exportCtx, exportCanvas, vinylRotation, albumArtImage, exportAudio, exportLyrics, exportLyricsColor, exportMusicPlayerColors = null) {
         if (!exportCtx) return;
 
         // Vinyl rotation is handled by export-manager.js
+        
+        // Helper function to get music player colors with fallback
+        const getMusicPlayerColor = (colorKey) => {
+            if (exportMusicPlayerColors && exportMusicPlayerColors[colorKey]) {
+                return exportMusicPlayerColors[colorKey];
+            }
+            // Fallback to default colors
+            const defaultColors = {
+                light40: '#c8bda9',
+                light35: '#d9cdbd',
+                light35Alt: '#d8cdb9',
+                light25: '#c4b5a0',
+                light20: '#ada28e',
+                light15: '#b0a591',
+                primary: '#8B4513',
+                primary80: 'rgba(139, 69, 19, 0.8)',
+                dark15: '#766142',
+                dark20: '#786d59',
+                dark30: '#6b5d4a',
+                dark40: '#7a6e70'
+            };
+            return defaultColors[colorKey] || '#8B4513';
+        };
 
         // Clear canvas
         exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
@@ -45,7 +68,7 @@ class ExportManagerCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 20;
         
-        exportCtx.fillStyle = '#c8bda9';
+        exportCtx.fillStyle = getMusicPlayerColor('light40');
         exportCtx.beginPath();
         const radius = 24; // --radius-2xl
         exportCtx.moveTo(musicPlayerX + radius, musicPlayerY);
@@ -65,14 +88,14 @@ class ExportManagerCanvas {
         const artistName = document.querySelector('.artist-name')?.textContent || '';
         const lyricsText = document.querySelector('.vinyl-lyrics-text')?.textContent || '';
 
-        exportCtx.fillStyle = '#8B4513';
+        exportCtx.fillStyle = getMusicPlayerColor('primary');
         exportCtx.font = `bold 28px 'Patrick Hand', Arial, sans-serif`; // Looks like 28px in HTML
         exportCtx.textAlign = 'center';
         exportCtx.fillText(songTitle, musicPlayerX + musicPlayerWidth / 2, musicPlayerY + 80); // Tăng từ 50 lên 80
 
         if (artistName) {
             exportCtx.font = `16px 'Patrick Hand', Arial, sans-serif`; // Looks like 16px in HTML
-            exportCtx.fillStyle = 'rgba(139, 69, 19, 0.8)';
+            exportCtx.fillStyle = getMusicPlayerColor('primary80');
             exportCtx.fillText(artistName, musicPlayerX + musicPlayerWidth / 2, musicPlayerY + 105); // Tăng từ 75 lên 105
         }
 
@@ -92,7 +115,7 @@ class ExportManagerCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 8;
         
-        exportCtx.fillStyle = '#d9cdbd';
+        exportCtx.fillStyle = getMusicPlayerColor('light35');
         exportCtx.beginPath();
         const containerRadius = 32; // --radius-4xl
         exportCtx.moveTo(deviceContainerX + containerRadius, deviceContainerY);
@@ -174,7 +197,7 @@ class ExportManagerCanvas {
         
         // Draw circular screen - CSS: background: #7a6e70, border: 8px solid #7a6e70
         // Since border and background are same color, just draw one circle
-        exportCtx.fillStyle = '#7a6e70';
+        exportCtx.fillStyle = getMusicPlayerColor('dark40');
         exportCtx.beginPath();
         exportCtx.arc(centerX, centerY, circularScreenSize/2, 0, 2 * Math.PI);
         exportCtx.fill();
@@ -255,7 +278,7 @@ class ExportManagerCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 1;
         
-        exportCtx.fillStyle = '#c8bda9';
+        exportCtx.fillStyle = getMusicPlayerColor('light40');
         exportCtx.fillRect(cordX - cordWidth/2, cordY, cordWidth, cordHeight);
         exportCtx.restore();
         
@@ -266,7 +289,7 @@ class ExportManagerCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 2;
         
-        exportCtx.fillStyle = '#c8bda9';
+        exportCtx.fillStyle = getMusicPlayerColor('light40');
         const handleX = cordX - handleWidth/2;
         const handleY = cordY + cordHeight - 4; // CSS: margin-top: -4px
         
@@ -322,7 +345,7 @@ class ExportManagerCanvas {
         const progressBarY = progressContainerY + 10;
         
         // Progress bar background - EXACT HTML CSS values
-        exportCtx.fillStyle = '#ada28e'; // CSS: background: #ada28e
+        exportCtx.fillStyle = getMusicPlayerColor('light20'); // CSS: background: #ada28e
         exportCtx.save();
         exportCtx.beginPath();
         const bgRadius = 4; // CSS: border-radius: var(--spacing-xs) = 4px
@@ -351,7 +374,7 @@ class ExportManagerCanvas {
         }
         const progressWidth = progressBarWidth * progressPercent;
         
-        exportCtx.fillStyle = '#766142'; // CSS: background: #766142
+        exportCtx.fillStyle = getMusicPlayerColor('dark15'); // CSS: background: #766142
         exportCtx.save();
         exportCtx.beginPath();
         const fillRadius = 4; // CSS: border-radius: var(--spacing-xs) = 4px
@@ -377,7 +400,7 @@ class ExportManagerCanvas {
         exportCtx.fill();
         
         // Time display - EXACT HTML values
-        exportCtx.fillStyle = '#766142';
+        exportCtx.fillStyle = getMusicPlayerColor('dark15');
         exportCtx.font = `12px 'Patrick Hand', Arial, sans-serif`; // --text-xs = 12px
         exportCtx.textAlign = 'left';
         const formatTime = (seconds) => {
@@ -436,17 +459,17 @@ class ExportManagerCanvas {
                 const playButtonYCenter = buttonY + playButtonSize/2;
                 
                 // CSS: background: #d8cdb9, border: 4px solid #b0a591 !important (vinyl-play-pause-btn)
-                exportCtx.fillStyle = '#d8cdb9';
+                exportCtx.fillStyle = getMusicPlayerColor('light35Alt');
                 exportCtx.beginPath();
                 exportCtx.arc(playButtonX, playButtonYCenter, playButtonSize/2, 0, 2 * Math.PI);
                 exportCtx.fill();
                 
                 // Draw border like CSS border: 4px solid #b0a591 !important
-                exportCtx.strokeStyle = '#b0a591';
+                exportCtx.strokeStyle = getMusicPlayerColor('light15');
                 exportCtx.lineWidth = 4;
                 exportCtx.stroke();
                 
-                exportCtx.fillStyle = '#786d59'; // CSS: color: #786d59
+                exportCtx.fillStyle = getMusicPlayerColor('dark20'); // CSS: color: #786d59
                 exportCtx.font = `28px FontAwesome`; // CSS: font-size: var(--text-3xl) = 28px
                 exportCtx.textAlign = 'center';
                 exportCtx.textBaseline = 'middle';
@@ -464,20 +487,20 @@ class ExportManagerCanvas {
                     exportCtx.arc(buttonX, buttonYCenter, buttonSize/2, 0, 2 * Math.PI);
                     exportCtx.fill();
                     
-                    exportCtx.fillStyle = '#786d59';
+                    exportCtx.fillStyle = getMusicPlayerColor('dark20');
                 } else {
                     // Previous (nth-child(2)) and Next (nth-child(4)) buttons - CSS: border: 3px solid #b0a591
-                    exportCtx.fillStyle = '#d8cdb9';
+                    exportCtx.fillStyle = getMusicPlayerColor('light35Alt');
                     exportCtx.beginPath();
                     exportCtx.arc(buttonX, buttonYCenter, buttonSize/2, 0, 2 * Math.PI);
                     exportCtx.fill();
                     
                     // Draw border like CSS border: 3px solid #b0a591
-                    exportCtx.strokeStyle = '#b0a591';
+                    exportCtx.strokeStyle = getMusicPlayerColor('light15');
                     exportCtx.lineWidth = 3;
                     exportCtx.stroke();
                     
-                    exportCtx.fillStyle = '#786d59';
+                    exportCtx.fillStyle = getMusicPlayerColor('dark20');
                 }
                 
                 exportCtx.font = `20px FontAwesome`; // CSS: font-size: var(--text-xl) = 20px

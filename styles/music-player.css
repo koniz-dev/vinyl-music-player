@@ -2,7 +2,7 @@
     width: 350px;
     max-width: 100%;
     aspect-ratio: 9 / 16;
-    background: #c8bda9;
+    background: var(--vinyl-primary-light-40);
     border-radius: var(--radius-2xl);
     position: relative;
     display: flex;
@@ -31,7 +31,7 @@
 
 .device-container {
     position: relative;
-    background: #d9cdbd;
+    background: var(--vinyl-primary-light-35);
     border-radius: var(--radius-4xl);
     display: flex;
     align-items: center;
@@ -107,8 +107,8 @@
     height: 180px;
     max-width: 100%;
     border-radius: var(--radius-full);
-    background: #7a6e70;
-    border: 8px solid #7a6e70;
+    background: var(--vinyl-primary-dark-40);
+    border: 8px solid var(--vinyl-primary-dark-40);
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -140,14 +140,14 @@
 .cord-line {
     width: var(--spacing-xs);
     height: 38px;
-    background: #d9cdbd;
+    background: var(--vinyl-primary-light-35);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .cord-handle {
     width: 12px;
     height: 18px;
-    background: #d9cdbd;
+    background: var(--vinyl-primary-light-35);
     border-radius: 16px 16px 3px 3px;
     box-shadow: 
         0 2px 4px rgba(0, 0, 0, 0.2),
@@ -175,7 +175,7 @@
     font-size: var(--text-2xl);
     font-weight: var(--font-bold);
     letter-spacing: 1px;
-    color: #8B4513;
+    color: var(--vinyl-primary);
     height: 30px;
     line-height: 30px;
     overflow: hidden;
@@ -183,7 +183,7 @@
 
 .artist-name {
     font-size: var(--text-sm);
-    color: #8B4513;
+    color: var(--vinyl-primary-80);
     font-weight: var(--font-normal);
     letter-spacing: 0.5px;
     height: 18px;
@@ -205,13 +205,13 @@
     width: 100%;
     padding: 0 var(--spacing-xl);
     flex-shrink: 0;
-    color: #766142;
+    color: var(--vinyl-primary-dark-15);
 }
 
 .vinyl-progress-bar {
     width: 100%;
     height: var(--spacing-xs);
-    background: #ada28e;
+    background: var(--vinyl-primary-light-20);
     border-radius: var(--spacing-xs);
     position: relative;
     cursor: pointer;
@@ -219,7 +219,7 @@
 
 .vinyl-progress {
     height: 100%;
-    background: #766142;
+    background: var(--color-primary-dark-15);
     border-radius: var(--spacing-xs);
     width: 0%;
     transition: width 0.1s ease;
@@ -244,9 +244,9 @@
     width: 44px;
     height: 44px;
     border-radius: var(--radius-full);
-    background: #d8cdb9;
+    background: var(--vinyl-primary-light-35-alt);
     border: none;
-    color: #786d59;
+    color: var(--vinyl-primary-dark-20);
     font-size: var(--text-xl);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -258,41 +258,46 @@
 }
 
 .control-btn:hover {
-    background: #c4b5a0;
-    color: #6b5d4a;
+    background: var(--vinyl-primary-light-25);
+    color: var(--vinyl-primary-dark-30);
 }
 
 .vinyl-play-pause-btn {
     width: 60px !important;
     height: 60px !important;
     font-size: var(--text-3xl) !important;
-    background: #d8cdb9 !important;
-    color: #786d59 !important;
-    border: 4px solid #b0a591 !important;
+    background: var(--vinyl-primary-light-35-alt) !important;
+    color: var(--vinyl-primary-dark-20) !important;
+    border: 4px solid var(--vinyl-primary-light-15) !important;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
 
 .vinyl-play-pause-btn:hover {
-    background: #c4b5a0 !important;
-    color: #6b5d4a !important;
+    background: var(--vinyl-primary-light-25) !important;
+    color: var(--vinyl-primary-dark-30) !important;
 }
 
 .controls .control-btn:nth-child(2),
 .controls .control-btn:nth-child(3),
 .controls .control-btn:nth-child(4) {
-    border: 3px solid #b0a591;
+    border: 3px solid var(--vinyl-primary-light-15);
 }
 
 .controls .control-btn:nth-child(1),
-.controls .control-btn:nth-child(5) {
-    background: transparent;
+.controls .control-btn:nth-child(5),
+.vinyl-mute-btn,
+.vinyl-repeat-btn {
+    background: transparent !important;
+    color: var(--vinyl-primary-dark-20) !important;
 }
 
 .controls .control-btn:nth-child(1):hover,
-.controls .control-btn:nth-child(5):hover {
-    background: #c4b5a0;
-    color: #6b5d4a;
+.controls .control-btn:nth-child(5):hover,
+.vinyl-mute-btn:hover,
+.vinyl-repeat-btn:hover {
+    background: var(--vinyl-primary-light-25) !important;
+    color: var(--vinyl-primary-dark-30) !important;
 }
 
 .control-btn-disabled {

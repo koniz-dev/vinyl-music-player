@@ -81,6 +81,9 @@ class ExportManager {
             // Setup export lyrics
             this.setupExportLyrics();
             
+            // Setup export music player colors
+            this.setupExportMusicPlayerColors();
+            
             const loadingPromises = [];
             
             if (albumArtFile) {
@@ -201,6 +204,28 @@ class ExportManager {
         }
     }
     
+    setupExportMusicPlayerColors() {
+        // Get current music player color variants
+        if (window.musicPlayerThemeManager) {
+            this.exportMusicPlayerColors = window.musicPlayerThemeManager.getCurrentVariants();
+        } else {
+            // Fallback to default colors
+            this.exportMusicPlayerColors = {
+                primary: '#8B4513',
+                light40: '#c8bda9',
+                light35: '#d9cdbd',
+                light35Alt: '#d8cdb9',
+                light25: '#c4b5a0',
+                light20: '#ada28e',
+                light15: '#b0a591',
+                dark15: '#766142',
+                dark20: '#786d59',
+                dark30: '#6b5d4a',
+                dark40: '#7a6e70'
+            };
+        }
+    }
+    
     async startRecording() {
         const canvasStream = this.exportCanvas.captureStream(30);
         
@@ -300,7 +325,8 @@ class ExportManager {
                         this.albumArtImage,
                         this.exportAudio,
                         this.exportLyrics,
-                        this.exportLyricsColor
+                        this.exportLyricsColor,
+                        this.exportMusicPlayerColors
                     );
                 }
                 

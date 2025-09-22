@@ -152,6 +152,28 @@
 
                         <div class="form-group">
                             <div class="form-label">
+                                <i class="fas fa-paint-brush"></i> Music Player Color
+                            </div>
+                            <div class="color-settings-container">
+                                <div class="color-picker-section">
+                                    <input type="color" class="color-picker" id="music-player-color-picker" value="#8B4513" aria-label="Select music player color">
+                                    <input type="text" class="color-preview-input" id="music-player-color-preview-input" placeholder="#8B4513" maxlength="7" aria-label="Enter hex color code">
+                                    <button type="button" class="copy-hex-btn" id="music-player-copy-hex-btn" title="Copy hex code">
+                                        <span class="copy-icon"><i class="fas fa-copy"></i></span>
+                                    </button>
+                                    <button type="button" class="reset-color-btn" id="music-player-reset-color-btn" title="Reset to default color">
+                                        <span class="reset-icon"><i class="fas fa-redo"></i></span>
+                                    </button>
+                                </div>
+                                <div class="color-history-section">
+                                    <div class="color-history-label">Recent Colors:</div>
+                                    <div class="color-history" id="music-player-color-history"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label">
                                 <i class="fas fa-edit"></i> Lyrics
                             </div>
                             <div class="lyrics-container" id="lyrics-container">
@@ -302,6 +324,8 @@
     <script src="js/modules/export-manager-canvas.js" defer onerror="console.error('Failed to load export-manager-canvas.js')"></script>
     <script src="js/modules/export-manager.js" defer onerror="console.error('Failed to load export-manager.js')"></script>
     <script src="js/modules/lyrics-color-manager.js" defer onerror="console.error('Failed to load lyrics-color-manager.js')"></script>
+    <script src="js/modules/music-player-color-manager.js" defer onerror="console.error('Failed to load music-player-color-manager.js')"></script>
+    <script src="js/modules/music-player-theme-manager.js" defer onerror="console.error('Failed to load music-player-theme-manager.js')"></script>
     <script src="js/modules/settings-manager.js" defer onerror="console.error('Failed to load settings-manager.js')"></script>
     
     <script src="js/toast.js" defer onerror="console.error('Failed to load toast.js')"></script>

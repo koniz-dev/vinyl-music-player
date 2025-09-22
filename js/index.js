@@ -63,6 +63,18 @@ class VinylMusicPlayerApp {
             window.lyricsColorManager = this.modules.lyricsColorManager; // Set global reference
         }
         
+        // Initialize Music Player Color Manager
+        if (window.MusicPlayerColorManager) {
+            this.modules.musicPlayerColorManager = new window.MusicPlayerColorManager();
+            window.musicPlayerColorManager = this.modules.musicPlayerColorManager; // Set global reference
+        }
+        
+        // Initialize Music Player Theme Manager
+        if (window.MusicPlayerThemeManager) {
+            this.modules.musicPlayerThemeManager = new window.MusicPlayerThemeManager();
+            window.musicPlayerThemeManager = this.modules.musicPlayerThemeManager; // Set global reference
+        }
+        
         // Initialize Settings Manager
         if (window.SettingsManager) {
             this.modules.settingsManager = new window.SettingsManager();
