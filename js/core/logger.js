@@ -133,20 +133,6 @@ class Logger {
         return [...this.logHistory];
     }
 
-    // Clear log history
-    clearHistory() {
-        this.logHistory = [];
-    }
-
-    // Export logs for debugging
-    exportLogs() {
-        return {
-            timestamp: new Date().toISOString(),
-            logLevel: this.logLevel,
-            isDevelopment: this.isDevelopment,
-            history: this.logHistory
-        };
-    }
 
     // Module-specific logging
     module(moduleName) {
@@ -158,23 +144,6 @@ class Logger {
         };
     }
 
-    // Enable debug mode for production (useful for troubleshooting)
-    enableDebugMode() {
-        this.setLogLevel('debug');
-        if (window.eventBus) {
-            window.eventBus.setDebug(true);
-        }
-        console.log('Debug mode enabled. All logs will be shown.');
-    }
-
-    // Disable debug mode
-    disableDebugMode() {
-        this.setLogLevel('warn');
-        if (window.eventBus) {
-            window.eventBus.setDebug(false);
-        }
-        console.log('Debug mode disabled. Only warnings and errors will be shown.');
-    }
 }
 
 // Create global logger instance
@@ -189,9 +158,6 @@ window.log = {
     error: (message, data) => logger.error(message, data)
 };
 
-// Global debug control methods
-window.enableDebugMode = () => logger.enableDebugMode();
-window.disableDebugMode = () => logger.disableDebugMode();
 
 // Utility functions to avoid code duplication
 window.safeLog = {

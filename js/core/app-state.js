@@ -197,13 +197,6 @@ class AppState {
         this.notifyListeners('*', this.state, oldState);
     }
     
-    getSnapshot() {
-        return {
-            state: JSON.parse(JSON.stringify(this.state)),
-            historySize: this.history.length,
-            listenersCount: Array.from(this.listeners.values()).reduce((sum, set) => sum + set.size, 0)
-        };
-    }
 }
 
 const appState = new AppState();

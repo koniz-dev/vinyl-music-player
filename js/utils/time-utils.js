@@ -81,29 +81,6 @@ class TimeUtils {
     
     
     
-    static calculateProgress(currentTime, totalTime) {
-        if (!totalTime || totalTime <= 0) return 0;
-        return Math.min((currentTime / totalTime) * (window.Constants?.UI.PROGRESS_MAX || 100), window.Constants?.UI.PROGRESS_MAX || 100);
-    }
-    
-    static timeFromProgress(progress, totalTime) {
-        if (!totalTime || totalTime <= 0) return 0;
-        return Math.floor((progress / (window.Constants?.UI.PROGRESS_MAX || 100)) * totalTime);
-    }
-    
-    static createTimeRange(startTime, endTime, text) {
-        const validation = this.validateTimeRange(startTime, endTime);
-        
-        if (!validation.isValid) {
-            throw new Error(`Invalid time range: ${validation.errors.join(', ')}`);
-        }
-        
-        return {
-            start: this.timeToSeconds(startTime),
-            end: this.timeToSeconds(endTime),
-            text: text || ''
-        };
-    }
     
     static findCurrentLyricIndex(lyrics, currentTime) {
         if (!lyrics || !Array.isArray(lyrics)) return -1;

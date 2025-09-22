@@ -61,9 +61,28 @@ class Constants {
 
     static COLORS = {
         BACKGROUND_GRADIENT: {
-            START: '#667eea',
-            MIDDLE: '#f093fb',
-            END: '#f5576c'
+            COLORS: [
+                '#667eea', // Blue
+                '#764ba2', // Purple
+                '#f093fb', // Pink
+                '#f5576c', // Red-pink
+                '#4facfe', // Light blue
+                '#00f2fe', // Cyan
+                '#43e97b', // Green
+                '#38f9d7', // Teal
+                '#fa709a', // Rose
+                '#fee140', // Yellow
+                '#a8edea', // Mint
+                '#d299c2', // Lavender
+                '#ffecd2', // Peach
+                '#fcb69f', // Coral
+                '#ff9a9e', // Pink-red
+                '#fecfef', // Light pink
+                '#a6c1ee', // Periwinkle
+                '#fbc2eb', // Light purple
+                '#a8caba', // Sage green
+                '#ffd3a5'  // Apricot
+            ]
         },
         VINYL: {
             CENTER_START: '#667eea',

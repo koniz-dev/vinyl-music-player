@@ -4,25 +4,71 @@
  */
 class CanvasUtils {
     static constants = window.Constants;
+    static cachedGradient = null;
 
     /**
-     * Create background gradient (purple to pink)
+     * Create background gradient with multiple colors
      */
     static createBackgroundGradient(ctx, width, height) {
         const gradient = ctx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, this.constants?.COLORS.BACKGROUND_GRADIENT.START || '#667eea');
-        gradient.addColorStop(0.5, this.constants?.COLORS.BACKGROUND_GRADIENT.MIDDLE || '#f093fb');
-        gradient.addColorStop(1, this.constants?.COLORS.BACKGROUND_GRADIENT.END || '#f5576c');
+        
+        // Get colors from constants
+        const colors = this.constants?.COLORS.BACKGROUND_GRADIENT.COLORS || ['#667eea', '#f093fb', '#f5576c'];
+        
+        // Add color stops evenly distributed
+        colors.forEach((color, index) => {
+            const position = index / (colors.length - 1);
+            gradient.addColorStop(position, color);
+        });
+        
         return gradient;
+    }
+
+    /**
+     * Create random background gradient with multiple colors
+     */
+    static createRandomBackgroundGradient(ctx, width, height) {
+        const gradient = ctx.createLinearGradient(0, 0, width, height);
+        
+        // Get colors from constants
+        const allColors = this.constants?.COLORS.BACKGROUND_GRADIENT.COLORS || ['#667eea', '#f093fb', '#f5576c'];
+        
+        // Randomly select 4-6 colors
+        const numColors = Math.floor(Math.random() * 3) + 4; // 4-6 colors
+        const selectedColors = [];
+        
+        for (let i = 0; i < numColors; i++) {
+            const randomIndex = Math.floor(Math.random() * allColors.length);
+            selectedColors.push(allColors[randomIndex]);
+        }
+        
+        // Add color stops
+        selectedColors.forEach((color, index) => {
+            const position = index / (selectedColors.length - 1);
+            gradient.addColorStop(position, color);
+        });
+        
+        return gradient;
+    }
+
+    /**
+     * Reset cached gradient to generate new random colors
+     */
+    static resetBackgroundGradient() {
+        this.cachedGradient = null;
     }
 
     /**
      * Draw background with gradient and overlay
      */
     static drawBackground(ctx, width, height) {
+        // Create gradient only once and cache it
+        if (!this.cachedGradient) {
+            this.cachedGradient = this.createRandomBackgroundGradient(ctx, width, height);
+        }
+        
         // Background gradient
-        const bodyGradient = this.createBackgroundGradient(ctx, width, height);
-        ctx.fillStyle = bodyGradient;
+        ctx.fillStyle = this.cachedGradient;
         ctx.fillRect(0, 0, width, height);
         
         // Semi-transparent overlay

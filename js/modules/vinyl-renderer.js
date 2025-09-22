@@ -95,19 +95,6 @@ class VinylRenderer {
     }
     
     
-    updateRotation(rotation) {
-        this.rotation = rotation;
-        this.appState.set('vinyl.rotation', rotation);
-        
-        if (this.vinylElement) {
-            this.vinylElement.style.transform = `rotate(${rotation}deg)`;
-        }
-        
-        if (this.albumArtElement) {
-            this.albumArtElement.style.transform = `rotate(${rotation}deg)`;
-        }
-    }
-    
     
     setupEventListeners() {
         // Animation is controlled by AppState changes, not direct audio events

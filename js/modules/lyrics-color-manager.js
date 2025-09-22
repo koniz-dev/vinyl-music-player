@@ -233,8 +233,8 @@ class LyricsColorManager {
         if (!this.colorHistory.includes(defaultColor)) {
             this.colorHistory.push(defaultColor);
             
-            if (this.colorHistory.length > this.maxHistorySize) {
-                this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
+            if (this.colorHistory.length > 5) {
+                this.colorHistory = this.colorHistory.slice(0, 5);
             }
             
             this.saveColorHistory();

@@ -169,16 +169,6 @@ class AudioPlayer {
         }
     }
     
-    stop() {
-        if (!this.audioElement) return;
-        
-        this.audioElement.pause();
-        this.audioElement.currentTime = 0;
-        this.appState.set('audio.isPlaying', false);
-        this.appState.set('audio.currentTime', 0);
-        this.updatePlayerState();
-        this.eventBus.emit('audio:stop');
-    }
     
     async restartAudio() {
         if (!this.audioElement) return;
@@ -211,14 +201,6 @@ class AudioPlayer {
         this.eventBus.emit('audio:seek', { time: clampedTime });
     }
     
-    setVolume(volume) {
-        if (!this.audioElement) return;
-        
-        const clampedVolume = Math.max(0, Math.min(1, volume));
-        this.audioElement.volume = clampedVolume;
-        this.appState.set('audio.volume', clampedVolume);
-        this.eventBus.emit('audio:volumeChange', { volume: clampedVolume });
-    }
     
     toggleMute() {
         if (!this.audioElement) return;
@@ -367,10 +349,8 @@ class AudioPlayer {
         
         // Listen for control requests
         this.eventBus.on('audio:requestPause', () => this.pause());
-        this.eventBus.on('audio:requestStop', () => this.stop());
         this.eventBus.on('audio:requestToggle', () => this.togglePlayPause());
         this.eventBus.on('audio:requestSeek', (data) => this.seekTo(data.time));
-        this.eventBus.on('audio:requestVolume', (data) => this.setVolume(data.volume));
         this.eventBus.on('audio:requestMute', () => this.toggleMute());
         this.eventBus.on('audio:requestRepeat', () => this.toggleRepeat());
         this.eventBus.on('audio:requestUpdateUI', () => this.updatePlayerState());

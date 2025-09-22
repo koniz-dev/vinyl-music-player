@@ -277,15 +277,6 @@ class LyricsManager {
     }
     
     
-    
-    clearLyrics() {
-        this.appState.set('lyrics.items', []);
-        this.appState.set('lyrics.currentIndex', -1);
-        this.currentLyricIndex = -1;
-        this.clearLyricsDisplay();
-        
-        this.eventBus.emit('lyrics:cleared');
-    }
 }
 
 if (typeof module !== 'undefined' && module.exports) {

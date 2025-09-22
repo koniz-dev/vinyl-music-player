@@ -96,23 +96,6 @@ class FileUtils {
         URL.revokeObjectURL(url);
     }
     
-    static readAsText(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = (e) => reject(e);
-            reader.readAsText(file);
-        });
-    }
-    
-    static readAsDataURL(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = (e) => reject(e);
-            reader.readAsDataURL(file);
-        });
-    }
     
     static validateAudioFile(file) {
         const allowedTypes = window.Constants?.AUDIO.SUPPORTED_FORMATS || [
@@ -166,23 +149,6 @@ class FileUtils {
         return { isValid: true, error: null };
     }
     
-    static loadImageFromFile(file) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = (e) => reject(new Error('Failed to load image'));
-            img.src = this.createObjectURL(file);
-        });
-    }
-    
-    static createAudioFromFile(file) {
-        return new Promise((resolve, reject) => {
-            const audio = new Audio();
-            audio.onloadedmetadata = () => resolve(audio);
-            audio.onerror = (e) => reject(new Error('Failed to load audio'));
-            audio.src = this.createObjectURL(file);
-        });
-    }
     
 }
 

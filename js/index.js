@@ -284,11 +284,6 @@ class VinylMusicPlayerApp {
         }
     }
     
-    forwardMessageToParent(type, data) {
-        if (window.parent && window.parent !== window) {
-            window.parent.postMessage({ type, ...data }, '*');
-        }
-    }
     
     
     destroy() {
