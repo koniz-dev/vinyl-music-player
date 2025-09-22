@@ -1,12 +1,171 @@
-@media (max-width: 768px) {
+/* Large tablets and small desktops */
+@media (max-width: 1200px) {
+    :root {
+        font-size: calc(var(--text-scale-tablet) * 16px);
+    }
+    
     .container {
-        padding: var(--spacing-xl);
+        gap: var(--spacing-md);
+    }
+    
+    .left-panel,
+    .right-panel {
+        margin: 0 var(--spacing-md) var(--spacing-lg) var(--spacing-md);
+    }
+    
+    .music-player {
+        width: 320px;
+        padding: var(--spacing-xl) var(--spacing-lg);
     }
 }
 
-@media (max-width: 480px) {
-    .container {
+/* Tablets */
+@media (max-width: 768px) {
+    :root {
+        font-size: calc(var(--text-scale-mobile) * 16px);
+    }
+    
+    .main-header {
         padding: var(--spacing-lg);
+    }
+    
+    .main-title {
+        font-size: var(--text-2xl);
+    }
+    
+    .main-icon {
+        font-size: var(--text-3xl);
+    }
+    
+    .container {
+        flex-direction: column;
+        height: auto;
+        gap: var(--spacing-lg);
+        padding: var(--spacing-lg);
+    }
+    
+    .left-panel,
+    .right-panel {
+        width: 100%;
+        margin: 0;
+        min-height: 400px;
+    }
+    
+    .panel-content {
+        padding: var(--spacing-lg);
+    }
+    
+    .header h1 {
+        font-size: var(--text-2xl);
+    }
+    
+    .music-icon {
+        font-size: var(--text-3xl);
+    }
+    
+    .music-player {
+        width: 300px;
+        padding: var(--spacing-6xl) var(--spacing-lg);
+    }
+    
+    .circular-screen {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .vinyl-album-art {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .device-container {
+        padding: var(--spacing-4xl);
+    }
+    
+    .speaker-grille-left,
+    .speaker-grille-right {
+        width: 14px;
+        height: 45px;
+    }
+    
+    .speaker-grille-left::before,
+    .speaker-grille-right::before {
+        height: 37px;
+    }
+}
+
+/* Mobile landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+    .container {
+        flex-direction: row;
+        height: calc(100vh - 60px);
+    }
+    
+    .left-panel,
+    .right-panel {
+        width: 50%;
+        min-height: auto;
+    }
+    
+    .music-player {
+        width: 280px;
+        padding: var(--spacing-4xl) var(--spacing-md);
+    }
+    
+    .circular-screen {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .vinyl-album-art {
+        width: 130px;
+        height: 130px;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    .main-header {
+        padding: var(--spacing-md);
+    }
+    
+    .main-title {
+        font-size: var(--text-xl);
+        gap: var(--spacing-sm);
+    }
+    
+    .main-icon {
+        font-size: var(--text-2xl);
+    }
+    
+    .container {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+    
+    .panel-content {
+        padding: var(--spacing-md);
+    }
+    
+    .header {
+        margin-bottom: var(--spacing-2xl);
+    }
+    
+    .header h1 {
+        font-size: var(--text-xl);
+        gap: var(--spacing-sm);
+    }
+    
+    .music-icon {
+        font-size: var(--text-2xl);
+    }
+    
+    .subtitle {
+        font-size: var(--text-sm);
+    }
+    
+    .form-group {
+        margin-bottom: var(--spacing-xl);
     }
     
     .upload-area {
@@ -17,41 +176,323 @@
         padding: var(--spacing-md) var(--spacing-lg);
         font-size: 14px;
     }
+    
+    .music-player {
+        width: 280px;
+        padding: var(--spacing-md);
+    }
+    
+    .circular-screen {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .vinyl-album-art {
+        width: 130px;
+        height: 130px;
+    }
+    
+    .device-container {
+        padding: var(--spacing-3xl);
+    }
+    
+    .speaker-grille-left,
+    .speaker-grille-right {
+        width: 12px;
+        height: 40px;
+    }
+    
+    .speaker-grille-left::before,
+    .speaker-grille-right::before {
+        height: 32px;
+    }
+    
+    .song-title {
+        font-size: var(--text-lg);
+    }
+    
+    .artist-name {
+        font-size: var(--text-xs);
+    }
+    
+    .vinyl-lyrics-text {
+        font-size: var(--text-sm);
+    }
+    
+    .control-btn {
+        width: 40px;
+        height: 40px;
+        font-size: var(--text-lg);
+    }
+    
+    .vinyl-play-pause-btn {
+        width: 56px !important;
+        height: 56px !important;
+        font-size: var(--text-2xl) !important;
+    }
+    
+    .progress-time {
+        font-size: 10px;
+    }
 }
 
-@media (max-width: 400px) {
+/* Small mobile phones */
+@media (max-width: 360px) {
+    .main-title {
+        font-size: var(--text-lg);
+    }
+    
+    .main-icon {
+        font-size: var(--text-xl);
+    }
+    
+    .container {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+    
+    .panel-content {
+        padding: var(--spacing-sm);
+    }
+    
+    .header h1 {
+        font-size: var(--text-lg);
+    }
+    
+    .music-icon {
+        font-size: var(--text-xl);
+    }
+    
     .music-player {
-        width: 320px;
-        height: 550px;
+        width: 260px;
+        padding: var(--spacing-4xl) var(--spacing-sm);
     }
     
-    .vinyl-container {
-        width: 160px;
-        height: 160px;
+    .circular-screen {
+        width: 120px;
+        height: 120px;
     }
     
-    .vinyl-record {
-        width: 160px;
-        height: 160px;
+    .vinyl-album-art {
+        width: 110px;
+        height: 110px;
     }
     
-    .vinyl-center {
-        width: 76px;
-        height: 76px;
+    .device-container {
+        padding: var(--spacing-2xl);
     }
     
-    .album-art, .vinyl-album-art {
-        width: 64px;
-        height: 64px;
+    .speaker-grille-left,
+    .speaker-grille-right {
+        width: 10px;
+        height: 35px;
     }
     
-    .groove-1 { width: 128px; height: 128px; top: 16px; left: 16px; }
-    .groove-2 { width: 108px; height: 108px; top: 26px; left: 26px; }
-    .groove-3 { width: 88px; height: 88px; top: 36px; left: 36px; }
+    .speaker-grille-left::before,
+    .speaker-grille-right::before {
+        height: 27px;
+    }
     
-    .tonearm {
-        height: 76px;
-        top: 12px;
-        right: 12px;
+    .song-title {
+        font-size: var(--text-base);
+    }
+    
+    .artist-name {
+        font-size: 10px;
+    }
+    
+    .vinyl-lyrics-text {
+        font-size: var(--text-xs);
+    }
+    
+    .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: var(--text-base);
+    }
+    
+    .vinyl-play-pause-btn {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: var(--text-xl) !important;
+    }
+    
+    .progress-time {
+        font-size: 9px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .control-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    .vinyl-play-pause-btn {
+        min-width: 60px !important;
+        min-height: 60px !important;
+    }
+    
+    .upload-area {
+        min-height: 120px;
+    }
+    
+    .form-input {
+        min-height: 44px;
+    }
+    
+    /* Improve touch targets */
+    .remove-lyrics-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: var(--spacing-sm);
+    }
+    
+    /* Remove hover effects on touch devices */
+    .control-btn:hover,
+    .vinyl-play-pause-btn:hover,
+    .upload-area:hover,
+    .form-input:hover {
+        transform: none;
+    }
+    
+    /* Add active states for touch feedback */
+    .control-btn:active {
+        transform: scale(0.95);
+        background: #c4b5a0;
+    }
+    
+    .vinyl-play-pause-btn:active {
+        transform: scale(0.95);
+        background: #c4b5a0 !important;
+    }
+    
+    .upload-area:active {
+        transform: scale(0.98);
+        background: rgba(102, 126, 234, 0.12);
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .vinyl-album-art {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Additional responsive improvements */
+@media (max-width: 1024px) {
+    .container {
+        padding: var(--spacing-md);
+    }
+    
+    .left-panel,
+    .right-panel {
+        margin: 0 var(--spacing-sm) var(--spacing-md) var(--spacing-sm);
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+    
+    .left-panel,
+    .right-panel {
+        margin: 0;
+        border-radius: var(--radius-md);
+    }
+    
+    .panel-content {
+        padding: var(--spacing-sm);
+    }
+    
+    .main-header {
+        padding: var(--spacing-sm);
+    }
+}
+
+/* Landscape orientation optimizations */
+@media (max-height: 500px) and (orientation: landscape) {
+    .main-header {
+        padding: var(--spacing-sm);
+    }
+    
+    .main-title {
+        font-size: var(--text-lg);
+    }
+    
+    .main-icon {
+        font-size: var(--text-xl);
+    }
+    
+    .container {
+        height: calc(100vh - 40px);
+        padding: var(--spacing-sm);
+    }
+    
+    .left-panel,
+    .right-panel {
+        min-height: auto;
+    }
+    
+    .music-player {
+        width: 250px;
+        padding: var(--spacing-3xl) var(--spacing-sm);
+    }
+    
+    .circular-screen {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .vinyl-album-art {
+        width: 110px;
+        height: 110px;
+    }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1800px;
+        margin: 0 auto;
+    }
+    
+    .music-player {
+        width: 400px;
+    }
+    
+    .circular-screen {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .vinyl-album-art {
+        width: 190px;
+        height: 190px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .main-header,
+    .left-panel {
+        display: none;
+    }
+    
+    .right-panel {
+        width: 100%;
+        margin: 0;
+        background: white;
+        box-shadow: none;
+    }
+    
+    .music-player {
+        box-shadow: none;
+        border: 1px solid #ccc;
     }
 }

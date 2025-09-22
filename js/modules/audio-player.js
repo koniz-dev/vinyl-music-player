@@ -346,7 +346,7 @@ class AudioPlayer {
         
         if (vinylAlbumArt && playPauseBtn) {
             if (isPlaying) {
-                vinylAlbumArt.style.animation = 'spin 8s linear infinite';
+                vinylAlbumArt.style.animation = 'spin 12s linear infinite';
                 vinylAlbumArt.style.animationPlayState = 'running';
                 playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
             } else {

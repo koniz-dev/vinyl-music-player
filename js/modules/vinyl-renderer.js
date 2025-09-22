@@ -58,7 +58,7 @@ class VinylRenderer {
         this.appState.set('vinyl.isAnimating', true);
         
         if (this.vinylElement) {
-            this.vinylElement.style.animation = 'spin 8s linear infinite';
+            this.vinylElement.style.animation = 'spin 12s linear infinite';
             this.vinylElement.style.animationPlayState = 'running';
         }
     }

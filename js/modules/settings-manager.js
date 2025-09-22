@@ -268,25 +268,25 @@ class SettingsManager {
             clearTimeout(this.updateTimeouts.get(inputId));
         }
         
-        const timeoutId = setTimeout(() => {
-            let updateData = {};
-            
-            if (inputId === 'song-title') {
-                updateData.type = 'UPDATE_SONG_TITLE';
-                updateData.songTitle = input.value;
-                // console.log(`[SettingsManager] Song title updated: "${input.value}"`);
-            } else if (inputId === 'artist-name') {
-                updateData.type = 'UPDATE_ARTIST_NAME';
-                updateData.artistName = input.value;
-                // console.log(`[SettingsManager] Artist name updated: "${input.value}"`);
-            }
-            
-            if (updateData.type) {
-                this.eventBus.emit('ui:updateSongInfo', updateData);
-            }
-            
-            this.updateTimeouts.delete(inputId);
-        }, 500);
+         const timeoutId = setTimeout(() => {
+             let updateData = {};
+             
+             if (inputId === 'song-title') {
+                 updateData.type = 'UPDATE_SONG_TITLE';
+                 updateData.songTitle = input.value;
+                 // console.log(`[SettingsManager] Song title updated: "${input.value}"`);
+             } else if (inputId === 'artist-name') {
+                 updateData.type = 'UPDATE_ARTIST_NAME';
+                 updateData.artistName = input.value;
+                 // console.log(`[SettingsManager] Artist name updated: "${input.value}"`);
+             }
+             
+             if (updateData.type) {
+                 this.eventBus.emit('ui:updateSongInfo', updateData);
+             }
+             
+             this.updateTimeouts.delete(inputId);
+         }, 200);
         
         this.updateTimeouts.set(inputId, timeoutId);
     }
@@ -343,6 +343,11 @@ class SettingsManager {
             artistName: artistName,
             albumArtFile: albumArtFile
         };
+        
+        // Show export start notification
+        if (window.toastManager) {
+            window.toastManager.showToast('info', 'Export Started', 'Video export is in progress, please wait...', 6000);
+        }
         
         this.eventBus.emit('export:requestStart', exportData);
     }

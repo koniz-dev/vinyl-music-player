@@ -85,6 +85,11 @@
     --text-4xl: 32px;
     --text-5xl: 36px;
     
+    /* Responsive typography scaling */
+    --text-scale-mobile: 0.875;
+    --text-scale-tablet: 0.9;
+    --text-scale-desktop: 1;
+    
     --font-normal: 400;
     --font-medium: 500;
     --font-semibold: 600;

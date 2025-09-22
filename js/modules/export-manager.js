@@ -14,6 +14,7 @@ class ExportManager {
         this.exportAudio = null;
         this.exportLyrics = [];
         this.exportLyricsColor = '#8B4513';
+        this.exportTimeout = null; // Store timeout ID to clear it later
         
         this.eventBus = window.eventBus;
         this.appState = window.appState;
@@ -51,7 +52,7 @@ class ExportManager {
             this.scrollToExportProgress();
             
             // Setup export timeout
-            const exportTimeout = this.setupExportTimeout(this.wasMainAudioPlaying);
+            this.exportTimeout = this.setupExportTimeout(this.wasMainAudioPlaying);
             
             // Create export canvas
             this.createExportCanvas();
@@ -74,7 +75,7 @@ class ExportManager {
             this.startRenderingLoop();
             
             // Setup progress tracking
-            this.setupProgressTracking(exportTimeout);
+            this.setupProgressTracking();
             
         } catch (error) {
             await this.handleExportError(error);
@@ -226,8 +227,26 @@ class ExportManager {
             this.handleRecordingComplete();
         };
         
+        // Add error handling for media recorder
+        this.mediaRecorder.onerror = (event) => {
+            console.error('MediaRecorder error:', event.error);
+            this.handleExportError(new Error('Recording failed: ' + event.error));
+        };
+        
         this.mediaRecorder.start();
-        this.exportAudio.play();
+        
+        // Ensure audio starts playing and add fallback
+        try {
+            await this.exportAudio.play();
+        } catch (error) {
+            console.warn('Audio play failed, trying fallback:', error);
+            // Fallback: try to play after a short delay
+            setTimeout(() => {
+                this.exportAudio.play().catch(e => {
+                    console.error('Fallback audio play failed:', e);
+                });
+            }, 100);
+        }
         
         this.eventBus.emit('export:progress', { progress: 40, message: 'Recording started...' });
     }
@@ -258,21 +277,57 @@ class ExportManager {
      * Start rendering loop
      */
     startRenderingLoop() {
-        const renderLoop = () => {
-            if (window.ExportManagerCanvas) {
-                window.ExportManagerCanvas.renderToCanvas(
-                    this.exportCtx,
-                    this.exportCanvas,
-                    this.vinylRotation,
-                    this.albumArtImage,
-                    this.exportAudio,
-                    this.exportLyrics,
-                    this.exportLyricsColor
-                );
+        let lastTime = performance.now();
+        let animationStartTime = performance.now();
+        let frameCount = 0;
+        
+        const renderLoop = (currentTime) => {
+            try {
+                // Calculate time delta for consistent rotation speed
+                const deltaTime = currentTime - lastTime;
+                lastTime = currentTime;
+                frameCount++;
+                
+                // Update vinyl rotation based on time (12s per full rotation)
+                // 360 degrees / 12000ms = 0.03 degrees per millisecond
+                // Use absolute time to prevent rotation drift
+                const totalElapsed = currentTime - animationStartTime;
+                this.vinylRotation = (totalElapsed * 0.03) % 360;
+                
+                // Ensure rotation is always positive and continuous
+                if (this.vinylRotation < 0) {
+                    this.vinylRotation += 360;
+                }
+                
+                // Force render even if audio is not ready
+                if (window.ExportManagerCanvas) {
+                    window.ExportManagerCanvas.renderToCanvas(
+                        this.exportCtx,
+                        this.exportCanvas,
+                        this.vinylRotation,
+                        this.albumArtImage,
+                        this.exportAudio,
+                        this.exportLyrics,
+                        this.exportLyricsColor
+                    );
+                }
+                
+                // Log every 100 frames for debugging
+                if (frameCount % 100 === 0) {
+                    console.log(`Export frame ${frameCount}, rotation: ${this.vinylRotation.toFixed(2)}°, audio time: ${this.exportAudio?.currentTime || 0}s`);
+                }
+                
+            } catch (error) {
+                console.error('Error in render loop:', error);
+                // Continue animation even if there's an error
             }
+            
+            // Continue animation loop - ensure it never stops
             this.exportAnimationId = requestAnimationFrame(renderLoop);
         };
-        renderLoop();
+        
+        // Start the loop
+        this.exportAnimationId = requestAnimationFrame(renderLoop);
     }
     
     /**
@@ -281,7 +336,7 @@ class ExportManager {
     renderToCanvas() {
         if (!this.exportCtx) return;
         
-        this.vinylRotation += 0.3;
+        // This function is deprecated - use startRenderingLoop() instead
         
         // Clear canvas
         this.exportCtx.clearRect(0, 0, this.exportCanvas.width, this.exportCanvas.height);
@@ -312,17 +367,16 @@ class ExportManager {
      * Draw background
      */
     drawBackground() {
+        // Background gradient (purple to pink)
         const bodyGradient = this.exportCtx.createLinearGradient(0, 0, this.exportCanvas.width, this.exportCanvas.height);
         bodyGradient.addColorStop(0, '#667eea');
-        bodyGradient.addColorStop(0.25, '#764ba2');
         bodyGradient.addColorStop(0.5, '#f093fb');
-        bodyGradient.addColorStop(0.75, '#f5576c');
-        bodyGradient.addColorStop(1, '#4facfe');
+        bodyGradient.addColorStop(1, '#f5576c');
         
         this.exportCtx.fillStyle = bodyGradient;
         this.exportCtx.fillRect(0, 0, this.exportCanvas.width, this.exportCanvas.height);
         
-        // Add overlay
+        // Semi-transparent overlay
         this.exportCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
         this.exportCtx.fillRect(0, 0, this.exportCanvas.width, this.exportCanvas.height);
     }
@@ -336,10 +390,19 @@ class ExportManager {
         const musicPlayerX = (this.exportCanvas.width - musicPlayerWidth) / 2;
         const musicPlayerY = (this.exportCanvas.height - musicPlayerHeight) / 2;
         
-        // Draw rounded rectangle
+        // Main music player card with exact CSS shadow-xl
         this.exportCtx.save();
+        
+        // CSS shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.4)
+        this.exportCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        this.exportCtx.shadowBlur = 60;
+        this.exportCtx.shadowOffsetX = 0;
+        this.exportCtx.shadowOffsetY = 20;
+        
+        // Main card background - exact CSS color
+        this.exportCtx.fillStyle = '#c8bda9';
         this.exportCtx.beginPath();
-        const radius = 30;
+        const radius = 24; // CSS --radius-2xl: 24px
         this.exportCtx.moveTo(musicPlayerX + radius, musicPlayerY);
         this.exportCtx.lineTo(musicPlayerX + musicPlayerWidth - radius, musicPlayerY);
         this.exportCtx.quadraticCurveTo(musicPlayerX + musicPlayerWidth, musicPlayerY, musicPlayerX + musicPlayerWidth, musicPlayerY + radius);
@@ -349,16 +412,13 @@ class ExportManager {
         this.exportCtx.quadraticCurveTo(musicPlayerX, musicPlayerY + musicPlayerHeight, musicPlayerX, musicPlayerY + musicPlayerHeight - radius);
         this.exportCtx.lineTo(musicPlayerX, musicPlayerY + radius);
         this.exportCtx.quadraticCurveTo(musicPlayerX, musicPlayerY, musicPlayerX + radius, musicPlayerY);
-        this.exportCtx.clip();
+        this.exportCtx.fill();
         
-        // Draw album art background if available
-        if (this.albumArtImage) {
-            this.drawAlbumArtBackground(musicPlayerX, musicPlayerY, musicPlayerWidth, musicPlayerHeight);
-        }
-        
-        // Add overlay
-        this.exportCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        this.exportCtx.fillRect(musicPlayerX, musicPlayerY, musicPlayerWidth, musicPlayerHeight);
+        // Reset shadow
+        this.exportCtx.shadowColor = 'transparent';
+        this.exportCtx.shadowBlur = 0;
+        this.exportCtx.shadowOffsetX = 0;
+        this.exportCtx.shadowOffsetY = 0;
         
         this.exportCtx.restore();
     }
@@ -675,8 +735,8 @@ class ExportManager {
         
         const buttonY = controlsY + (controlsHeight - playButtonSize) / 2;
         
-        const playIcon = (this.exportAudio && !this.exportAudio.paused) ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-        const buttonIcons = ['<i class="fas fa-volume-up"></i>', '<i class="fas fa-step-backward"></i>', playIcon, '<i class="fas fa-step-forward"></i>', '<i class="fas fa-redo"></i>'];
+        const playIcon = (this.exportAudio && !this.exportAudio.paused) ? '⏸' : '▶';
+        const buttonIcons = ['🔊', '⏮', playIcon, '⏭', '🔁'];
         
         let currentX = startButtonX;
         
@@ -685,12 +745,21 @@ class ExportManager {
                 const playButtonX = currentX + playButtonSize/2;
                 const playButtonYCenter = buttonY + playButtonSize/2;
                 
-                this.exportCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                // Play button with CSS shadow-lg effect
+                this.exportCtx.save();
+                this.exportCtx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                this.exportCtx.shadowBlur = 30;
+                this.exportCtx.shadowOffsetX = 0;
+                this.exportCtx.shadowOffsetY = 10;
+                
+                this.exportCtx.fillStyle = '#c8bda9';
                 this.exportCtx.beginPath();
                 this.exportCtx.arc(playButtonX, playButtonYCenter, playButtonSize/2, 0, 2 * Math.PI);
                 this.exportCtx.fill();
                 
-                this.exportCtx.fillStyle = '#ffffff';
+                this.exportCtx.restore();
+                
+                this.exportCtx.fillStyle = '#8B4513';
                 this.exportCtx.font = `28px Arial`;
                 this.exportCtx.textAlign = 'center';
                 this.exportCtx.textBaseline = 'middle';
@@ -701,12 +770,21 @@ class ExportManager {
                 const buttonX = currentX + buttonSize/2;
                 const buttonYCenter = buttonY + playButtonSize/2;
                 
-                this.exportCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                // Control buttons with CSS shadow-md effect
+                this.exportCtx.save();
+                this.exportCtx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+                this.exportCtx.shadowBlur = 8;
+                this.exportCtx.shadowOffsetX = 0;
+                this.exportCtx.shadowOffsetY = 4;
+                
+                this.exportCtx.fillStyle = '#c8bda9';
                 this.exportCtx.beginPath();
                 this.exportCtx.arc(buttonX, buttonYCenter, buttonSize/2, 0, 2 * Math.PI);
                 this.exportCtx.fill();
                 
-                this.exportCtx.fillStyle = '#ffffff';
+                this.exportCtx.restore();
+                
+                this.exportCtx.fillStyle = '#8B4513';
                 this.exportCtx.font = `${buttonSize * 0.4}px Arial`;
                 this.exportCtx.textAlign = 'center';
                 this.exportCtx.textBaseline = 'middle';
@@ -719,9 +797,8 @@ class ExportManager {
     
     /**
      * Setup progress tracking
-     * @param {number} exportTimeout - Export timeout ID
      */
-    setupProgressTracking(exportTimeout) {
+    setupProgressTracking() {
         const duration = this.exportAudio.duration;
         const startTime = Date.now();
         
@@ -766,6 +843,12 @@ class ExportManager {
      * Handle recording complete
      */
     handleRecordingComplete() {
+        // Clear export timeout since export is successful
+        if (this.exportTimeout) {
+            clearTimeout(this.exportTimeout);
+            this.exportTimeout = null;
+        }
+        
         const webmBlob = new Blob(this.recordedChunks, { type: this.getSupportedMimeType() });
         const songTitle = this.appState.get('ui.songTitle') || 'untitled';
         const fileName = `${this.fileUtils.sanitizeFilename(songTitle)}.webm`;
@@ -1005,6 +1088,12 @@ class ExportManager {
      * Cleanup export resources
      */
     cleanup() {
+        // Clear export timeout
+        if (this.exportTimeout) {
+            clearTimeout(this.exportTimeout);
+            this.exportTimeout = null;
+        }
+        
         if (this.exportAudio) {
             this.exportAudio.pause();
             this.exportAudio = null;

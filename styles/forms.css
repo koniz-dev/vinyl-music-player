@@ -6,6 +6,8 @@
     font-size: var(--text-base);
     transition: all var(--transition-normal);
     background: var(--bg-white);
+    box-sizing: border-box;
+    min-height: 44px;
 }
 
 .form-input:focus {
@@ -41,6 +43,11 @@
     cursor: pointer;
     position: relative;
     margin: var(--spacing-lg) 0;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .upload-area:hover {
@@ -155,14 +162,17 @@
     display: flex;
     gap: var(--spacing-md);
     align-items: end;
+    flex-wrap: wrap;
 }
 
 .lyrics-inputs > div {
     flex: 1;
+    min-width: 120px;
 }
 
 .lyrics-inputs > div:last-child {
     flex: 2;
+    min-width: 200px;
 }
 
 .time-input {
@@ -175,6 +185,7 @@
     transition: all var(--transition-normal);
     box-sizing: border-box;
     text-align: center;
+    min-height: 44px;
 }
 
 .time-input:focus {
@@ -199,6 +210,7 @@
     font-size: var(--text-sm);
     transition: all var(--transition-normal);
     box-sizing: border-box;
+    min-height: 44px;
 }
 
 .lyrics-text-input:focus {
@@ -225,4 +237,89 @@
     display: flex;
     gap: 8px;
     margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+/* Responsive form improvements */
+@media (max-width: 768px) {
+    .lyrics-inputs {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .lyrics-inputs > div {
+        min-width: unset;
+        width: 100%;
+    }
+    
+    .lyrics-inputs > div:last-child {
+        min-width: unset;
+    }
+    
+    .lyrics-buttons-container {
+        justify-content: center;
+    }
+    
+    .upload-area {
+        padding: var(--spacing-lg) var(--spacing-md);
+        min-height: 100px;
+    }
+    
+    .upload-icon {
+        font-size: var(--text-4xl);
+    }
+    
+    .upload-text {
+        font-size: var(--text-sm);
+    }
+    
+    .upload-hint {
+        font-size: var(--text-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    .form-input {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--text-sm);
+    }
+    
+    .time-input,
+    .lyrics-text-input {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--text-xs);
+    }
+    
+    .upload-area {
+        padding: var(--spacing-md);
+        min-height: 80px;
+    }
+    
+    .upload-icon {
+        font-size: var(--text-3xl);
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .upload-text {
+        font-size: var(--text-xs);
+        margin-bottom: 2px;
+    }
+    
+    .upload-hint {
+        font-size: 10px;
+    }
+    
+    .lyrics-item {
+        padding: var(--spacing-md);
+    }
+    
+    .lyrics-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+    
+    .remove-lyrics-btn {
+        align-self: flex-end;
+    }
 }
