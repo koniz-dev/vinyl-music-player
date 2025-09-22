@@ -1,4 +1,26 @@
 class ExportManager {
+    // Static method to ensure Font Awesome is loaded before drawing icons
+    static async ensureFontAwesomeLoaded() {
+        return new Promise((resolve) => {
+            if (document.fonts && document.fonts.check) {
+                // Modern browsers with Font Loading API
+                if (document.fonts.check('16px FontAwesome')) {
+                    resolve();
+                } else {
+                    document.fonts.load('16px FontAwesome').then(() => {
+                        resolve();
+                    }).catch(() => {
+                        // Fallback: wait a bit and resolve anyway
+                        setTimeout(resolve, 100);
+                    });
+                }
+            } else {
+                // Fallback for older browsers
+                setTimeout(resolve, 100);
+            }
+        });
+    }
+
     constructor() {
         this.mediaRecorder = null;
         this.recordedChunks = [];
@@ -297,7 +319,7 @@ class ExportManager {
         this.exportAnimationId = requestAnimationFrame(renderLoop);
     }
     
-    renderToCanvas() {
+    async renderToCanvas() {
         if (!this.exportCtx) return;
         
         // This function is deprecated - use startRenderingLoop() instead
@@ -324,7 +346,7 @@ class ExportManager {
         this.drawProgressBar();
         
         // Draw controls
-        this.drawControls();
+        await this.drawControls();
     }
     
     drawBackground() {
@@ -643,7 +665,9 @@ class ExportManager {
         this.exportCtx.fillText(this.timeUtils.formatTime(totalTime), x + width, y + 20);
     }
     
-    drawControls() {
+    async drawControls() {
+        // Ensure Font Awesome is loaded before drawing icons
+        await ExportManager.ensureFontAwesomeLoaded();
         const controlsWidth = this.exportCanvas.width;
         const controlsHeight = 80;
         const controlsX = 0;
@@ -660,8 +684,8 @@ class ExportManager {
         
         const buttonY = controlsY + (controlsHeight - playButtonSize) / 2;
         
-        const playIcon = (this.exportAudio && !this.exportAudio.paused) ? '⏸' : '▶';
-        const buttonIcons = ['🔊', '⏮', playIcon, '⏭', '🔁'];
+        const playIcon = (this.exportAudio && !this.exportAudio.paused) ? '\uf04c' : '\uf04b'; // fa-pause : fa-play
+        const buttonIcons = ['\uf028', '\uf048', playIcon, '\uf051', '\uf01e']; // fa-volume-up, fa-step-backward, play/pause, fa-step-forward, fa-redo
         
         let currentX = startButtonX;
         
@@ -685,7 +709,7 @@ class ExportManager {
                 this.exportCtx.restore();
                 
                 this.exportCtx.fillStyle = '#8B4513';
-                this.exportCtx.font = `28px Arial`;
+                this.exportCtx.font = `28px FontAwesome`;
                 this.exportCtx.textAlign = 'center';
                 this.exportCtx.textBaseline = 'middle';
                 this.exportCtx.fillText(buttonIcons[i], playButtonX, playButtonYCenter);
@@ -710,7 +734,7 @@ class ExportManager {
                 this.exportCtx.restore();
                 
                 this.exportCtx.fillStyle = '#8B4513';
-                this.exportCtx.font = `${buttonSize * 0.4}px Arial`;
+                this.exportCtx.font = `${buttonSize * 0.4}px FontAwesome`;
                 this.exportCtx.textAlign = 'center';
                 this.exportCtx.textBaseline = 'middle';
                 this.exportCtx.fillText(buttonIcons[i], buttonX, buttonYCenter);

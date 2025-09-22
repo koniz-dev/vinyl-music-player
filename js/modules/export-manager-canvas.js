@@ -1,5 +1,27 @@
 class ExportManagerCanvas {
-    static renderToCanvas(exportCtx, exportCanvas, vinylRotation, albumArtImage, exportAudio, exportLyrics, exportLyricsColor) {
+    // Static method to ensure Font Awesome is loaded before drawing icons
+    static async ensureFontAwesomeLoaded() {
+        return new Promise((resolve) => {
+            if (document.fonts && document.fonts.check) {
+                // Modern browsers with Font Loading API
+                if (document.fonts.check('16px FontAwesome')) {
+                    resolve();
+                } else {
+                    document.fonts.load('16px FontAwesome').then(() => {
+                        resolve();
+                    }).catch(() => {
+                        // Fallback: wait a bit and resolve anyway
+                        setTimeout(resolve, 100);
+                    });
+                }
+            } else {
+                // Fallback for older browsers
+                setTimeout(resolve, 100);
+            }
+        });
+    }
+
+    static async renderToCanvas(exportCtx, exportCanvas, vinylRotation, albumArtImage, exportAudio, exportLyrics, exportLyricsColor) {
         if (!exportCtx) return;
 
         // Vinyl rotation is handled by export-manager.js
@@ -432,6 +454,9 @@ class ExportManagerCanvas {
         exportCtx.textAlign = 'right';
         exportCtx.fillText(formatTime(totalTime), progressBarX + progressBarWidth, progressBarY + 20);
         
+        // Ensure Font Awesome is loaded before drawing icons
+        await ExportManagerCanvas.ensureFontAwesomeLoaded();
+        
         // Controls - moved up closer to progress bar
         const controlsWidth = musicPlayerWidth;
         const controlsHeight = 80;
@@ -449,8 +474,8 @@ class ExportManagerCanvas {
         
         const buttonY = controlsY + (controlsHeight - playButtonSize) / 2;
         
-        const playIcon = (exportAudio && !exportAudio.paused) ? '⏸' : '▶';
-        const buttonIcons = ['🔊', '⏮', playIcon, '⏭', '🔁'];
+        const playIcon = (exportAudio && !exportAudio.paused) ? '\uf04c' : '\uf04b'; // fa-pause : fa-play
+        const buttonIcons = ['\uf028', '\uf048', playIcon, '\uf051', '\uf01e']; // fa-volume-up, fa-step-backward, play/pause, fa-step-forward, fa-redo
         
         let currentX = startButtonX;
         
@@ -472,7 +497,7 @@ class ExportManagerCanvas {
                 exportCtx.stroke();
                 
                 exportCtx.fillStyle = '#786d59'; // CSS: color: #786d59
-                exportCtx.font = `28px Arial`; // CSS: font-size: var(--text-3xl) = 28px
+                exportCtx.font = `28px FontAwesome`; // CSS: font-size: var(--text-3xl) = 28px
                 exportCtx.textAlign = 'center';
                 exportCtx.textBaseline = 'middle';
                 exportCtx.fillText(buttonIcons[i], playButtonX, playButtonYCenter);
@@ -505,7 +530,7 @@ class ExportManagerCanvas {
                     exportCtx.fillStyle = '#786d59';
                 }
                 
-                exportCtx.font = `20px Arial`; // CSS: font-size: var(--text-xl) = 20px
+                exportCtx.font = `20px FontAwesome`; // CSS: font-size: var(--text-xl) = 20px
                 exportCtx.textAlign = 'center';
                 exportCtx.textBaseline = 'middle';
                 exportCtx.fillText(buttonIcons[i], buttonX, buttonYCenter);

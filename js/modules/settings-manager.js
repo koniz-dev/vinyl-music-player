@@ -286,7 +286,7 @@ class SettingsManager {
         
         // Show export start notification
         if (window.toastManager) {
-            window.toastManager.showToast('info', 'Export Started', 'Video export is in progress, please wait...', 6000);
+            window.toastManager.showToast('warning', 'Export Started', 'Video export is in progress. Please keep this tab active for best recording quality!', 8000);
         }
         
         this.eventBus.emit('export:requestStart', exportData);
