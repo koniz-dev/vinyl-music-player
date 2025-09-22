@@ -78,16 +78,17 @@ class ExportManager {
             // Create export canvas
             this.createExportCanvas();
             
-            // Load album art if provided
-            if (albumArtFile) {
-                await this.loadAlbumArt(albumArtFile);
-            }
-            
-            // Load export audio
-            await this.loadExportAudio(audioFile);
-            
             // Setup export lyrics
             this.setupExportLyrics();
+            
+            const loadingPromises = [];
+            
+            if (albumArtFile) {
+                loadingPromises.push(this.loadAlbumArt(albumArtFile));
+            }
+            
+            loadingPromises.push(this.loadExportAudio(audioFile));
+            await Promise.all(loadingPromises);
             
             // Start recording
             await this.startRecording();
@@ -172,8 +173,6 @@ class ExportManager {
     }
     
     async loadAlbumArt(albumArtFile) {
-        this.eventBus.emit('export:progress', { progress: 10, message: 'Loading album art...' });
-        
         this.albumArtImage = new Image();
         this.albumArtImage.src = this.fileUtils.createObjectURL(albumArtFile);
         
@@ -184,8 +183,6 @@ class ExportManager {
     }
     
     async loadExportAudio(audioFile) {
-        this.eventBus.emit('export:progress', { progress: 20, message: 'Loading audio...' });
-        
         const audioUrl = this.fileUtils.createObjectURL(audioFile);
         this.exportAudio = new Audio(audioUrl);
         
@@ -205,8 +202,6 @@ class ExportManager {
     }
     
     async startRecording() {
-        this.eventBus.emit('export:progress', { progress: 30, message: 'Setting up video recorder...' });
-        
         const canvasStream = this.exportCanvas.captureStream(30);
         
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -254,8 +249,6 @@ class ExportManager {
                 });
             }, this.constants?.ANIMATION.TIMEOUT_DELAY || 100);
         }
-        
-        this.eventBus.emit('export:progress', { progress: 40, message: 'Recording started...' });
     }
     
     getSupportedMimeType() {
@@ -336,14 +329,14 @@ class ExportManager {
         
         const progressInterval = setInterval(() => {
             const elapsed = (Date.now() - startTime) / 1000;
-            const progress = Math.min(40 + (elapsed / duration) * 55, 95);
+            const progress = Math.min((elapsed / duration) * 100, 100);
             
             this.appState.set('export.progress', progress);
-            this.appState.set('export.message', `Recording... ${Math.round(progress)}%`);
+            this.appState.set('export.message', `Exporting... ${Math.round(progress)}%`);
             
             this.eventBus.emit('export:progress', { 
                 progress: progress, 
-                message: `Recording... ${Math.round(progress)}%` 
+                message: `Exporting... ${Math.round(progress)}%` 
             });
             
             if (elapsed >= duration) {
@@ -375,21 +368,19 @@ class ExportManager {
             this.exportTimeout = null;
         }
         
-        const webmBlob = new Blob(this.recordedChunks, { type: this.getSupportedMimeType() });
-        const songTitle = this.appState.get('ui.songTitle') || 'untitled';
-        const fileName = `${this.fileUtils.sanitizeFilename(songTitle)}.webm`;
-        
-        this.appState.set('export.progress', 95);
+        this.appState.set('export.progress', 100);
         this.appState.set('export.message', 'Processing video...');
         
         this.eventBus.emit('export:progress', { 
-            progress: 95, 
+            progress: 100, 
             message: 'Processing video...' 
         });
         
-        // Small delay to show processing step
         setTimeout(() => {
-            this.appState.set('export.progress', this.constants?.UI.PROGRESS_MAX || 100);
+            const webmBlob = new Blob(this.recordedChunks, { type: this.getSupportedMimeType() });
+            const songTitle = this.appState.get('ui.songTitle') || 'untitled';
+            const fileName = `${this.fileUtils.sanitizeFilename(songTitle)}.webm`;
+            
             this.appState.set('export.message', 'Export complete!');
             
             this.eventBus.emit('export:complete', {
@@ -397,9 +388,9 @@ class ExportManager {
                 fileName: fileName,
                 wasMainAudioPlaying: this.wasMainAudioPlaying
             });
+            
+            this.cleanup();
         }, 500);
-        
-        this.cleanup();
     }
     
     pauseMainAudio() {
