@@ -1,4 +1,4 @@
-class ExportManagerCanvas {
+class ExportCanvas {
     // Static method to ensure Font Awesome is loaded before drawing icons
     static async ensureFontAwesomeLoaded() {
         return new Promise((resolve) => {
@@ -24,7 +24,7 @@ class ExportManagerCanvas {
     static async renderToCanvas(exportCtx, exportCanvas, vinylRotation, albumArtImage, exportAudio, exportLyrics, exportLyricsColor, exportMusicPlayerColors = null) {
         if (!exportCtx) return;
 
-        // Vinyl rotation is handled by export-manager.js
+        // Vinyl rotation is handled by manager.js
         
         // Helper function to get music player colors with fallback
         const getMusicPlayerColor = (colorKey) => {
@@ -428,7 +428,7 @@ class ExportManagerCanvas {
         exportCtx.fillText(formatTime(totalTime), progressBarX + progressBarWidth, progressBarY + 20);
         
         // Ensure Font Awesome is loaded before drawing icons
-        await ExportManagerCanvas.ensureFontAwesomeLoaded();
+        await ExportCanvas.ensureFontAwesomeLoaded();
         
         // Controls - moved up closer to progress bar
         const controlsWidth = musicPlayerWidth;
@@ -515,7 +515,7 @@ class ExportManagerCanvas {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ExportManagerCanvas;
+    module.exports = ExportCanvas;
 }
 
-window.ExportManagerCanvas = ExportManagerCanvas;
+window.ExportCanvas = ExportCanvas;

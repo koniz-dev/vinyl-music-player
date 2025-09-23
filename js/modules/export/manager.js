@@ -317,8 +317,8 @@ class ExportManager {
                 }
                 
                 // Force render even if audio is not ready
-                if (window.ExportManagerCanvas) {
-                    window.ExportManagerCanvas.renderToCanvas(
+                if (window.ExportCanvas) {
+                    window.ExportCanvas.renderToCanvas(
                         this.exportCtx,
                         this.exportCanvas,
                         this.vinylRotation,
