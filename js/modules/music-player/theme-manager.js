@@ -1,6 +1,6 @@
 class MusicPlayerThemeManager {
     constructor() {
-        this.currentPrimaryColor = '#8B4513';
+        this.currentPrimaryColor = window.Constants.PLAYER_BASE_COLOR;
         this.lyricsColorManuallySet = false;
         this.setupEventListeners();
     }
@@ -47,53 +47,23 @@ class MusicPlayerThemeManager {
         }
     }
     
-    calculateColorVariants(primaryColor) {
-        const rgb = this.hexToRgb(primaryColor);
+    calculateColorVariants(baseColor) {
+        const rgb = this.hexToRgb(baseColor);
         
-        // Use predefined color palette for better design consistency
-        // These colors are manually crafted for optimal contrast and aesthetics
-        const colorPalette = {
-            '#8B4513': {
-                light80: '#E8DAD0',
-                light40: '#c8bda9',
-                light35: '#d9cdbd',
-                light35Alt: '#d8cdb9',
-                light25: '#c4b5a0',
-                light20: '#ada28e',
-                light15: '#b0a591',
-                dark15: '#766142',
-                dark20: '#786d59',
-                dark30: '#6b5d4a',
-                dark40: '#7a6e70',
-                dark80: '#1C0E04'
-            }
-        };
-        
-        // If we have a predefined palette for this color, use it
-        if (colorPalette[primaryColor]) {
-            return {
-                primary: primaryColor,
-                primary80: this.rgbToRgba(rgb, 0.8),
-                ...colorPalette[primaryColor]
-            };
-        }
-        
-        // Fallback to calculated colors for other colors
+        // Calculate all colors based on RGB formula from CSS comments
         return {
-            primary: primaryColor,
-            primary80: this.rgbToRgba(rgb, 0.8),
-            light80: this.lightenColor(rgb, 0.8),
-            light40: this.lightenColor(rgb, 0.4),
-            light35: this.lightenColor(rgb, 0.35),
-            light35Alt: this.lightenColor(rgb, 0.35),
-            light25: this.lightenColor(rgb, 0.25),
-            light20: this.lightenColor(rgb, 0.2),
-            light15: this.lightenColor(rgb, 0.15),
-            dark15: this.darkenColor(rgb, 0.15),
-            dark20: this.darkenColor(rgb, 0.2),
-            dark30: this.darkenColor(rgb, 0.3),
-            dark40: this.darkenColor(rgb, 0.4),
-            dark80: this.darkenColor(rgb, 0.8)
+            base: baseColor,
+            light: this.addRgb(rgb, 17, 16, 20),      // +17, +16, +20
+            lighter: this.addRgb(rgb, 16, 16, 16),    // +16, +16, +16
+            neutral: this.addRgb(rgb, -4, -8, -9),    // -4, -8, -9
+            muted: this.addRgb(rgb, -27, -27, -27),   // -27, -27, -27
+            subtle: this.addRgb(rgb, -24, -24, -24),  // -24, -24, -24
+            medium: this.addRgb(rgb, -82, -92, -103), // -82, -92, -103
+            strong: this.addRgb(rgb, -80, -80, -80),  // -80, -80, -80
+            dark: this.addRgb(rgb, -93, -96, -95),    // -93, -96, -95
+            darker: this.addRgb(rgb, -78, -79, -57),  // -78, -79, -57
+            accent: this.addRgb(rgb, -16, -74, -118), // -16, -74, -118
+            primary: this.addRgb(rgb, -61, -120, -150) // -61, -120, -150
         };
     }
     
@@ -104,6 +74,17 @@ class MusicPlayerThemeManager {
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16)
         } : null;
+    }
+    
+    addRgb(rgb, rOffset, gOffset, bOffset) {
+        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
+        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
+        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
+        return this.rgbToHex(newR, newG, newB);
+    }
+    
+    rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
     
     rgbToRgba(rgb, alpha) {
@@ -131,25 +112,24 @@ class MusicPlayerThemeManager {
     updateCSSVariables(variants) {
         const root = document.documentElement;
         
-        root.style.setProperty('--vinyl-primary', variants.primary);
-        root.style.setProperty('--vinyl-primary-80', variants.primary80);
-        root.style.setProperty('--vinyl-primary-light-80', variants.light80);
-        root.style.setProperty('--vinyl-primary-light-40', variants.light40);
-        root.style.setProperty('--vinyl-primary-light-35', variants.light35);
-        root.style.setProperty('--vinyl-primary-light-35-alt', variants.light35Alt);
-        root.style.setProperty('--vinyl-primary-light-25', variants.light25);
-        root.style.setProperty('--vinyl-primary-light-20', variants.light20);
-        root.style.setProperty('--vinyl-primary-light-15', variants.light15);
-        root.style.setProperty('--vinyl-primary-dark-15', variants.dark15);
-        root.style.setProperty('--vinyl-primary-dark-20', variants.dark20);
-        root.style.setProperty('--vinyl-primary-dark-30', variants.dark30);
-        root.style.setProperty('--vinyl-primary-dark-40', variants.dark40);
-        root.style.setProperty('--vinyl-primary-dark-80', variants.dark80);
+        root.style.setProperty('--player-base', variants.base);
+        root.style.setProperty('--player-light', variants.light);
+        root.style.setProperty('--player-lighter', variants.lighter);
+        root.style.setProperty('--player-neutral', variants.neutral);
+        root.style.setProperty('--player-muted', variants.muted);
+        root.style.setProperty('--player-subtle', variants.subtle);
+        root.style.setProperty('--player-medium', variants.medium);
+        root.style.setProperty('--player-strong', variants.strong);
+        root.style.setProperty('--player-dark', variants.dark);
+        root.style.setProperty('--player-darker', variants.darker);
+        root.style.setProperty('--player-accent', variants.accent);
+        root.style.setProperty('--player-primary', variants.primary);
     }
     
     updateLyricsDefaultColor(variants) {
-        // Use dark-15 variant as default lyrics color for good contrast
-        const defaultLyricsColor = variants.dark15;
+        // Calculate lyrics color using formula: -126, -129, -127 from base color
+        const baseRgb = this.hexToRgb(variants.base);
+        const defaultLyricsColor = this.addRgb(baseRgb, -126, -129, -127);
         
         // Only update if this is the first time or if lyrics color hasn't been manually changed
         if (!this.lyricsColorManuallySet) {

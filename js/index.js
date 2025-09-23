@@ -55,6 +55,7 @@ class VinylMusicPlayerApp {
         // Initialize Export Manager
         if (window.ExportManager) {
             this.modules.exportManager = new window.ExportManager();
+            await this.modules.exportManager.initialize();
         }
         
         // Initialize Lyrics Color Manager

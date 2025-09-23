@@ -351,12 +351,12 @@
     
     .control-btn:active {
         transform: scale(0.95);
-        background: #c4b5a0;
+        background: var(--player-neutral);
     }
     
     .vinyl-play-pause-btn:active {
         transform: scale(0.95);
-        background: #c4b5a0 !important;
+        background: var(--player-neutral) !important;
     }
     
     .upload-area:active {

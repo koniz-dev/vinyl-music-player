@@ -51,8 +51,9 @@ class Constants {
     };
 
 
+    static PLAYER_BASE_COLOR = '#c8bda9'; // Single source of truth for all player colors
+    
     static LYRICS = {
-        DEFAULT_COLOR: '#8B4513',
         FADE_DURATION: 150 // milliseconds
     };
 

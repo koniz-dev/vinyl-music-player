@@ -215,13 +215,13 @@ class AudioPlayer {
             if (!isMuted) {
                 // Mute is being activated
                 muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                muteBtn.style.background = 'rgba(139, 69, 19, 0.3)';
-                muteBtn.style.color = '#8B4513';
+                muteBtn.style.background = this.getPlayerColor('accent');
+                muteBtn.style.color = this.getPlayerColor('primary');
             } else {
                 // Mute is being deactivated
                 muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
                 muteBtn.style.background = 'transparent';
-                muteBtn.style.color = '#786d59';
+                muteBtn.style.color = this.getPlayerColor('strong');
             }
         }
         
@@ -237,12 +237,12 @@ class AudioPlayer {
         if (repeatBtn) {
             if (!isRepeat) {
                 // Activate repeat mode
-                repeatBtn.style.background = 'rgba(139, 69, 19, 0.3)';
-                repeatBtn.style.color = '#8B4513';
+                repeatBtn.style.background = this.getPlayerColor('accent');
+                repeatBtn.style.color = this.getPlayerColor('primary');
             } else {
                 // Deactivate repeat mode - return to default style
                 repeatBtn.style.background = 'transparent';
-                repeatBtn.style.color = '#786d59';
+                repeatBtn.style.color = this.getPlayerColor('strong');
             }
         }
         
@@ -263,15 +263,64 @@ class AudioPlayer {
         if (muteBtn) {
             muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
             muteBtn.style.background = 'transparent';
-            muteBtn.style.color = '#786d59';
+            muteBtn.style.color = this.getPlayerColor('strong');
         }
         
         if (repeatBtn) {
             repeatBtn.style.background = 'transparent';
-            repeatBtn.style.color = '#786d59';
+            repeatBtn.style.color = this.getPlayerColor('strong');
         }
         
         this.appState.set('audio.isRepeat', false);
+    }
+    
+    getPlayerColor(colorKey) {
+        // Get color from CSS custom properties or calculate from base color
+        const root = document.documentElement;
+        const cssColor = getComputedStyle(root).getPropertyValue(`--player-${colorKey}`).trim();
+        
+        if (cssColor) {
+            return cssColor;
+        }
+        
+        // Fallback: calculate from base color
+        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        const colorMap = {
+            base: window.Constants.PLAYER_BASE_COLOR,
+            light: this.addRgb(baseRgb, 17, 16, 20),
+            lighter: this.addRgb(baseRgb, 16, 16, 16),
+            neutral: this.addRgb(baseRgb, -4, -8, -9),
+            muted: this.addRgb(baseRgb, -27, -27, -27),
+            subtle: this.addRgb(baseRgb, -24, -24, -24),
+            medium: this.addRgb(baseRgb, -82, -92, -103),
+            strong: this.addRgb(baseRgb, -80, -80, -80),
+            dark: this.addRgb(baseRgb, -93, -96, -95),
+            darker: this.addRgb(baseRgb, -78, -79, -57),
+            accent: this.addRgb(baseRgb, -16, -74, -118),
+            primary: this.addRgb(baseRgb, -61, -120, -150)
+        };
+        
+        return colorMap[colorKey] || window.Constants.PLAYER_BASE_COLOR;
+    }
+    
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+    
+    addRgb(rgb, rOffset, gOffset, bOffset) {
+        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
+        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
+        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
+        return this.rgbToHex(newR, newG, newB);
+    }
+    
+    rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
     
     updatePlayerState() {

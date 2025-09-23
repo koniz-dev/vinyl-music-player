@@ -1,20 +1,18 @@
 :root {
-    --vinyl-primary: #8B4513;
-    --vinyl-primary-80: rgba(139, 69, 19, 0.8);
+    --player-base: #c8bda9;
+    --player-light: #d9cdbd; /* +17, +16, +20 */
+    --player-lighter: #d8cdb9; /* +16, +16, +16 */
+    --player-neutral: #c4b5a0; /* -4, -8, -9 */
+    --player-muted: #ada28e; /* -27, -27, -27 */
+    --player-subtle: #b0a591; /* -24, -24, -24 */
+    --player-medium: #766142; /* -82, -92, -103 */
+    --player-strong: #786d59; /* -80, -80, -80 */
+    --player-dark: #6b5d4a; /* -93, -96, -95 */
+    --player-darker: #7a6e70; /* -78, -79, -57 */
+    --player-accent: #B87333; /* -16, -74, -118 */
+    --player-primary: #8B4513; /* -61, -120, -150 */
     
-    --vinyl-primary-light-80: #E8DAD0;
-    --vinyl-primary-light-40: #c8bda9;
-    --vinyl-primary-light-35: #d9cdbd;
-    --vinyl-primary-light-35-alt: #d8cdb9;
-    --vinyl-primary-light-25: #c4b5a0;
-    --vinyl-primary-light-20: #ada28e;
-    --vinyl-primary-light-15: #b0a591;
-    
-    --vinyl-primary-dark-15: #766142;
-    --vinyl-primary-dark-20: #786d59;
-    --vinyl-primary-dark-30: #6b5d4a;
-    --vinyl-primary-dark-40: #7a6e70;
-    --vinyl-primary-dark-80: #1C0E04;
+    --lyrics-optimal: #4a3c2a; /* -126, -129, -127 */
     
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
     --primary-blue: #667eea;

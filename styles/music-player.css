@@ -2,7 +2,7 @@
     width: 350px;
     max-width: 100%;
     aspect-ratio: 9 / 16;
-    background: var(--vinyl-primary-light-40);
+    background: var(--player-base);
     border-radius: var(--radius-2xl);
     position: relative;
     display: flex;
@@ -31,7 +31,7 @@
 
 .device-container {
     position: relative;
-    background: var(--vinyl-primary-light-35);
+    background: var(--player-light);
     border-radius: var(--radius-4xl);
     display: flex;
     align-items: center;
@@ -107,8 +107,8 @@
     height: 180px;
     max-width: 100%;
     border-radius: var(--radius-full);
-    background: var(--vinyl-primary-dark-40);
-    border: 8px solid var(--vinyl-primary-dark-40);
+    background: var(--player-darker);
+    border: 8px solid var(--player-darker);
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -140,14 +140,14 @@
 .cord-line {
     width: var(--spacing-xs);
     height: 38px;
-    background: var(--vinyl-primary-light-35);
+    background: var(--player-light);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .cord-handle {
     width: 12px;
     height: 18px;
-    background: var(--vinyl-primary-light-35);
+    background: var(--player-light);
     border-radius: 16px 16px 3px 3px;
     box-shadow: 
         0 2px 4px rgba(0, 0, 0, 0.2),
@@ -175,7 +175,7 @@
     font-size: var(--text-2xl);
     font-weight: var(--font-bold);
     letter-spacing: 1px;
-    color: var(--vinyl-primary);
+    color: var(--player-primary);
     height: 30px;
     line-height: 30px;
     overflow: hidden;
@@ -183,7 +183,7 @@
 
 .artist-name {
     font-size: var(--text-sm);
-    color: var(--vinyl-primary-80);
+    color: var(--player-accent);
     font-weight: var(--font-normal);
     letter-spacing: 0.5px;
     height: 18px;
@@ -205,13 +205,13 @@
     width: 100%;
     padding: 0 var(--spacing-xl);
     flex-shrink: 0;
-    color: var(--vinyl-primary-dark-15);
+    color: var(--player-medium);
 }
 
 .vinyl-progress-bar {
     width: 100%;
     height: var(--spacing-xs);
-    background: var(--vinyl-primary-light-20);
+    background: var(--player-muted);
     border-radius: var(--spacing-xs);
     position: relative;
     cursor: pointer;
@@ -219,7 +219,7 @@
 
 .vinyl-progress {
     height: 100%;
-    background: var(--vinyl-primary-dark-15);
+    background: var(--player-medium);
     border-radius: var(--spacing-xs);
     width: 0%;
     transition: width 0.1s ease;
@@ -244,9 +244,9 @@
     width: 44px;
     height: 44px;
     border-radius: var(--radius-full);
-    background: var(--vinyl-primary-light-35-alt);
+    background: var(--player-lighter);
     border: none;
-    color: var(--vinyl-primary-dark-20);
+    color: var(--player-strong);
     font-size: var(--text-xl);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -258,30 +258,30 @@
 }
 
 .control-btn:hover {
-    background: var(--vinyl-primary-light-25);
-    color: var(--vinyl-primary-dark-30);
+    background: var(--player-neutral);
+    color: var(--player-dark);
 }
 
 .vinyl-play-pause-btn {
     width: 60px !important;
     height: 60px !important;
     font-size: var(--text-3xl) !important;
-    background: var(--vinyl-primary-light-35-alt) !important;
-    color: var(--vinyl-primary-dark-20) !important;
-    border: 4px solid var(--vinyl-primary-light-15) !important;
+    background: var(--player-lighter) !important;
+    color: var(--player-strong) !important;
+    border: 4px solid var(--player-subtle) !important;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
 
 .vinyl-play-pause-btn:hover {
-    background: var(--vinyl-primary-light-25) !important;
-    color: var(--vinyl-primary-dark-30) !important;
+    background: var(--player-neutral) !important;
+    color: var(--player-dark) !important;
 }
 
 .controls .control-btn:nth-child(2),
 .controls .control-btn:nth-child(3),
 .controls .control-btn:nth-child(4) {
-    border: 3px solid var(--vinyl-primary-light-15);
+    border: 3px solid var(--player-subtle);
 }
 
 .controls .control-btn:nth-child(1),
@@ -289,15 +289,15 @@
 .vinyl-mute-btn,
 .vinyl-repeat-btn {
     background: transparent !important;
-    color: var(--vinyl-primary-dark-20) !important;
+    color: var(--player-strong) !important;
 }
 
 .controls .control-btn:nth-child(1):hover,
 .controls .control-btn:nth-child(5):hover,
 .vinyl-mute-btn:hover,
 .vinyl-repeat-btn:hover {
-    background: var(--vinyl-primary-light-25) !important;
-    color: var(--vinyl-primary-dark-30) !important;
+    background: var(--player-neutral) !important;
+    color: var(--player-dark) !important;
 }
 
 .control-btn-disabled {

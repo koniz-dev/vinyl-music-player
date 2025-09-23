@@ -1,7 +1,7 @@
 class MusicPlayerColorManager {
     constructor() {
         // Initialize with default color
-        this.currentColor = '#8B4513';
+        this.currentColor = window.Constants.PLAYER_BASE_COLOR;
         this.colorHistory = [];
         
         this.initializeElements();
@@ -211,10 +211,10 @@ class MusicPlayerColorManager {
     loadCurrentColor() {
         try {
             const saved = localStorage.getItem('musicPlayerCurrentColor');
-            return saved || '#8B4513';
+            return saved || window.Constants.PLAYER_BASE_COLOR;
         } catch (error) {
             window.safeLog.warn('Failed to load current color:', error);
-            return '#8B4513';
+            return window.Constants.PLAYER_BASE_COLOR;
         }
     }
     
@@ -227,14 +227,14 @@ class MusicPlayerColorManager {
     }
     
     resetToDefault() {
-        this.currentColor = '#8B4513';
+        this.currentColor = window.Constants.PLAYER_BASE_COLOR;
         
         this.moveDefaultColorToFront();
         this.saveCurrentColor();
     }
     
     ensureDefaultColorInHistory() {
-        const defaultColor = '#8B4513';
+        const defaultColor = window.Constants.PLAYER_BASE_COLOR;
         
         if (!this.colorHistory.includes(defaultColor)) {
             this.colorHistory.push(defaultColor);
@@ -248,7 +248,7 @@ class MusicPlayerColorManager {
     }
     
     moveDefaultColorToFront() {
-        const defaultColor = '#8B4513';
+        const defaultColor = window.Constants.PLAYER_BASE_COLOR;
         
         this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
         this.colorHistory.unshift(defaultColor);
@@ -286,7 +286,7 @@ class MusicPlayerColorManager {
             }
             
             if (window.toastManager) {
-                window.toastManager.showWarning('Invalid Color', 'Please enter a valid hex color (e.g., #8B4513)');
+                window.toastManager.showWarning('Invalid Color', `Please enter a valid hex color (e.g., ${window.Constants.PLAYER_BASE_COLOR})`);
             }
         }
     }

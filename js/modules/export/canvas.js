@@ -31,23 +31,45 @@ class ExportCanvas {
             if (exportMusicPlayerColors && exportMusicPlayerColors[colorKey]) {
                 return exportMusicPlayerColors[colorKey];
             }
-            // Fallback to default colors
+            // Fallback to calculated colors from base color
+            const baseRgb = hexToRgb(window.Constants.PLAYER_BASE_COLOR);
             const defaultColors = {
-                light40: '#c8bda9',
-                light35: '#d9cdbd',
-                light35Alt: '#d8cdb9',
-                light25: '#c4b5a0',
-                light20: '#ada28e',
-                light15: '#b0a591',
-                primary: '#8B4513',
-                primary80: 'rgba(139, 69, 19, 0.8)',
-                dark15: '#766142',
-                dark20: '#786d59',
-                dark30: '#6b5d4a',
-                dark40: '#7a6e70'
+                base: window.Constants.PLAYER_BASE_COLOR,
+                light: addRgb(baseRgb, 17, 16, 20),
+                lighter: addRgb(baseRgb, 16, 16, 16),
+                neutral: addRgb(baseRgb, -4, -8, -9),
+                muted: addRgb(baseRgb, -27, -27, -27),
+                subtle: addRgb(baseRgb, -24, -24, -24),
+                medium: addRgb(baseRgb, -82, -92, -103),
+                strong: addRgb(baseRgb, -80, -80, -80),
+                dark: addRgb(baseRgb, -93, -96, -95),
+                darker: addRgb(baseRgb, -78, -79, -57),
+                accent: addRgb(baseRgb, -16, -74, -118),
+                primary: addRgb(baseRgb, -61, -120, -150)
             };
-            return defaultColors[colorKey] || '#8B4513';
+            return defaultColors[colorKey] || window.Constants.PLAYER_BASE_COLOR;
         };
+        
+        // Helper functions for color calculation
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+        
+        function addRgb(rgb, rOffset, gOffset, bOffset) {
+            const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
+            const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
+            const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
+            return rgbToHex(newR, newG, newB);
+        }
+        
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
 
         // Clear canvas
         exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
@@ -68,7 +90,7 @@ class ExportCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 20;
         
-        exportCtx.fillStyle = getMusicPlayerColor('light40');
+        exportCtx.fillStyle = getMusicPlayerColor('base');
         exportCtx.beginPath();
         const radius = 24; // --radius-2xl
         exportCtx.moveTo(musicPlayerX + radius, musicPlayerY);
@@ -95,7 +117,7 @@ class ExportCanvas {
 
         if (artistName) {
             exportCtx.font = `16px 'Patrick Hand', Arial, sans-serif`; // Looks like 16px in HTML
-            exportCtx.fillStyle = getMusicPlayerColor('primary80');
+            exportCtx.fillStyle = getMusicPlayerColor('accent');
             exportCtx.fillText(artistName, musicPlayerX + musicPlayerWidth / 2, musicPlayerY + 105); // Tăng từ 75 lên 105
         }
 
@@ -115,7 +137,7 @@ class ExportCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 8;
         
-        exportCtx.fillStyle = getMusicPlayerColor('light35');
+        exportCtx.fillStyle = getMusicPlayerColor('light');
         exportCtx.beginPath();
         const containerRadius = 32; // --radius-4xl
         exportCtx.moveTo(deviceContainerX + containerRadius, deviceContainerY);
@@ -197,7 +219,7 @@ class ExportCanvas {
         
         // Draw circular screen - CSS: background: #7a6e70, border: 8px solid #7a6e70
         // Since border and background are same color, just draw one circle
-        exportCtx.fillStyle = getMusicPlayerColor('dark40');
+        exportCtx.fillStyle = getMusicPlayerColor('darker');
         exportCtx.beginPath();
         exportCtx.arc(centerX, centerY, circularScreenSize/2, 0, 2 * Math.PI);
         exportCtx.fill();
@@ -278,7 +300,7 @@ class ExportCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 1;
         
-        exportCtx.fillStyle = getMusicPlayerColor('light40');
+        exportCtx.fillStyle = getMusicPlayerColor('base');
         exportCtx.fillRect(cordX - cordWidth/2, cordY, cordWidth, cordHeight);
         exportCtx.restore();
         
@@ -289,7 +311,7 @@ class ExportCanvas {
         exportCtx.shadowOffsetX = 0;
         exportCtx.shadowOffsetY = 2;
         
-        exportCtx.fillStyle = getMusicPlayerColor('light40');
+        exportCtx.fillStyle = getMusicPlayerColor('base');
         const handleX = cordX - handleWidth/2;
         const handleY = cordY + cordHeight - 4; // CSS: margin-top: -4px
         
@@ -345,7 +367,7 @@ class ExportCanvas {
         const progressBarY = progressContainerY + 10;
         
         // Progress bar background - EXACT HTML CSS values
-        exportCtx.fillStyle = getMusicPlayerColor('light20'); // CSS: background: #ada28e
+        exportCtx.fillStyle = getMusicPlayerColor('muted'); // CSS: background: muted color
         exportCtx.save();
         exportCtx.beginPath();
         const bgRadius = 4; // CSS: border-radius: var(--spacing-xs) = 4px
@@ -374,7 +396,7 @@ class ExportCanvas {
         }
         const progressWidth = progressBarWidth * progressPercent;
         
-        exportCtx.fillStyle = getMusicPlayerColor('dark15'); // CSS: background: #766142
+        exportCtx.fillStyle = getMusicPlayerColor('medium'); // CSS: background: medium color
         exportCtx.save();
         exportCtx.beginPath();
         const fillRadius = 4; // CSS: border-radius: var(--spacing-xs) = 4px
@@ -400,7 +422,7 @@ class ExportCanvas {
         exportCtx.fill();
         
         // Time display - EXACT HTML values
-        exportCtx.fillStyle = getMusicPlayerColor('dark15');
+        exportCtx.fillStyle = getMusicPlayerColor('medium');
         exportCtx.font = `12px 'Patrick Hand', Arial, sans-serif`; // --text-xs = 12px
         exportCtx.textAlign = 'left';
         const formatTime = (seconds) => {
@@ -459,17 +481,17 @@ class ExportCanvas {
                 const playButtonYCenter = buttonY + playButtonSize/2;
                 
                 // CSS: background: #d8cdb9, border: 4px solid #b0a591 !important (vinyl-play-pause-btn)
-                exportCtx.fillStyle = getMusicPlayerColor('light35Alt');
+                exportCtx.fillStyle = getMusicPlayerColor('lighter');
                 exportCtx.beginPath();
                 exportCtx.arc(playButtonX, playButtonYCenter, playButtonSize/2, 0, 2 * Math.PI);
                 exportCtx.fill();
                 
                 // Draw border like CSS border: 4px solid #b0a591 !important
-                exportCtx.strokeStyle = getMusicPlayerColor('light15');
+                exportCtx.strokeStyle = getMusicPlayerColor('subtle');
                 exportCtx.lineWidth = 4;
                 exportCtx.stroke();
                 
-                exportCtx.fillStyle = getMusicPlayerColor('dark20'); // CSS: color: #786d59
+                exportCtx.fillStyle = getMusicPlayerColor('strong'); // CSS: color: strong color
                 exportCtx.font = `28px FontAwesome`; // CSS: font-size: var(--text-3xl) = 28px
                 exportCtx.textAlign = 'center';
                 exportCtx.textBaseline = 'middle';
@@ -487,20 +509,20 @@ class ExportCanvas {
                     exportCtx.arc(buttonX, buttonYCenter, buttonSize/2, 0, 2 * Math.PI);
                     exportCtx.fill();
                     
-                    exportCtx.fillStyle = getMusicPlayerColor('dark20');
+                    exportCtx.fillStyle = getMusicPlayerColor('strong');
                 } else {
                     // Previous (nth-child(2)) and Next (nth-child(4)) buttons - CSS: border: 3px solid #b0a591
-                    exportCtx.fillStyle = getMusicPlayerColor('light35Alt');
+                    exportCtx.fillStyle = getMusicPlayerColor('lighter');
                     exportCtx.beginPath();
                     exportCtx.arc(buttonX, buttonYCenter, buttonSize/2, 0, 2 * Math.PI);
                     exportCtx.fill();
                     
                     // Draw border like CSS border: 3px solid #b0a591
-                    exportCtx.strokeStyle = getMusicPlayerColor('light15');
+                    exportCtx.strokeStyle = getMusicPlayerColor('subtle');
                     exportCtx.lineWidth = 3;
                     exportCtx.stroke();
                     
-                    exportCtx.fillStyle = getMusicPlayerColor('dark20');
+                    exportCtx.fillStyle = getMusicPlayerColor('strong');
                 }
                 
                 exportCtx.font = `20px FontAwesome`; // CSS: font-size: var(--text-xl) = 20px

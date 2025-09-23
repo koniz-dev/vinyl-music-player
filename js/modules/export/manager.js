@@ -31,12 +31,41 @@ class ExportManager {
         this.albumArtImage = null;
         this.exportAudio = null;
         this.exportLyrics = [];
-        this.exportLyricsColor = '#8B4513';
+        // Calculate lyrics color from base color using formula
+        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        this.exportLyricsColor = this.addRgb(baseRgb, -126, -129, -127);
         this.exportTimeout = null;
         this.wasMainAudioPlaying = false;
         
         this.eventBus = window.eventBus;
         this.appState = window.appState;
+    }
+    
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+    
+    addRgb(rgb, rOffset, gOffset, bOffset) {
+        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
+        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
+        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
+        return this.rgbToHex(newR, newG, newB);
+    }
+    
+    rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    
+    async initialize() {
+        this.initializeUtils();
+    }
+    
+    initializeUtils() {
         this.fileUtils = window.FileUtils;
         this.timeUtils = window.TimeUtils;
         this.logger = window.logger?.module('ExportManager') || console;
@@ -209,19 +238,21 @@ class ExportManager {
         if (window.musicPlayerThemeManager) {
             this.exportMusicPlayerColors = window.musicPlayerThemeManager.getCurrentVariants();
         } else {
-            // Fallback to default colors
+            // Fallback to calculated colors from base color
+            const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
             this.exportMusicPlayerColors = {
-                primary: '#8B4513',
-                light40: '#c8bda9',
-                light35: '#d9cdbd',
-                light35Alt: '#d8cdb9',
-                light25: '#c4b5a0',
-                light20: '#ada28e',
-                light15: '#b0a591',
-                dark15: '#766142',
-                dark20: '#786d59',
-                dark30: '#6b5d4a',
-                dark40: '#7a6e70'
+                base: window.Constants.PLAYER_BASE_COLOR,
+                light: this.addRgb(baseRgb, 17, 16, 20),
+                lighter: this.addRgb(baseRgb, 16, 16, 16),
+                neutral: this.addRgb(baseRgb, -4, -8, -9),
+                muted: this.addRgb(baseRgb, -27, -27, -27),
+                subtle: this.addRgb(baseRgb, -24, -24, -24),
+                medium: this.addRgb(baseRgb, -82, -92, -103),
+                strong: this.addRgb(baseRgb, -80, -80, -80),
+                dark: this.addRgb(baseRgb, -93, -96, -95),
+                darker: this.addRgb(baseRgb, -78, -79, -57),
+                accent: this.addRgb(baseRgb, -16, -74, -118),
+                primary: this.addRgb(baseRgb, -61, -120, -150)
             };
         }
     }
