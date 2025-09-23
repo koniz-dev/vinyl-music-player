@@ -3,6 +3,7 @@ class LyricsColorManager {
         // Initialize with default color
         this.currentColor = '#766142';
         this.colorHistory = [];
+        this.isInitializing = true; // Flag to prevent event emissions during init
         
         this.initializeElements();
         this.setupEventListeners();
@@ -11,6 +12,8 @@ class LyricsColorManager {
         
         // Apply default color to lyrics
         this.sendColorToPlayer();
+        
+        this.isInitializing = false; // Clear flag after initialization
     }
     
     initializeElements() {
@@ -79,13 +82,18 @@ class LyricsColorManager {
         this.updateColorPreview();
         this.renderColorHistory();
         this.saveCurrentColor();
-        this.sendColorToPlayer();
+        
+        // Only emit if not during initialization or theme update
+        if (!this.isInitializing && !this.isThemeUpdating) {
+            this.sendColorToPlayer();
+        }
     }
     
     updateColorPreviewOnly(color) {
         this.currentColor = color;
         this.updateColorPreview();
-        this.sendColorToPlayer();
+        // Don't emit here to avoid excessive events during color picker interaction
+        // The 'change' event will handle the final emission
     }
     
     addToHistory(color) {
@@ -185,6 +193,15 @@ class LyricsColorManager {
         if (window.eventBus) {
             window.eventBus.emit('lyrics:colorChanged', { color: this.currentColor });
         }
+    }
+    
+    // Method to set color without emitting events (for internal updates)
+    setCurrentColorSilently(color) {
+        this.currentColor = color;
+        this.updateColorPreview();
+        this.renderColorHistory();
+        this.saveCurrentColor();
+        // Don't call sendColorToPlayer() to avoid duplicate emissions
     }
     
     loadColorHistory() {

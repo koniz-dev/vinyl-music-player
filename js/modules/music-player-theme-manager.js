@@ -153,9 +153,13 @@ class MusicPlayerThemeManager {
         
         // Only update if this is the first time or if lyrics color hasn't been manually changed
         if (!this.lyricsColorManuallySet) {
-            // Update lyrics color manager if it exists
+            // Set flag to prevent duplicate emissions during theme update
             if (window.lyricsColorManager) {
-                window.lyricsColorManager.setCurrentColor(defaultLyricsColor, false);
+                window.lyricsColorManager.isThemeUpdating = true;
+            }
+            // Update lyrics color manager if it exists (silently to avoid duplicate events)
+            if (window.lyricsColorManager) {
+                window.lyricsColorManager.setCurrentColorSilently(defaultLyricsColor);
             }
             
             // Update the color picker value
@@ -172,9 +176,9 @@ class MusicPlayerThemeManager {
                 lyricsColorPreview.style.color = this.getContrastColor(defaultLyricsColor);
             }
             
-            // Notify lyrics manager to update the display
-            if (window.eventBus) {
-                window.eventBus.emit('lyrics:colorChanged', { color: defaultLyricsColor });
+            // Clear flag after theme update
+            if (window.lyricsColorManager) {
+                window.lyricsColorManager.isThemeUpdating = false;
             }
         }
     }

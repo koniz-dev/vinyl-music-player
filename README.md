@@ -228,8 +228,9 @@ vinyl-music-player/
 │   │   ├── lyrics-color-manager.js # Lyrics color customization
 │   │   └── settings-manager.js   # Settings panel management
 │   ├── utils/                    # Utility functions
-│   │   ├── time-utils.js         # Time formatting utilities
-│   │   └── file-utils.js         # File handling utilities
+│   │   ├── canvas.js             # Canvas drawing utilities
+│   │   ├── time.js               # Time formatting utilities
+│   │   └── file.js               # File handling utilities
 │   ├── index.js                  # Main application entry point
 │   └── toast.js                  # Toast notification system
 └── styles/                       # CSS stylesheets
