@@ -1,8 +1,8 @@
-class MusicPlayerThemeManager {
+class MusicPlayerThemeManager extends BaseModule {
     constructor() {
+        super('MusicPlayerThemeManager');
         this.currentPrimaryColor = window.Constants.PLAYER_BASE_COLOR;
         this.lyricsColorManuallySet = false;
-        this.setupEventListeners();
     }
     
     setupEventListeners() {
@@ -48,44 +48,26 @@ class MusicPlayerThemeManager {
     }
     
     calculateColorVariants(baseColor) {
-        const rgb = this.hexToRgb(baseColor);
+        const rgb = ColorHelper.hexToRgb(baseColor);
         
         // Calculate all colors based on RGB formula from CSS comments
         return {
             base: baseColor,
-            light: this.addRgb(rgb, 17, 16, 20),      // +17, +16, +20
-            lighter: this.addRgb(rgb, 16, 16, 16),    // +16, +16, +16
-            neutral: this.addRgb(rgb, -4, -8, -9),    // -4, -8, -9
-            muted: this.addRgb(rgb, -27, -27, -27),   // -27, -27, -27
-            subtle: this.addRgb(rgb, -24, -24, -24),  // -24, -24, -24
-            medium: this.addRgb(rgb, -82, -92, -103), // -82, -92, -103
-            strong: this.addRgb(rgb, -80, -80, -80),  // -80, -80, -80
-            dark: this.addRgb(rgb, -93, -96, -95),    // -93, -96, -95
-            darker: this.addRgb(rgb, -78, -79, -57),  // -78, -79, -57
-            accent: this.addRgb(rgb, -16, -74, -118), // -16, -74, -118
-            primary: this.addRgb(rgb, -61, -120, -150) // -61, -120, -150
+            light: ColorHelper.addRgbOffset(rgb, 17, 16, 20),      // +17, +16, +20
+            lighter: ColorHelper.addRgbOffset(rgb, 16, 16, 16),    // +16, +16, +16
+            neutral: ColorHelper.addRgbOffset(rgb, -4, -8, -9),    // -4, -8, -9
+            muted: ColorHelper.addRgbOffset(rgb, -27, -27, -27),   // -27, -27, -27
+            subtle: ColorHelper.addRgbOffset(rgb, -24, -24, -24),  // -24, -24, -24
+            medium: ColorHelper.addRgbOffset(rgb, -82, -92, -103), // -82, -92, -103
+            strong: ColorHelper.addRgbOffset(rgb, -80, -80, -80),  // -80, -80, -80
+            dark: ColorHelper.addRgbOffset(rgb, -93, -96, -95),    // -93, -96, -95
+            darker: ColorHelper.addRgbOffset(rgb, -78, -79, -57),  // -78, -79, -57
+            accent: ColorHelper.addRgbOffset(rgb, -16, -74, -118), // -16, -74, -118
+            primary: ColorHelper.addRgbOffset(rgb, -61, -120, -150) // -61, -120, -150
         };
     }
     
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-    
-    addRgb(rgb, rOffset, gOffset, bOffset) {
-        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
-        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
-        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
-        return this.rgbToHex(newR, newG, newB);
-    }
-    
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
+    // Color methods are now handled by ColorHelper
     
     rgbToRgba(rgb, alpha) {
         return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
@@ -95,19 +77,17 @@ class MusicPlayerThemeManager {
         const newR = Math.round(rgb.r + (255 - rgb.r) * amount);
         const newG = Math.round(rgb.g + (255 - rgb.g) * amount);
         const newB = Math.round(rgb.b + (255 - rgb.b) * amount);
-        return this.rgbToHex(newR, newG, newB);
+        return ColorHelper.rgbToHex(newR, newG, newB);
     }
     
     darkenColor(rgb, amount) {
         const newR = Math.round(rgb.r * (1 - amount));
         const newG = Math.round(rgb.g * (1 - amount));
         const newB = Math.round(rgb.b * (1 - amount));
-        return this.rgbToHex(newR, newG, newB);
+        return ColorHelper.rgbToHex(newR, newG, newB);
     }
     
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
+    // rgbToHex is now handled by ColorHelper
     
     updateCSSVariables(variants) {
         const root = document.documentElement;
@@ -128,8 +108,8 @@ class MusicPlayerThemeManager {
     
     updateLyricsDefaultColor(variants) {
         // Calculate lyrics color using formula: -126, -129, -127 from base color
-        const baseRgb = this.hexToRgb(variants.base);
-        const defaultLyricsColor = this.addRgb(baseRgb, -126, -129, -127);
+        const baseRgb = ColorHelper.hexToRgb(variants.base);
+        const defaultLyricsColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         
         // Only update if this is the first time or if lyrics color hasn't been manually changed
         if (!this.lyricsColorManuallySet) {
@@ -143,8 +123,8 @@ class MusicPlayerThemeManager {
             }
             
             // Update the color picker value
-            const lyricsColorPicker = document.getElementById('lyrics-color-picker');
-            const lyricsColorPreview = document.getElementById('color-preview-input');
+            const lyricsColorPicker = DOMHelper.getElementSilent('#lyrics-color-picker');
+            const lyricsColorPreview = DOMHelper.getElementSilent('#color-preview-input');
             
             if (lyricsColorPicker) {
                 lyricsColorPicker.value = defaultLyricsColor;
@@ -168,7 +148,7 @@ class MusicPlayerThemeManager {
     }
     
     getContrastColor(hexColor) {
-        const rgb = this.hexToRgb(hexColor);
+        const rgb = ColorHelper.hexToRgb(hexColor);
         if (!rgb) return '#000000';
         
         const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;

@@ -3,12 +3,22 @@ class VinylMusicPlayerApp {
         this.modules = {};
         this.isInitialized = false;
         
-        // Core systems
+        // Core systems - with safety checks
         this.appState = window.appState;
         this.eventBus = window.eventBus;
         this.logger = window.logger?.module('VinylMusicPlayerApp') || console;
         this.errorHandler = window.errorHandler;
         this.constants = window.Constants;
+        
+        // Check if required systems are available
+        if (!this.appState) {
+            console.error('AppState not available');
+            return;
+        }
+        if (!this.eventBus) {
+            console.error('EventBus not available');
+            return;
+        }
         
         // Initialize app
         this.initialize();
@@ -36,50 +46,56 @@ class VinylMusicPlayerApp {
     }
     
     async initializeModules() {
-        // Initialize Audio Player
+        // Initialize Audio Player (BaseModule)
         if (window.AudioPlayer) {
             this.modules.audioPlayer = new window.AudioPlayer();
             await this.modules.audioPlayer.initialize();
         }
         
-        // Initialize Lyrics Manager
-        if (window.LyricsManager) {
-            this.modules.lyricsManager = new window.LyricsManager();
-        }
-        
-        // Initialize Vinyl Renderer
+        // Initialize Vinyl Renderer (BaseModule)
         if (window.VinylRenderer) {
             this.modules.vinylRenderer = new window.VinylRenderer();
+            await this.modules.vinylRenderer.initialize();
         }
         
-        // Initialize Export Manager
+        // Initialize Settings Manager (BaseModule)
+        if (window.SettingsManager) {
+            this.modules.settingsManager = new window.SettingsManager();
+            await this.modules.settingsManager.initialize();
+            window.settingsManager = this.modules.settingsManager; // Set global reference
+        }
+        
+        // Initialize Lyrics Manager (BaseModule)
+        if (window.LyricsManager) {
+            this.modules.lyricsManager = new window.LyricsManager();
+            await this.modules.lyricsManager.initialize();
+        }
+        
+        // Initialize Export Manager (BaseModule)
         if (window.ExportManager) {
             this.modules.exportManager = new window.ExportManager();
             await this.modules.exportManager.initialize();
         }
         
-        // Initialize Lyrics Color Manager
+        // Initialize Lyrics Color Manager (BaseModule)
         if (window.LyricsColorManager) {
             this.modules.lyricsColorManager = new window.LyricsColorManager();
+            await this.modules.lyricsColorManager.initialize();
             window.lyricsColorManager = this.modules.lyricsColorManager; // Set global reference
         }
         
-        // Initialize Music Player Color Manager
+        // Initialize Music Player Color Manager (BaseModule)
         if (window.MusicPlayerColorManager) {
             this.modules.musicPlayerColorManager = new window.MusicPlayerColorManager();
+            await this.modules.musicPlayerColorManager.initialize();
             window.musicPlayerColorManager = this.modules.musicPlayerColorManager; // Set global reference
         }
         
-        // Initialize Music Player Theme Manager
+        // Initialize Music Player Theme Manager (BaseModule)
         if (window.MusicPlayerThemeManager) {
             this.modules.musicPlayerThemeManager = new window.MusicPlayerThemeManager();
+            await this.modules.musicPlayerThemeManager.initialize();
             window.musicPlayerThemeManager = this.modules.musicPlayerThemeManager; // Set global reference
-        }
-        
-        // Initialize Settings Manager
-        if (window.SettingsManager) {
-            this.modules.settingsManager = new window.SettingsManager();
-            window.settingsManager = this.modules.settingsManager; // Set global reference
         }
         
         // Initialize Toast Manager
@@ -246,8 +262,8 @@ class VinylMusicPlayerApp {
         const songTitle = this.appState.get('ui.songTitle');
         const artistName = this.appState.get('ui.artistName');
         
-        const songTitleElement = document.querySelector('.song-title');
-        const artistNameElement = document.querySelector('.artist-name');
+        const songTitleElement = DOMHelper.getElementSilent('.song-title');
+        const artistNameElement = DOMHelper.getElementSilent('.artist-name');
         
         if (songTitleElement) {
             songTitleElement.textContent = songTitle || '';
@@ -262,9 +278,9 @@ class VinylMusicPlayerApp {
         const currentTime = this.appState.get('audio.currentTime');
         const totalTime = this.appState.get('audio.totalTime');
         
-        const progress = document.querySelector('.vinyl-progress');
-        const currentTimeEl = document.querySelector('.vinyl-current-time');
-        const totalTimeEl = document.querySelector('.vinyl-total-time');
+        const progress = DOMHelper.getElementSilent('.vinyl-progress');
+        const currentTimeEl = DOMHelper.getElementSilent('.vinyl-current-time');
+        const totalTimeEl = DOMHelper.getElementSilent('.vinyl-total-time');
         
         if (progress && totalTime > 0) {
             const progressPercent = (currentTime / totalTime) * (this.constants?.UI.PROGRESS_MAX || 100);
@@ -321,6 +337,16 @@ class VinylMusicPlayerApp {
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
+        // Check if all required systems are loaded
+        if (!window.appState || !window.eventBus || !window.Constants) {
+            console.error('Required systems not loaded:', {
+                appState: !!window.appState,
+                eventBus: !!window.eventBus,
+                Constants: !!window.Constants
+            });
+            return;
+        }
+        
         window.vinylMusicPlayerApp = new VinylMusicPlayerApp();
     }, window.Constants?.TIME.INIT_DELAY || 100);
 });

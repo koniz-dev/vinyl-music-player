@@ -1,13 +1,14 @@
-class LyricsColorManager {
+class LyricsColorManager extends BaseModule {
     constructor() {
+        super('LyricsColorManager');
         // Calculate default color from base color using formula
-        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        this.currentColor = this.addRgb(baseRgb, -126, -129, -127);
+        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        this.currentColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         this.colorHistory = [];
         this.isInitializing = true; // Flag to prevent event emissions during init
-        
-        this.initializeElements();
-        this.setupEventListeners();
+    }
+    
+    async customInitialize() {
         this.updateColorPreview();
         this.renderColorHistory();
         
@@ -17,32 +18,14 @@ class LyricsColorManager {
         this.isInitializing = false; // Clear flag after initialization
     }
     
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
+    // Color methods are now handled by ColorHelper
     
-    addRgb(rgb, rOffset, gOffset, bOffset) {
-        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
-        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
-        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
-        return this.rgbToHex(newR, newG, newB);
-    }
-    
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
-    
-    initializeElements() {
-        this.colorPicker = document.getElementById('lyrics-color-picker');
-        this.colorPreviewInput = document.getElementById('color-preview-input');
-        this.colorHistoryContainer = document.getElementById('color-history');
-        this.copyHexBtn = document.getElementById('copy-hex-btn');
-        this.resetColorBtn = document.getElementById('reset-color-btn');
+    setupElements() {
+        this.colorPicker = DOMHelper.getElement('#lyrics-color-picker');
+        this.colorPreviewInput = DOMHelper.getElement('#color-preview-input');
+        this.colorHistoryContainer = DOMHelper.getElement('#color-history');
+        this.copyHexBtn = DOMHelper.getElement('#copy-hex-btn');
+        this.resetColorBtn = DOMHelper.getElement('#reset-color-btn');
         
         // Ensure color preview is updated after DOM elements are ready
         if (this.colorPreviewInput && this.colorPicker) {
@@ -157,7 +140,7 @@ class LyricsColorManager {
         
         this.colorHistoryContainer.innerHTML = '';
         
-        const colorHistorySection = document.querySelector('.color-history-section');
+        const colorHistorySection = DOMHelper.getElementSilent('.color-history-section');
         if (colorHistorySection) {
             colorHistorySection.style.display = this.colorHistory.length > 0 ? 'block' : 'none';
         }
@@ -246,12 +229,12 @@ class LyricsColorManager {
     loadCurrentColor() {
         try {
             const saved = localStorage.getItem('lyricsCurrentColor');
-            const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-            return saved || this.addRgb(baseRgb, -126, -129, -127);
+            const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+            return saved || ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         } catch (error) {
             window.safeLog.warn('Failed to load current color:', error);
-            const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-            return this.addRgb(baseRgb, -126, -129, -127);
+            const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+            return ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         }
     }
     
@@ -266,16 +249,16 @@ class LyricsColorManager {
     
     resetToDefault() {
         // Calculate default color from base color using formula
-        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        this.currentColor = this.addRgb(baseRgb, -126, -129, -127);
+        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        this.currentColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         
         this.moveDefaultColorToFront();
         this.saveCurrentColor();
     }
     
     ensureDefaultColorInHistory() {
-        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        const defaultColor = this.addRgb(baseRgb, -126, -129, -127);
+        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        const defaultColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         
         if (!this.colorHistory.includes(defaultColor)) {
             this.colorHistory.push(defaultColor);
@@ -289,8 +272,8 @@ class LyricsColorManager {
     }
     
     moveDefaultColorToFront() {
-        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        const defaultColor = this.addRgb(baseRgb, -126, -129, -127);
+        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        const defaultColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         
         this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
         this.colorHistory.unshift(defaultColor);
@@ -328,8 +311,8 @@ class LyricsColorManager {
             }
             
             if (window.toastManager) {
-                const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-                const exampleColor = this.addRgb(baseRgb, -126, -129, -127);
+                const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+                const exampleColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
                 window.toastManager.showWarning('Invalid Color', `Please enter a valid hex color (e.g., ${exampleColor})`);
             }
         }

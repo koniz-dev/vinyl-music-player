@@ -1,11 +1,12 @@
-class MusicPlayerColorManager {
+class MusicPlayerColorManager extends BaseModule {
     constructor() {
+        super('MusicPlayerColorManager');
         // Initialize with default color
         this.currentColor = window.Constants.PLAYER_BASE_COLOR;
         this.colorHistory = [];
-        
-        this.initializeElements();
-        this.setupEventListeners();
+    }
+    
+    async customInitialize() {
         this.updateColorPreview();
         this.renderColorHistory();
         
@@ -15,12 +16,12 @@ class MusicPlayerColorManager {
         }, 100);
     }
     
-    initializeElements() {
-        this.colorPicker = document.getElementById('music-player-color-picker');
-        this.colorPreviewInput = document.getElementById('music-player-color-preview-input');
-        this.colorHistoryContainer = document.getElementById('music-player-color-history');
-        this.copyHexBtn = document.getElementById('music-player-copy-hex-btn');
-        this.resetColorBtn = document.getElementById('music-player-reset-color-btn');
+    setupElements() {
+        this.colorPicker = DOMHelper.getElement('#music-player-color-picker');
+        this.colorPreviewInput = DOMHelper.getElement('#music-player-color-preview-input');
+        this.colorHistoryContainer = DOMHelper.getElement('#music-player-color-history');
+        this.copyHexBtn = DOMHelper.getElement('#music-player-copy-hex-btn');
+        this.resetColorBtn = DOMHelper.getElement('#music-player-reset-color-btn');
         
         // Ensure color preview is updated after DOM elements are ready
         if (this.colorPreviewInput && this.colorPicker) {
@@ -131,7 +132,7 @@ class MusicPlayerColorManager {
         
         this.colorHistoryContainer.innerHTML = '';
         
-        const colorHistorySection = document.querySelector('.color-history-section');
+        const colorHistorySection = DOMHelper.getElementSilent('.color-history-section');
         if (colorHistorySection) {
             colorHistorySection.style.display = this.colorHistory.length > 0 ? 'block' : 'none';
         }

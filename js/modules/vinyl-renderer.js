@@ -1,5 +1,6 @@
-class VinylRenderer {
+class VinylRenderer extends BaseModule {
     constructor() {
+        super('VinylRenderer');
         this.vinylElement = null;
         this.tonearmElement = null;
         this.albumArtElement = null;
@@ -8,33 +9,16 @@ class VinylRenderer {
         this.animationId = null;
         this.rotation = 0;
         this.isAnimating = false;
-        
-        this.eventBus = window.eventBus;
-        this.appState = window.appState;
-        
-        this.setupEventListeners();
-        this.initializeElements();
-    }
-    
-    initializeElements() {
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.setupElements();
-            });
-        } else {
-            this.setupElements();
-        }
     }
     
     setupElements() {
-        this.vinylElement = document.querySelector('.vinyl-album-art');
+        this.vinylElement = DOMHelper.getElement('.vinyl-album-art');
         this.tonearmElement = null; // No tonearm in new design
-        this.albumArtElement = document.querySelector('.vinyl-album-art');
-        this.musicPlayerElement = document.querySelector('.music-player');
+        this.albumArtElement = DOMHelper.getElement('.vinyl-album-art');
+        this.musicPlayerElement = DOMHelper.getElement('.music-player');
         
         if (!this.vinylElement) {
-            window.safeLog.warn('Vinyl album art element not found');
+            this.logger.warn('Vinyl album art element not found');
         }
     }
     
@@ -45,8 +29,10 @@ class VinylRenderer {
         this.appState.set('vinyl.isAnimating', true);
         
         if (this.vinylElement) {
-            this.vinylElement.style.animation = 'spin 12s linear infinite';
-            this.vinylElement.style.animationPlayState = 'running';
+            DOMHelper.setStyles(this.vinylElement, {
+                animation: 'spin 12s linear infinite',
+                animationPlayState: 'running'
+            });
         }
     }
     
@@ -57,7 +43,9 @@ class VinylRenderer {
         this.appState.set('vinyl.isAnimating', false);
         
         if (this.vinylElement) {
-            this.vinylElement.style.animationPlayState = 'paused';
+            DOMHelper.setStyles(this.vinylElement, {
+                animationPlayState: 'paused'
+            });
         }
     }
     
@@ -69,12 +57,14 @@ class VinylRenderer {
         
         // Only update vinyl album art (the circular disc)
         if (this.albumArtElement) {
-            this.albumArtElement.style.backgroundImage = `url(${imageUrl})`;
-            this.albumArtElement.style.backgroundSize = 'cover';
-            this.albumArtElement.style.backgroundPosition = 'center';
-            this.albumArtElement.style.backgroundRepeat = 'no-repeat';
-            this.albumArtElement.style.borderRadius = '50%';
-            this.albumArtElement.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1)';
+            DOMHelper.setStyles(this.albumArtElement, {
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                borderRadius: '50%',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1)'
+            });
         }
         
         this.eventBus.emit('vinyl:albumArtUpdated', { imageUrl });
@@ -83,12 +73,14 @@ class VinylRenderer {
     removeAlbumArt() {
         // Only remove vinyl album art (the circular disc)
         if (this.albumArtElement) {
-            this.albumArtElement.style.backgroundImage = '';
-            this.albumArtElement.style.backgroundSize = '';
-            this.albumArtElement.style.backgroundPosition = '';
-            this.albumArtElement.style.backgroundRepeat = '';
-            this.albumArtElement.style.borderRadius = '';
-            this.albumArtElement.style.boxShadow = '';
+            DOMHelper.setStyles(this.albumArtElement, {
+                backgroundImage: '',
+                backgroundSize: '',
+                backgroundPosition: '',
+                backgroundRepeat: '',
+                borderRadius: '',
+                boxShadow: ''
+            });
         }
         
         this.eventBus.emit('vinyl:albumArtRemoved');
@@ -132,7 +124,7 @@ class VinylRenderer {
     }
     
     
-    destroy() {
+    customDestroy() {
         this.stopAnimation();
         
         if (this.animationId) {
@@ -141,8 +133,6 @@ class VinylRenderer {
         }
         
         this.removeAlbumArt();
-        
-        this.eventBus.emit('vinyl:destroyed');
     }
 }
 

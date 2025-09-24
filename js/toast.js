@@ -1,7 +1,7 @@
 
 class ToastManager {
     constructor() {
-        this.toastContainer = document.getElementById('toast-container');
+        this.toastContainer = DOMHelper.getElementSilent('#toast-container');
         this.toastQueue = [];
         this.maxToasts = 5;
         

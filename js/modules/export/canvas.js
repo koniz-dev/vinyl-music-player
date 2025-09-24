@@ -32,44 +32,25 @@ class ExportCanvas {
                 return exportMusicPlayerColors[colorKey];
             }
             // Fallback to calculated colors from base color
-            const baseRgb = hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+            const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
             const defaultColors = {
                 base: window.Constants.PLAYER_BASE_COLOR,
-                light: addRgb(baseRgb, 17, 16, 20),
-                lighter: addRgb(baseRgb, 16, 16, 16),
-                neutral: addRgb(baseRgb, -4, -8, -9),
-                muted: addRgb(baseRgb, -27, -27, -27),
-                subtle: addRgb(baseRgb, -24, -24, -24),
-                medium: addRgb(baseRgb, -82, -92, -103),
-                strong: addRgb(baseRgb, -80, -80, -80),
-                dark: addRgb(baseRgb, -93, -96, -95),
-                darker: addRgb(baseRgb, -78, -79, -57),
-                accent: addRgb(baseRgb, -16, -74, -118),
-                primary: addRgb(baseRgb, -61, -120, -150)
+                light: ColorHelper.addRgbOffset(baseRgb, 17, 16, 20),
+                lighter: ColorHelper.addRgbOffset(baseRgb, 16, 16, 16),
+                neutral: ColorHelper.addRgbOffset(baseRgb, -4, -8, -9),
+                muted: ColorHelper.addRgbOffset(baseRgb, -27, -27, -27),
+                subtle: ColorHelper.addRgbOffset(baseRgb, -24, -24, -24),
+                medium: ColorHelper.addRgbOffset(baseRgb, -82, -92, -103),
+                strong: ColorHelper.addRgbOffset(baseRgb, -80, -80, -80),
+                dark: ColorHelper.addRgbOffset(baseRgb, -93, -96, -95),
+                darker: ColorHelper.addRgbOffset(baseRgb, -78, -79, -57),
+                accent: ColorHelper.addRgbOffset(baseRgb, -16, -74, -118),
+                primary: ColorHelper.addRgbOffset(baseRgb, -61, -120, -150)
             };
             return defaultColors[colorKey] || window.Constants.PLAYER_BASE_COLOR;
         };
         
-        // Helper functions for color calculation
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
-        
-        function addRgb(rgb, rOffset, gOffset, bOffset) {
-            const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
-            const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
-            const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
-            return rgbToHex(newR, newG, newB);
-        }
-        
-        function rgbToHex(r, g, b) {
-            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-        }
+        // Color functions are now handled by ColorHelper
 
         // Clear canvas
         exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
@@ -106,9 +87,9 @@ class ExportCanvas {
         exportCtx.restore();
 
         // Song info section - điều chỉnh để cân bằng khoảng cách
-        const songTitle = document.querySelector('.song-title')?.textContent || '';
-        const artistName = document.querySelector('.artist-name')?.textContent || '';
-        const lyricsText = document.querySelector('.vinyl-lyrics-text')?.textContent || '';
+        const songTitle = DOMHelper.getElementSilent('.song-title')?.textContent || '';
+        const artistName = DOMHelper.getElementSilent('.artist-name')?.textContent || '';
+        const lyricsText = DOMHelper.getElementSilent('.vinyl-lyrics-text')?.textContent || '';
 
         exportCtx.fillStyle = getMusicPlayerColor('primary');
         exportCtx.font = `bold 28px 'Patrick Hand', Arial, sans-serif`; // Looks like 28px in HTML

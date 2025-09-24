@@ -1,68 +1,28 @@
-class AudioPlayer {
+class AudioPlayer extends BaseModule {
     constructor() {
+        super('AudioPlayer');
         this.audioElement = null;
-        this.isInitialized = false;
-        this.eventBus = window.eventBus;
-        this.appState = window.appState;
-        this.logger = window.logger?.module('AudioPlayer') || console;
-        this.errorHandler = window.errorHandler;
-        this.constants = window.Constants;
-        
-        this.setupEventListeners();
-        this.setupDOMEventListeners();
     }
     
-    async initialize(options = {}) {
-        try {
-            this.logger.debug('Initializing AudioPlayer');
-            this.audioElement = new Audio();
-            this.setupAudioEventListeners();
-            
-            this.appState.set('audio.element', this.audioElement);
-            this.isInitialized = true;
-            
-            this.logger.debug('AudioPlayer initialized successfully');
-            
-        } catch (error) {
-            this.errorHandler.handleAudioError(error, 'AudioPlayer initialization');
-            throw error;
-        }
+    async customInitialize(options = {}) {
+        this.audioElement = new Audio();
+        this.setupAudioEventListeners();
+        this.appState.set('audio.element', this.audioElement);
     }
     
-    setupDOMEventListeners() {
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.attachControlListeners();
-            });
-        } else {
-            this.attachControlListeners();
-        }
+    setupElements() {
+        this.attachControlListeners();
     }
     
     attachControlListeners() {
-        const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
-        const muteBtn = document.querySelector('.vinyl-mute-btn');
-        const repeatBtn = document.querySelector('.vinyl-repeat-btn');
-        const progressBar = document.querySelector('.vinyl-progress-bar');
+        const playPauseBtn = DOMHelper.getElement('.vinyl-play-pause-btn');
+        const muteBtn = DOMHelper.getElement('.vinyl-mute-btn');
+        const repeatBtn = DOMHelper.getElement('.vinyl-repeat-btn');
+        const progressBar = DOMHelper.getElement('.vinyl-progress-bar');
         
-        if (playPauseBtn) {
-            playPauseBtn.addEventListener('click', () => {
-                this.togglePlayPause();
-            });
-        }
-        
-        if (muteBtn) {
-            muteBtn.addEventListener('click', () => {
-                this.toggleMute();
-            });
-        }
-        
-        if (repeatBtn) {
-            repeatBtn.addEventListener('click', () => {
-                this.toggleRepeat();
-            });
-        }
+        DOMHelper.addEventListener(playPauseBtn, 'click', () => this.togglePlayPause());
+        DOMHelper.addEventListener(muteBtn, 'click', () => this.toggleMute());
+        DOMHelper.addEventListener(repeatBtn, 'click', () => this.toggleRepeat());
         
         if (progressBar) {
             this.setupProgressBarClick(progressBar);
@@ -210,7 +170,7 @@ class AudioPlayer {
         this.appState.set('audio.isMuted', !isMuted);
         
         // Update mute button UI
-        const muteBtn = document.querySelector('.vinyl-mute-btn');
+        const muteBtn = DOMHelper.getElementSilent('.vinyl-mute-btn');
         if (muteBtn) {
             if (!isMuted) {
                 // Mute is being activated
@@ -233,7 +193,7 @@ class AudioPlayer {
         this.appState.set('audio.isRepeat', !isRepeat);
         
         // Update repeat button UI
-        const repeatBtn = document.querySelector('.vinyl-repeat-btn');
+        const repeatBtn = DOMHelper.getElementSilent('.vinyl-repeat-btn');
         if (repeatBtn) {
             if (!isRepeat) {
                 // Activate repeat mode
@@ -250,9 +210,9 @@ class AudioPlayer {
     }
     
     enableControls() {
-        const controls = document.querySelectorAll('.control-btn');
-        const muteBtn = document.querySelector('.vinyl-mute-btn');
-        const repeatBtn = document.querySelector('.vinyl-repeat-btn');
+        const controls = DOMHelper.getElements('.control-btn');
+        const muteBtn = DOMHelper.getElementSilent('.vinyl-mute-btn');
+        const repeatBtn = DOMHelper.getElementSilent('.vinyl-repeat-btn');
         
         controls.forEach(btn => {
             btn.disabled = false;
@@ -275,67 +235,26 @@ class AudioPlayer {
     }
     
     getPlayerColor(colorKey) {
-        // Get color from CSS custom properties or calculate from base color
-        const root = document.documentElement;
-        const cssColor = getComputedStyle(root).getPropertyValue(`--player-${colorKey}`).trim();
-        
-        if (cssColor) {
-            return cssColor;
-        }
-        
-        // Fallback: calculate from base color
-        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        const colorMap = {
-            base: window.Constants.PLAYER_BASE_COLOR,
-            light: this.addRgb(baseRgb, 17, 16, 20),
-            lighter: this.addRgb(baseRgb, 16, 16, 16),
-            neutral: this.addRgb(baseRgb, -4, -8, -9),
-            muted: this.addRgb(baseRgb, -27, -27, -27),
-            subtle: this.addRgb(baseRgb, -24, -24, -24),
-            medium: this.addRgb(baseRgb, -82, -92, -103),
-            strong: this.addRgb(baseRgb, -80, -80, -80),
-            dark: this.addRgb(baseRgb, -93, -96, -95),
-            darker: this.addRgb(baseRgb, -78, -79, -57),
-            accent: this.addRgb(baseRgb, -16, -74, -118),
-            primary: this.addRgb(baseRgb, -61, -120, -150)
-        };
-        
-        return colorMap[colorKey] || window.Constants.PLAYER_BASE_COLOR;
-    }
-    
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-    
-    addRgb(rgb, rOffset, gOffset, bOffset) {
-        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
-        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
-        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
-        return this.rgbToHex(newR, newG, newB);
-    }
-    
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        return ColorHelper.getPlayerColor(colorKey);
     }
     
     updatePlayerState() {
-        const vinylAlbumArt = document.querySelector('.vinyl-album-art');
-        const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
+        const vinylAlbumArt = DOMHelper.getElement('.vinyl-album-art');
+        const playPauseBtn = DOMHelper.getElement('.vinyl-play-pause-btn');
         const isPlaying = this.appState.get('audio.isPlaying');
         
         if (vinylAlbumArt && playPauseBtn) {
             if (isPlaying) {
-                vinylAlbumArt.style.animation = 'spin 12s linear infinite';
-                vinylAlbumArt.style.animationPlayState = 'running';
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                DOMHelper.setStyles(vinylAlbumArt, {
+                    animation: 'spin 12s linear infinite',
+                    animationPlayState: 'running'
+                });
+                DOMHelper.setInnerHTML(playPauseBtn, '<i class="fas fa-pause"></i>');
             } else {
-                vinylAlbumArt.style.animationPlayState = 'paused';
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                DOMHelper.setStyles(vinylAlbumArt, {
+                    animationPlayState: 'paused'
+                });
+                DOMHelper.setInnerHTML(playPauseBtn, '<i class="fas fa-play"></i>');
             }
         }
     }
@@ -435,9 +354,7 @@ class AudioPlayer {
         });
     }
     
-    destroy() {
-        this.logger.debug('Destroying AudioPlayer');
-        
+    customDestroy() {
         if (this.audioElement) {
             this.audioElement.pause();
             this.audioElement.src = '';
@@ -445,10 +362,6 @@ class AudioPlayer {
         }
         
         this.appState.set('audio.element', null);
-        this.isInitialized = false;
-        
-        this.eventBus.emit('audio:destroyed');
-        this.logger.debug('AudioPlayer destroyed');
     }
 }
 

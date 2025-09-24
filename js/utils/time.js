@@ -105,49 +105,7 @@ class TimeUtils {
     }
     
     static validateLyricsData(lyricsData) {
-        const result = {
-            isValid: true,
-            errors: []
-        };
-        
-        if (!Array.isArray(lyricsData)) {
-            result.isValid = false;
-            result.errors.push('JSON must be an array of objects');
-            return result;
-        }
-        
-        for (let i = 0; i < lyricsData.length; i++) {
-            const item = lyricsData[i];
-            
-            if (typeof item !== 'object' || item === null) {
-                result.isValid = false;
-                result.errors.push(`Item at index ${i} must be an object`);
-                continue;
-            }
-            
-            if (typeof item.start !== 'string' || typeof item.end !== 'string' || typeof item.text !== 'string') {
-                result.isValid = false;
-                result.errors.push(`Item at index ${i} must have 'start' (mm:ss), 'end' (mm:ss), and 'text' (string) properties`);
-                continue;
-            }
-            
-            const timeRegex = /^[0-9]{1,2}:[0-9]{2}$/;
-            if (!timeRegex.test(item.start) || !timeRegex.test(item.end)) {
-                result.isValid = false;
-                result.errors.push(`Item at index ${i} has invalid time format. Use mm:ss format (e.g., "01:30")`);
-                continue;
-            }
-            
-            const startSeconds = this.timeToSeconds(item.start);
-            const endSeconds = this.timeToSeconds(item.end);
-            
-            if (startSeconds < 0 || endSeconds < 0 || startSeconds >= endSeconds) {
-                result.isValid = false;
-                result.errors.push(`Item at index ${i} has invalid time values: start must be >= 00:00, end must be > start`);
-            }
-        }
-        
-        return result;
+        return ValidationHelper.validateLyricsData(lyricsData);
     }
     
 }

@@ -198,29 +198,11 @@ class AppState {
     }
     
     calculateLyricsColor() {
-        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        return this.addRgb(baseRgb, -126, -129, -127);
+        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        return ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
     }
     
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-    
-    addRgb(rgb, rOffset, gOffset, bOffset) {
-        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
-        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
-        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
-        return this.rgbToHex(newR, newG, newB);
-    }
-    
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
+    // Color methods are now handled by ColorHelper
 }
 
 const appState = new AppState();

@@ -98,55 +98,11 @@ class FileUtils {
     
     
     static validateAudioFile(file) {
-        const allowedTypes = window.Constants?.AUDIO.SUPPORTED_FORMATS || [
-            'audio/mpeg',
-            'audio/mp3',
-            'audio/wav',
-            'audio/ogg',
-            'audio/mp4',
-            'audio/aac',
-            'audio/flac',
-            'audio/m4a',
-            'audio/x-m4a',
-            'audio/mp4a-latm'
-        ];
-        
-        const typeValidation = this.validateFileType(file, allowedTypes);
-        if (!typeValidation.isValid) {
-            return typeValidation;
-        }
-        
-        const maxSizeMB = window.Constants?.EXPORT.MAX_FILE_SIZE_MB || 100;
-        const sizeValidation = this.validateFileSize(file, maxSizeMB);
-        if (!sizeValidation.isValid) {
-            return sizeValidation;
-        }
-        
-        return { isValid: true, error: null };
+        return ValidationHelper.validateAudioFile(file);
     }
     
     static validateImageFile(file) {
-        const allowedTypes = window.Constants?.IMAGE.SUPPORTED_FORMATS || [
-            'image/jpeg',
-            'image/jpg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'image/svg+xml'
-        ];
-        
-        const typeValidation = this.validateFileType(file, allowedTypes);
-        if (!typeValidation.isValid) {
-            return typeValidation;
-        }
-        
-        const maxSizeMB = window.Constants?.EXPORT.MAX_IMAGE_SIZE_MB || 10;
-        const sizeValidation = this.validateFileSize(file, maxSizeMB);
-        if (!sizeValidation.isValid) {
-            return sizeValidation;
-        }
-        
-        return { isValid: true, error: null };
+        return ValidationHelper.validateImageFile(file);
     }
     
     

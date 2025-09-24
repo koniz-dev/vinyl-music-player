@@ -1,7 +1,6 @@
-class SettingsManager {
+class SettingsManager extends BaseModule {
     constructor() {
-        this.eventBus = window.eventBus;
-        this.appState = window.appState;
+        super('SettingsManager');
         this.fileUtils = window.FileUtils;
         this.timeUtils = window.TimeUtils;
         
@@ -9,24 +8,11 @@ class SettingsManager {
         this.lyricsColorManager = null;
         this.updateTimeouts = new Map(); // Per-input debouncing
         
-        this.setupEventListeners();
-        this.initializeElements();
         this.initializeLyricsColorManager();
     }
     
-    initializeElements() {
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.setupElements();
-            });
-        } else {
-            this.setupElements();
-        }
-    }
-    
     setupElements() {
-        this.lyricsContainer = document.getElementById('lyrics-container');
+        this.lyricsContainer = DOMHelper.getElement('#lyrics-container');
         this.addLyricsItem(); // Add initial lyrics item
         
         this.setupFileUploads();
@@ -43,10 +29,10 @@ class SettingsManager {
     }
     
     setupFileUploads() {
-        const uploadArea = document.getElementById('upload-area');
-        const fileInput = document.getElementById('album-art');
-        const audioUploadArea = document.getElementById('audio-upload-area');
-        const audioFileInput = document.getElementById('audio-file');
+        const uploadArea = DOMHelper.getElement('#upload-area');
+        const fileInput = DOMHelper.getElement('#album-art');
+        const audioUploadArea = DOMHelper.getElement('#audio-upload-area');
+        const audioFileInput = DOMHelper.getElement('#audio-file');
         
         if (uploadArea && fileInput) {
             this.setupAlbumArtUpload(uploadArea, fileInput);
@@ -58,69 +44,67 @@ class SettingsManager {
     }
     
     setupAlbumArtUpload(uploadArea, fileInput) {
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#667eea';
-            uploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
-        });
-        
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#cbd5e0';
-            uploadArea.style.background = '#f7fafc';
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#cbd5e0';
-            uploadArea.style.background = '#f7fafc';
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                this.handleAlbumArtFile(files[0]);
+        DOMHelper.setupDragAndDrop(uploadArea, {
+            onDragOver: () => {
+                DOMHelper.setStyles(uploadArea, {
+                    borderColor: '#667eea',
+                    background: 'rgba(102, 126, 234, 0.1)'
+                });
+            },
+            onDragLeave: () => {
+                DOMHelper.setStyles(uploadArea, {
+                    borderColor: '#cbd5e0',
+                    background: '#f7fafc'
+                });
+            },
+            onDrop: (e) => {
+                DOMHelper.setStyles(uploadArea, {
+                    borderColor: '#cbd5e0',
+                    background: '#f7fafc'
+                });
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.handleAlbumArtFile(files[0]);
+                }
             }
         });
         
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                this.handleAlbumArtFile(e.target.files[0]);
-            }
-        });
+        DOMHelper.setupFileInput(fileInput, (file) => this.handleAlbumArtFile(file));
     }
     
     setupAudioUpload(uploadArea, fileInput) {
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#667eea';
-            uploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
-        });
-        
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#cbd5e0';
-            uploadArea.style.background = '#f7fafc';
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#cbd5e0';
-            uploadArea.style.background = '#f7fafc';
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                this.handleAudioFile(files[0]);
+        DOMHelper.setupDragAndDrop(uploadArea, {
+            onDragOver: () => {
+                DOMHelper.setStyles(uploadArea, {
+                    borderColor: '#667eea',
+                    background: 'rgba(102, 126, 234, 0.1)'
+                });
+            },
+            onDragLeave: () => {
+                DOMHelper.setStyles(uploadArea, {
+                    borderColor: '#cbd5e0',
+                    background: '#f7fafc'
+                });
+            },
+            onDrop: (e) => {
+                DOMHelper.setStyles(uploadArea, {
+                    borderColor: '#cbd5e0',
+                    background: '#f7fafc'
+                });
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.handleAudioFile(files[0]);
+                }
             }
         });
         
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                this.handleAudioFile(e.target.files[0]);
-            }
-        });
+        DOMHelper.setupFileInput(fileInput, (file) => this.handleAudioFile(file));
     }
     
     handleAlbumArtFile(file) {
-        const validation = this.fileUtils.validateImageFile(file);
+        const validation = ValidationHelper.validateImageFile(file);
         
         if (!validation.isValid) {
             this.showError('Invalid Album Art', validation.error);
@@ -133,7 +117,7 @@ class SettingsManager {
     }
     
     handleAudioFile(file) {
-        const validation = this.fileUtils.validateAudioFile(file);
+        const validation = ValidationHelper.validateAudioFile(file);
         
         if (!validation.isValid) {
             this.showError('Invalid Audio File', validation.error);
@@ -146,15 +130,17 @@ class SettingsManager {
     }
     
     updateUploadDisplay(file, type) {
-        const uploadArea = document.getElementById(type === 'album-art' ? 'upload-area' : 'audio-upload-area');
-        const uploadText = uploadArea.querySelector('.upload-text');
-        const uploadHint = uploadArea.querySelector('.upload-hint');
+        const uploadArea = DOMHelper.getElement(type === 'album-art' ? '#upload-area' : '#audio-upload-area');
+        const uploadText = DOMHelper.getElement('.upload-text', uploadArea);
+        const uploadHint = DOMHelper.getElement('.upload-hint', uploadArea);
         
         if (uploadText && uploadHint) {
-            uploadText.textContent = file.name;
-            uploadHint.textContent = this.fileUtils.formatFileSize(file.size);
-            uploadArea.style.borderColor = '#38a169';
-            uploadArea.style.background = 'rgba(56, 161, 105, 0.05)';
+            DOMHelper.setTextContent(uploadText, file.name);
+            DOMHelper.setTextContent(uploadHint, this.fileUtils.formatFileSize(file.size));
+            DOMHelper.setStyles(uploadArea, {
+                borderColor: '#38a169',
+                background: 'rgba(56, 161, 105, 0.05)'
+            });
         }
     }
     
@@ -167,10 +153,10 @@ class SettingsManager {
     
     startAutoPlay(file) {
         const audioUrl = this.fileUtils.createObjectURL(file);
-        const songTitle = document.getElementById('song-title')?.value || '';
-        const artistName = document.getElementById('artist-name')?.value || '';
+        const songTitle = DOMHelper.getElement('#song-title')?.value || '';
+        const artistName = DOMHelper.getElement('#artist-name')?.value || '';
         
-        const albumArtFile = document.getElementById('album-art')?.files[0];
+        const albumArtFile = DOMHelper.getElement('#album-art')?.files[0];
         let albumArtUrl = null;
         if (albumArtFile) {
             albumArtUrl = this.fileUtils.createObjectURL(albumArtFile);
@@ -191,19 +177,10 @@ class SettingsManager {
     }
     
     setupFormInputs() {
-        const inputs = document.querySelectorAll('input, textarea');
+        const inputs = DOMHelper.getElements('input, textarea');
         
         inputs.forEach(input => {
-            const handleInputChange = () => {
-                this.sendRealTimeUpdate(input);
-            };
-            
-            input.addEventListener('input', handleInputChange);
-            input.addEventListener('change', handleInputChange);
-            input.addEventListener('keyup', handleInputChange);
-            input.addEventListener('paste', () => {
-                setTimeout(handleInputChange, 10);
-            });
+            DOMHelper.setupFormInput(input, () => this.sendRealTimeUpdate(input));
         });
     }
     
@@ -236,39 +213,28 @@ class SettingsManager {
     }
     
     setupExportButton() {
-        const exportBtn = document.getElementById('export-btn');
-        const audioFileInput = document.getElementById('audio-file');
-        const songTitleInput = document.getElementById('song-title');
+        const exportBtn = DOMHelper.getElement('#export-btn');
+        const audioFileInput = DOMHelper.getElement('#audio-file');
+        const songTitleInput = DOMHelper.getElement('#song-title');
         
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.handleExport();
-            });
-        }
+        DOMHelper.addEventListener(exportBtn, 'click', () => this.handleExport());
         
         const updateExportButtonState = () => {
             const audioFile = audioFileInput?.files[0];
             const songTitle = songTitleInput?.value?.trim();
             
-            if (exportBtn) {
-                exportBtn.disabled = !(audioFile && songTitle);
-            }
+            DOMHelper.setDisabled(exportBtn, !(audioFile && songTitle));
         };
         
-        if (audioFileInput) {
-            audioFileInput.addEventListener('change', updateExportButtonState);
-        }
-        
-        if (songTitleInput) {
-            songTitleInput.addEventListener('input', updateExportButtonState);
-        }
+        DOMHelper.addEventListener(audioFileInput, 'change', updateExportButtonState);
+        DOMHelper.addEventListener(songTitleInput, 'input', updateExportButtonState);
     }
     
     handleExport() {
-        const audioFile = document.getElementById('audio-file')?.files[0];
-        const songTitle = document.getElementById('song-title')?.value?.trim();
-        const artistName = document.getElementById('artist-name')?.value?.trim();
-        const albumArtFile = document.getElementById('album-art')?.files[0];
+        const audioFile = DOMHelper.getElement('#audio-file')?.files[0];
+        const songTitle = DOMHelper.getElement('#song-title')?.value?.trim();
+        const artistName = DOMHelper.getElement('#artist-name')?.value?.trim();
+        const albumArtFile = DOMHelper.getElement('#album-art')?.files[0];
         
         if (!audioFile || !songTitle) {
             this.showError('Export Error', 'Please upload an audio file and enter a song title before exporting.');
@@ -291,25 +257,12 @@ class SettingsManager {
     }
     
     setupDebugButton() {
-        const debugBtn = document.getElementById('debug-btn');
-        
-        if (debugBtn) {
-            debugBtn.addEventListener('click', () => {
-                this.handleDebugBrowserSupport();
-            });
-        }
+        const debugBtn = DOMHelper.getElement('#debug-btn');
+        DOMHelper.addEventListener(debugBtn, 'click', () => this.handleDebugBrowserSupport());
     }
     
     handleDebugBrowserSupport() {
-        const support = {
-            mediaRecorder: !!window.MediaRecorder,
-            canvas: !!document.createElement('canvas').getContext,
-            audio: !!window.Audio,
-            webm: MediaRecorder.isTypeSupported('video/webm'),
-            webm_vp8: MediaRecorder.isTypeSupported('video/webm;codecs=vp8'),
-            webm_vp9: MediaRecorder.isTypeSupported('video/webm;codecs=vp9'),
-            userAgent: navigator.userAgent
-        };
+        const support = ValidationHelper.validateBrowserSupport();
         
         let message = 'Browser Support Check:\n\n';
         message += `MediaRecorder: ${support.mediaRecorder ? '✅' : '❌'}\n`;
@@ -324,103 +277,44 @@ class SettingsManager {
     }
     
     setupLyricsModal() {
-        const devLyricsBtn = document.getElementById('dev-lyrics-btn');
-        const devLyricsModal = document.getElementById('dev-lyrics-modal');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-        const modalCancelBtn = document.getElementById('modal-cancel-btn');
-        const modalImportBtn = document.getElementById('modal-import-btn');
-        const jsonLyricsInput = document.getElementById('json-lyrics-input');
+        const devLyricsBtn = DOMHelper.getElement('#dev-lyrics-btn');
+        const devLyricsModal = DOMHelper.getElement('#dev-lyrics-modal');
+        const modalCloseBtn = DOMHelper.getElement('#modal-close-btn');
+        const modalCancelBtn = DOMHelper.getElement('#modal-cancel-btn');
+        const modalImportBtn = DOMHelper.getElement('#modal-import-btn');
+        const jsonLyricsInput = DOMHelper.getElement('#json-lyrics-input');
         
-        if (devLyricsBtn && devLyricsModal) {
-            devLyricsBtn.addEventListener('click', () => {
-                this.openLyricsModal(devLyricsModal, jsonLyricsInput);
-            });
-        }
+        DOMHelper.setupModal(devLyricsModal, {
+            openBtn: devLyricsBtn,
+            closeBtn: modalCloseBtn,
+            cancelBtn: modalCancelBtn,
+            onOpen: () => this.openLyricsModal(devLyricsModal, jsonLyricsInput),
+            onClose: () => this.closeLyricsModal(devLyricsModal, jsonLyricsInput),
+            onCancel: () => this.closeLyricsModal(devLyricsModal, jsonLyricsInput)
+        });
         
-        if (modalCloseBtn) {
-            modalCloseBtn.addEventListener('click', () => {
-                this.closeLyricsModal(devLyricsModal, jsonLyricsInput);
-            });
-        }
-        
-        if (modalCancelBtn) {
-            modalCancelBtn.addEventListener('click', () => {
-                this.closeLyricsModal(devLyricsModal, jsonLyricsInput);
-            });
-        }
-        
-        if (modalImportBtn) {
-            modalImportBtn.addEventListener('click', () => {
-                this.handleLyricsImport(jsonLyricsInput, devLyricsModal);
-            });
-        }
-        
-        if (devLyricsModal) {
-            devLyricsModal.addEventListener('click', (e) => {
-                if (e.target === devLyricsModal) {
-                    this.closeLyricsModal(devLyricsModal, jsonLyricsInput);
-                }
-            });
-            
-            devLyricsModal.addEventListener('keydown', (e) => {
-                if (e.key === 'Tab') {
-                    this.trapFocus(e, devLyricsModal);
-                }
-            });
-        }
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && devLyricsModal?.style.display === 'flex') {
-                this.closeLyricsModal(devLyricsModal, jsonLyricsInput);
-            }
+        DOMHelper.addEventListener(modalImportBtn, 'click', () => {
+            this.handleLyricsImport(jsonLyricsInput, devLyricsModal);
         });
     }
     
     openLyricsModal(modal, input) {
         this.previousActiveElement = document.activeElement;
-        
-        modal.setAttribute('aria-hidden', 'false');
-        modal.removeAttribute('inert');
-        modal.style.display = 'flex';
-        
-        setTimeout(() => {
-            input.focus();
-        }, this.constants?.UI.FOCUS_DELAY || 100);
+        DOMHelper.openModal(modal);
+        DOMHelper.focusWithDelay(input, this.constants?.UI.FOCUS_DELAY || 100);
     }
     
     closeLyricsModal(modal, input) {
         const focusedElement = document.activeElement;
         if (focusedElement && modal.contains(focusedElement)) {
-            focusedElement.blur();
+            DOMHelper.blur(focusedElement);
         }
         
-        modal.setAttribute('aria-hidden', 'true');
-        modal.setAttribute('inert', '');
-        modal.style.display = 'none';
+        DOMHelper.closeModal(modal);
         input.value = '';
         
         if (this.previousActiveElement) {
-            this.previousActiveElement.focus();
-        }
-    }
-    
-    trapFocus(e, modal) {
-        const focusableElements = modal.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
-
-        if (e.shiftKey) {
-            if (document.activeElement === firstElement) {
-                lastElement.focus();
-                e.preventDefault();
-            }
-        } else {
-            if (document.activeElement === lastElement) {
-                firstElement.focus();
-                e.preventDefault();
-            }
+            DOMHelper.focusWithDelay(this.previousActiveElement, 0);
         }
     }
 
@@ -434,7 +328,7 @@ class SettingsManager {
         
         try {
             const lyricsData = JSON.parse(jsonText);
-            const validation = this.timeUtils.validateLyricsData(lyricsData);
+            const validation = ValidationHelper.validateLyricsData(lyricsData);
             
             if (!validation.isValid) {
                 throw new Error(validation.errors.join(', '));
@@ -449,7 +343,7 @@ class SettingsManager {
     }
     
     loadLyricsFromJSON(lyricsData) {
-        this.lyricsContainer.innerHTML = '';
+        DOMHelper.clear(this.lyricsContainer);
         
         lyricsData.forEach((item) => {
             this.addLyricsItem(item);
@@ -459,55 +353,55 @@ class SettingsManager {
     }
     
     addLyricsItem(item = null) {
-        const lyricsItem = document.createElement('div');
-        lyricsItem.className = 'lyrics-item';
-        
         const startTime = item ? item.start : '00:00';
         const endTime = item ? item.end : '00:05';
         const text = item ? item.text : '';
         
         const lyricsCount = this.lyricsContainer.children.length + 1;
         
-        lyricsItem.innerHTML = `
-            <div class="lyrics-item-header">
-                <div class="lyrics-item-title">Lyrics ${lyricsCount}</div>
-                <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="lyrics-inputs">
-                <div>
-                    <div class="time-label">Start Time (mm:ss)</div>
-                    <input type="text" class="time-input" placeholder="00:00" pattern="[0-9]{1,2}:[0-9]{2}" value="${startTime}" oninput="updateLyricsData()">
+        const lyricsItem = DOMHelper.createElement('div', {
+            className: 'lyrics-item',
+            innerHTML: `
+                <div class="lyrics-item-header">
+                    <div class="lyrics-item-title">Lyrics ${lyricsCount}</div>
+                    <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)"><i class="fas fa-times"></i></button>
                 </div>
-                <div>
-                    <div class="time-label">End Time (mm:ss)</div>
-                    <input type="text" class="time-input" placeholder="00:05" pattern="[0-9]{1,2}:[0-9]{2}" value="${endTime}" oninput="updateLyricsData()">
+                <div class="lyrics-inputs">
+                    <div>
+                        <div class="time-label">Start Time (mm:ss)</div>
+                        <input type="text" class="time-input" placeholder="00:00" pattern="[0-9]{1,2}:[0-9]{2}" value="${startTime}" oninput="updateLyricsData()">
+                    </div>
+                    <div>
+                        <div class="time-label">End Time (mm:ss)</div>
+                        <input type="text" class="time-input" placeholder="00:05" pattern="[0-9]{1,2}:[0-9]{2}" value="${endTime}" oninput="updateLyricsData()">
+                    </div>
+                    <div>
+                        <div class="lyrics-label">Lyrics Content</div>
+                        <input type="text" class="lyrics-text-input" placeholder="Enter lyrics..." value="${text}" oninput="updateLyricsData()">
+                    </div>
                 </div>
-                <div>
-                    <div class="lyrics-label">Lyrics Content</div>
-                    <input type="text" class="lyrics-text-input" placeholder="Enter lyrics..." value="${text}" oninput="updateLyricsData()">
-                </div>
-            </div>
-        `;
+            `
+        });
         
-        this.lyricsContainer.appendChild(lyricsItem);
+        DOMHelper.appendChild(this.lyricsContainer, lyricsItem);
     }
     
     removeLyricsItem(button) {
         const lyricsItem = button.closest('.lyrics-item');
-        lyricsItem.remove();
+        DOMHelper.removeChild(this.lyricsContainer, lyricsItem);
         this.updateLyricsData();
         this.showInfo('Lyrics Removed', 'Lyrics item has been removed successfully');
     }
     
     updateLyricsData() {
-        const lyricsItems = this.lyricsContainer.querySelectorAll('.lyrics-item');
+        const lyricsItems = DOMHelper.getElements('.lyrics-item', this.lyricsContainer);
         const lyricsData = [];
         
         lyricsItems.forEach((item) => {
-            const timeInputs = item.querySelectorAll('.time-input');
+            const timeInputs = DOMHelper.getElements('.time-input', item);
             const startTimeString = timeInputs[0]?.value || '00:00';
             const endTimeString = timeInputs[1]?.value || '';
-            const text = item.querySelector('.lyrics-text-input')?.value.trim() || '';
+            const text = DOMHelper.getElement('.lyrics-text-input', item)?.value.trim() || '';
             
             if (text) {
                 const startTime = this.timeUtils.timeToSeconds(startTimeString);
@@ -545,14 +439,14 @@ class SettingsManager {
     }
     
     updateExportProgress(data) {
-        const exportProgress = document.getElementById('export-progress');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
+        const exportProgress = DOMHelper.getElement('#export-progress');
+        const progressFill = DOMHelper.getElement('#progress-fill');
+        const progressText = DOMHelper.getElement('#progress-text');
         
         if (exportProgress && progressFill && progressText) {
-            exportProgress.style.display = 'block';
-            progressFill.style.width = data.progress + '%';
-            progressText.textContent = data.message;
+            DOMHelper.show(exportProgress);
+            DOMHelper.setStyles(progressFill, { width: data.progress + '%' });
+            DOMHelper.setTextContent(progressText, data.message);
         }
     }
     
@@ -563,23 +457,13 @@ class SettingsManager {
         this.fileUtils.downloadBlob(videoBlob, fileName);
         this.resumeMainAudio(wasMainAudioPlaying);
         
-        const exportProgress = document.getElementById('export-progress');
-        const exportBtn = document.getElementById('export-btn');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
+        const exportProgress = DOMHelper.getElement('#export-progress');
+        const progressFill = DOMHelper.getElement('#progress-fill');
+        const progressText = DOMHelper.getElement('#progress-text');
         
-        if (exportProgress) {
-            exportProgress.style.display = 'none';
-        }
-        
-        
-        if (progressFill) {
-            progressFill.style.width = '0%';
-        }
-        
-        if (progressText) {
-            progressText.textContent = 'Preparing export...';
-        }
+        DOMHelper.hide(exportProgress);
+        DOMHelper.setStyles(progressFill, { width: '0%' });
+        DOMHelper.setTextContent(progressText, 'Preparing export...');
         
         this.showSuccess('Export Complete', 'WebM video exported successfully!');
     }
@@ -588,50 +472,18 @@ class SettingsManager {
         const { wasMainAudioPlaying } = data;
         this.resumeMainAudio(wasMainAudioPlaying);
         
-        const exportProgress = document.getElementById('export-progress');
-        const exportBtn = document.getElementById('export-btn');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
+        const exportProgress = DOMHelper.getElement('#export-progress');
+        const progressFill = DOMHelper.getElement('#progress-fill');
+        const progressText = DOMHelper.getElement('#progress-text');
         
-        if (exportProgress) {
-            exportProgress.style.display = 'none';
-        }
-        
-        
-        if (progressFill) {
-            progressFill.style.width = '0%';
-        }
-        
-        if (progressText) {
-            progressText.textContent = 'Preparing export...';
-        }
+        DOMHelper.hide(exportProgress);
+        DOMHelper.setStyles(progressFill, { width: '0%' });
+        DOMHelper.setTextContent(progressText, 'Preparing export...');
         
         this.showError('Export Failed', 'Export failed: ' + data.error);
     }
     
-    showSuccess(title, message) {
-        if (window.toastManager) {
-            window.toastManager.showSuccess(title, message);
-        }
-    }
-    
-    showError(title, message) {
-        if (window.toastManager) {
-            window.toastManager.showError(title, message);
-        }
-    }
-    
-    showWarning(title, message) {
-        if (window.toastManager) {
-            window.toastManager.showWarning(title, message);
-        }
-    }
-    
-    showInfo(title, message) {
-        if (window.toastManager) {
-            window.toastManager.showInfo(title, message);
-        }
-    }
+    // Toast methods are inherited from BaseModule
     
     
     pauseMainAudio() {
@@ -666,8 +518,8 @@ class SettingsManager {
         }
     }
     
-    destroy() {
-        this.eventBus.emit('settings:destroyed');
+    customDestroy() {
+        // Custom cleanup if needed
     }
 }
 

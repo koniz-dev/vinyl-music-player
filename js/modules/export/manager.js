@@ -1,4 +1,4 @@
-class ExportManager {
+class ExportManager extends BaseModule {
     // Static method to ensure Font Awesome is loaded before drawing icons
     static async ensureFontAwesomeLoaded() {
         return new Promise((resolve) => {
@@ -22,6 +22,7 @@ class ExportManager {
     }
 
     constructor() {
+        super('ExportManager');
         this.mediaRecorder = null;
         this.recordedChunks = [];
         this.exportCanvas = null;
@@ -32,34 +33,13 @@ class ExportManager {
         this.exportAudio = null;
         this.exportLyrics = [];
         // Calculate lyrics color from base color using formula
-        const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        this.exportLyricsColor = this.addRgb(baseRgb, -126, -129, -127);
+        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+        this.exportLyricsColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
         this.exportTimeout = null;
         this.wasMainAudioPlaying = false;
-        
-        this.eventBus = window.eventBus;
-        this.appState = window.appState;
     }
     
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-    
-    addRgb(rgb, rOffset, gOffset, bOffset) {
-        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
-        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
-        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
-        return this.rgbToHex(newR, newG, newB);
-    }
-    
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
+    // Color methods are now handled by ColorHelper
     
     async initialize() {
         this.initializeUtils();
@@ -149,7 +129,7 @@ class ExportManager {
         // Try to get dimensions from various sources
         const dimensionSources = [
             () => {
-                const vinylPlayer = document.querySelector('.vinyl-player');
+                const vinylPlayer = DOMHelper.getElementSilent('.vinyl-player');
                 if (vinylPlayer) {
                     const rect = vinylPlayer.getBoundingClientRect();
                     if (rect.width > 0 && rect.height > 0) {
@@ -239,20 +219,20 @@ class ExportManager {
             this.exportMusicPlayerColors = window.musicPlayerThemeManager.getCurrentVariants();
         } else {
             // Fallback to calculated colors from base color
-            const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+            const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
             this.exportMusicPlayerColors = {
                 base: window.Constants.PLAYER_BASE_COLOR,
-                light: this.addRgb(baseRgb, 17, 16, 20),
-                lighter: this.addRgb(baseRgb, 16, 16, 16),
-                neutral: this.addRgb(baseRgb, -4, -8, -9),
-                muted: this.addRgb(baseRgb, -27, -27, -27),
-                subtle: this.addRgb(baseRgb, -24, -24, -24),
-                medium: this.addRgb(baseRgb, -82, -92, -103),
-                strong: this.addRgb(baseRgb, -80, -80, -80),
-                dark: this.addRgb(baseRgb, -93, -96, -95),
-                darker: this.addRgb(baseRgb, -78, -79, -57),
-                accent: this.addRgb(baseRgb, -16, -74, -118),
-                primary: this.addRgb(baseRgb, -61, -120, -150)
+                light: ColorHelper.addRgbOffset(baseRgb, 17, 16, 20),
+                lighter: ColorHelper.addRgbOffset(baseRgb, 16, 16, 16),
+                neutral: ColorHelper.addRgbOffset(baseRgb, -4, -8, -9),
+                muted: ColorHelper.addRgbOffset(baseRgb, -27, -27, -27),
+                subtle: ColorHelper.addRgbOffset(baseRgb, -24, -24, -24),
+                medium: ColorHelper.addRgbOffset(baseRgb, -82, -92, -103),
+                strong: ColorHelper.addRgbOffset(baseRgb, -80, -80, -80),
+                dark: ColorHelper.addRgbOffset(baseRgb, -93, -96, -95),
+                darker: ColorHelper.addRgbOffset(baseRgb, -78, -79, -57),
+                accent: ColorHelper.addRgbOffset(baseRgb, -16, -74, -118),
+                primary: ColorHelper.addRgbOffset(baseRgb, -61, -120, -150)
             };
         }
     }
@@ -485,7 +465,7 @@ class ExportManager {
     
     disableControls() {
         // Disable audio control buttons
-        const controls = document.querySelectorAll('.control-btn');
+        const controls = DOMHelper.getElements('.control-btn');
         controls.forEach(btn => {
             btn.disabled = true;
             btn.style.opacity = '0.5';
@@ -493,7 +473,7 @@ class ExportManager {
         });
         
         // Disable export button
-        const exportBtn = document.getElementById('export-btn');
+        const exportBtn = DOMHelper.getElementSilent('#export-btn');
         if (exportBtn) {
             exportBtn.disabled = true;
             exportBtn.style.opacity = '0.5';
@@ -503,7 +483,7 @@ class ExportManager {
     
     enableControls() {
         // Enable audio control buttons
-        const controls = document.querySelectorAll('.control-btn');
+        const controls = DOMHelper.getElements('.control-btn');
         controls.forEach(btn => {
             btn.disabled = false;
             btn.style.opacity = '1';
@@ -511,7 +491,7 @@ class ExportManager {
         });
         
         // Enable export button
-        const exportBtn = document.getElementById('export-btn');
+        const exportBtn = DOMHelper.getElementSilent('#export-btn');
         if (exportBtn) {
             exportBtn.disabled = false;
             exportBtn.style.opacity = '1';
@@ -520,7 +500,7 @@ class ExportManager {
     }
     
     scrollToExportProgress() {
-        const exportProgress = document.getElementById('export-progress');
+        const exportProgress = DOMHelper.getElementSilent('#export-progress');
         if (exportProgress) {
             exportProgress.scrollIntoView({ 
                 behavior: 'smooth', 
@@ -530,9 +510,9 @@ class ExportManager {
     }
     
     updateExportProgress(data) {
-        const exportProgress = document.getElementById('export-progress');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
+        const exportProgress = DOMHelper.getElementSilent('#export-progress');
+        const progressFill = DOMHelper.getElementSilent('#progress-fill');
+        const progressText = DOMHelper.getElementSilent('#progress-text');
         
         if (exportProgress && progressFill && progressText) {
             exportProgress.style.display = 'block';
@@ -549,9 +529,9 @@ class ExportManager {
         // Resume main audio if it was playing
         this.resumeMainAudio(wasMainAudioPlaying);
         
-        const exportProgress = document.getElementById('export-progress');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
+        const exportProgress = DOMHelper.getElementSilent('#export-progress');
+        const progressFill = DOMHelper.getElementSilent('#progress-fill');
+        const progressText = DOMHelper.getElementSilent('#progress-text');
         
         if (exportProgress) {
             exportProgress.style.display = 'none';
@@ -577,9 +557,9 @@ class ExportManager {
         // Resume main audio if it was playing
         this.resumeMainAudio(wasMainAudioPlaying);
         
-        const exportProgress = document.getElementById('export-progress');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
+        const exportProgress = DOMHelper.getElementSilent('#export-progress');
+        const progressFill = DOMHelper.getElementSilent('#progress-fill');
+        const progressText = DOMHelper.getElementSilent('#progress-text');
         
         if (exportProgress) {
             exportProgress.style.display = 'none';

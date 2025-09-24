@@ -1,37 +1,35 @@
-class LyricsManager {
+class LyricsManager extends BaseModule {
     constructor() {
+        super('LyricsManager');
         this.lyricsContainer = null;
         this.lyricsTextElement = null;
         this.currentLyricIndex = -1;
-        this.eventBus = window.eventBus;
-        this.appState = window.appState;
         this.timeUtils = window.TimeUtils;
-        
-        this.setupEventListeners();
-        this.initializeElements();
-    }
-    
-    initializeElements() {
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.setupElements();
-            });
-        } else {
-            this.setupElements();
-        }
     }
     
     setupElements() {
-        this.lyricsContainer = document.querySelector('.lyrics-container');
-        this.lyricsTextElement = document.querySelector('.vinyl-lyrics-text');
+        this.lyricsContainer = DOMHelper.getElementSilent('#lyrics-container');
+        this.lyricsTextElement = DOMHelper.getElementSilent('.vinyl-lyrics-text');
         
-        if (!this.lyricsTextElement) {
-            window.safeLog.warn('Lyrics text element not found');
-        } else {
+        if (this.lyricsTextElement) {
             // Apply saved color when elements are ready
             this.applySavedColor();
         }
+    }
+    
+    async customInitialize() {
+        // Initialize time utilities
+        this.timeUtils = window.TimeUtils;
+        
+        if (!this.timeUtils) {
+            this.logger.error('TimeUtils not available');
+            return;
+        }
+        
+        // Apply saved color
+        this.applySavedColor();
+        
+        this.logger.debug('LyricsManager custom initialization complete');
     }
     
     loadLyrics(lyricsData) {
@@ -64,6 +62,11 @@ class LyricsManager {
         
         if (!lyrics || lyrics.length === 0) {
             this.clearLyricsDisplay();
+            return;
+        }
+        
+        if (!this.timeUtils || !this.timeUtils.findCurrentLyricIndex) {
+            this.logger.warn('TimeUtils not available');
             return;
         }
         
@@ -136,31 +139,13 @@ class LyricsManager {
         // Always apply default color on page load
         if (this.lyricsTextElement) {
             // Calculate lyrics color from base color using formula
-            const baseRgb = this.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-            const lyricsColor = this.addRgb(baseRgb, -126, -129, -127);
+            const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
+            const lyricsColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
             this.setLyricsColor(lyricsColor);
         }
     }
     
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-    
-    addRgb(rgb, rOffset, gOffset, bOffset) {
-        const newR = Math.max(0, Math.min(255, rgb.r + rOffset));
-        const newG = Math.max(0, Math.min(255, rgb.g + gOffset));
-        const newB = Math.max(0, Math.min(255, rgb.b + bOffset));
-        return this.rgbToHex(newR, newG, newB);
-    }
-    
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
+    // Color methods are now handled by ColorHelper
 
     validateLyric(lyric) {
         if (!lyric || typeof lyric !== 'object') return false;
@@ -208,7 +193,7 @@ class LyricsManager {
                     throw new Error(`Item at index ${i} must have 'start' (mm:ss), 'end' (mm:ss), and 'text' (string) properties`);
                 }
                 
-                if (!this.timeUtils.isValidTimeFormat(item.start) || !this.timeUtils.isValidTimeFormat(item.end)) {
+                if (!this.timeUtils || !this.timeUtils.isValidTimeFormat(item.start) || !this.timeUtils.isValidTimeFormat(item.end)) {
                     throw new Error(`Item at index ${i} has invalid time format. Use mm:ss format (e.g., "01:30")`);
                 }
                 
@@ -237,8 +222,8 @@ class LyricsManager {
         const lyrics = this.appState.get('lyrics.items');
         
         const exportData = lyrics.map(lyric => ({
-            start: this.timeUtils.secondsToTime(lyric.start),
-            end: this.timeUtils.secondsToTime(lyric.end),
+            start: this.timeUtils ? this.timeUtils.secondsToTime(lyric.start) : '00:00',
+            end: this.timeUtils ? this.timeUtils.secondsToTime(lyric.end) : '00:00',
             text: lyric.text
         }));
         
