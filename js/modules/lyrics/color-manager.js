@@ -3,7 +3,7 @@ class LyricsColorManager extends BaseModule {
         super('LyricsColorManager');
         // Calculate default color from base color using formula
         const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        this.currentColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+        this.currentColor = ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
         this.colorHistory = [];
         this.isInitializing = true; // Flag to prevent event emissions during init
     }
@@ -230,11 +230,11 @@ class LyricsColorManager extends BaseModule {
         try {
             const saved = localStorage.getItem('lyricsCurrentColor');
             const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-            return saved || ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+            return saved || ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
         } catch (error) {
             window.safeLog.warn('Failed to load current color:', error);
             const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-            return ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+            return ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
         }
     }
     
@@ -250,7 +250,7 @@ class LyricsColorManager extends BaseModule {
     resetToDefault() {
         // Calculate default color from base color using formula
         const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        this.currentColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+        this.currentColor = ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
         
         this.moveDefaultColorToFront();
         this.saveCurrentColor();
@@ -258,7 +258,7 @@ class LyricsColorManager extends BaseModule {
     
     ensureDefaultColorInHistory() {
         const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        const defaultColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+        const defaultColor = ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
         
         if (!this.colorHistory.includes(defaultColor)) {
             this.colorHistory.push(defaultColor);
@@ -273,7 +273,7 @@ class LyricsColorManager extends BaseModule {
     
     moveDefaultColorToFront() {
         const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        const defaultColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+        const defaultColor = ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
         
         this.colorHistory = this.colorHistory.filter(c => c !== defaultColor);
         this.colorHistory.unshift(defaultColor);
@@ -312,7 +312,7 @@ class LyricsColorManager extends BaseModule {
             
             if (window.toastManager) {
                 const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-                const exampleColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+                const exampleColor = ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
                 window.toastManager.showWarning('Invalid Color', `Please enter a valid hex color (e.g., ${exampleColor})`);
             }
         }

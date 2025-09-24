@@ -138,9 +138,8 @@ class LyricsManager extends BaseModule {
     applySavedColor() {
         // Always apply default color on page load
         if (this.lyricsTextElement) {
-            // Calculate lyrics color from base color using formula
-            const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-            const lyricsColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+            // Use centralized lyrics color calculation
+            const lyricsColor = ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
             this.setLyricsColor(lyricsColor);
         }
     }

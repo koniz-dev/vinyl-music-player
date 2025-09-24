@@ -36,11 +36,15 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Cross-browser Support**: Works with modern browsers supporting MediaRecorder API
 - **Custom Colors**: Export videos with your customized lyrics colors
 
-### 🎨 Beautiful UI
+### 🎨 Beautiful UI & Customization
 - **Modern Design**: Clean, minimalist interface with smooth animations
 - **Gradient Backgrounds**: Stunning visual effects and color schemes
 - **Interactive Elements**: Hover effects, smooth transitions, and responsive feedback
 - **Custom Fonts**: Beautiful typography with Patrick Hand font family
+- **Music Player Color Customization**: Customize the entire vinyl player color scheme
+- **Dynamic Theme System**: Automatic color variant generation for cohesive design
+- **Color History**: Save and reuse recently used colors for both player and lyrics
+- **Real-time Preview**: See color changes instantly in the vinyl player
 
 ### 📱 Progressive Web App (PWA)
 - **Offline Support**: Works without internet connection
@@ -53,7 +57,9 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Real-time Preview**: See changes instantly in the vinyl player
 - **Export Progress**: Detailed progress tracking during video export
 - **Error Handling**: Comprehensive error messages and recovery options
-- **Color Management**: Advanced color picker with hex input and history
+- **Dual Color Management**: Separate color customization for music player and lyrics
+- **Advanced Color Tools**: Color picker, hex input, copy functionality, and history
+- **Theme Integration**: Automatic lyrics color adjustment based on player theme
 - **Developer Tools**: JSON import for bulk lyrics management
 - **Browser Support Check**: Built-in compatibility testing
 
@@ -88,15 +94,16 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
    npm install
    ```
 
-3. **Start the development server**
+3. **Start the development server** (optional)
    ```bash
+   # If you have a local server setup
    npm run dev
    ```
    Or simply open `index.html` in your browser.
 
 4. **Access the application**
-   - **Local Development**: Open your browser and navigate to `http://localhost:3000`
    - **Direct File**: Open `index.html` directly in your browser
+   - **Local Server**: Use any local web server (e.g., Python's `python -m http.server`, Node's `http-server`, etc.)
 
 ## 📖 How to Use
 
@@ -121,12 +128,22 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - Use the "×" button to remove individual lyrics entries
 - **Developer Option**: Click **"For Dev"** to import lyrics from JSON format for bulk operations
 
-### 4. Customize Lyrics Color
-- Use the **Color Picker** to select a custom color for your lyrics
-- Enter a **Hex Color Code** directly in the text input (e.g., #FF5733)
+### 4. Customize Colors
+#### Music Player Color
+- Use the **Music Player Color Picker** to customize the entire vinyl player theme
+- Enter a **Hex Color Code** directly in the text input (e.g., #c8bda9)
 - **Copy** hex codes with the copy button for easy sharing
-- **Reset** to default color (#8B4513) anytime
+- **Reset** to default color anytime
 - **Recent Colors** are saved automatically for quick access
+- The theme system automatically generates complementary color variants
+
+#### Lyrics Color
+- Use the **Lyrics Color Picker** to select a custom color for your lyrics
+- Enter a **Hex Color Code** directly in the text input (e.g., #4a3c2a)
+- **Copy** hex codes with the copy button for easy sharing
+- **Reset** to default color anytime
+- **Recent Colors** are saved automatically for quick access
+- **Smart Integration**: Lyrics color automatically adjusts based on music player theme
 
 ### 5. Control Playback
 - **Play/Pause**: Click the play button to start/stop music
@@ -138,7 +155,7 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ### 6. Export Video
 - Click **"Export WebM Video"** when ready
 - The export process will create a 720x1280 WebM video with your audio and lyrics
-- Your custom lyrics colors will be preserved in the exported video
+- Your custom music player and lyrics colors will be preserved in the exported video
 - Wait for the WebM export process to complete (progress is shown)
 - Download your custom WebM music video automatically when finished
 
@@ -154,6 +171,8 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **File Upload**: Drag & drop or click to upload audio and image files
 - **Real-time Updates**: Changes are immediately reflected in the player
 - **Lyrics Management**: Easy-to-use interface for adding and managing lyrics
+- **Dual Color Customization**: Separate controls for music player and lyrics colors
+- **Theme Integration**: Smart color coordination between player and lyrics
 - **Export Controls**: One-click video export with progress tracking
 
 ### Video Export
@@ -161,6 +180,7 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **High Resolution**: Exports videos in 720x1280 high quality
 - **Synchronized Content**: Lyrics appear at the exact timing you specify
 - **Album Art Background**: Beautiful blurred album art as background
+- **Custom Theme Preservation**: Your music player and lyrics colors are maintained
 - **Professional Quality**: Suitable for social media and sharing
 
 ## 🚀 Deployment
@@ -187,11 +207,15 @@ This project is deployed on GitHub Pages and is available at:
 ### Architecture
 - **Frontend Only**: Pure HTML, CSS, and JavaScript
 - **No Backend Required**: Everything runs in the browser
+- **Modular Design**: Organized into core, modules, and utilities
+- **Event-Driven**: Centralized event bus for component communication
+- **State Management**: Centralized application state with persistence
 - **MediaRecorder API**: For video export functionality
 - **Canvas API**: For rendering the vinyl player and effects
 - **Web Audio API**: For audio processing and visualization
 - **File API**: For handling audio and image uploads
 - **PWA Support**: Service worker and manifest for app-like experience
+- **Color System**: Advanced color management with theme integration
 
 ### Browser Support
 - **Chrome**: Full support including video export
@@ -218,46 +242,66 @@ vinyl-music-player/
 ├── js/                           # JavaScript modules
 │   ├── core/                     # Core application systems
 │   │   ├── app-state.js          # Application state management
-│   │   └── event-bus.js          # Event communication system
+│   │   ├── base-module.js        # Base class for all modules
+│   │   ├── constants.js          # Application constants and configuration
+│   │   ├── error-handler.js      # Centralized error handling
+│   │   ├── event-bus.js          # Event communication system
+│   │   └── logger.js             # Logging system
 │   ├── modules/                  # Feature modules
 │   │   ├── audio-player.js       # Audio playback and controls
-│   │   ├── lyrics-manager.js     # Lyrics timing and display
-│   │   ├── vinyl-renderer.js     # Vinyl player visual rendering
-│   │   ├── export-manager.js     # Video export functionality
-│   │   ├── export-manager-canvas.js # Canvas-based export rendering
-│   │   ├── lyrics-color-manager.js # Lyrics color customization
-│   │   └── settings-manager.js   # Settings panel management
+│   │   ├── export/               # Video export system
+│   │   │   ├── canvas.js         # Canvas-based export rendering
+│   │   │   └── manager.js        # Export functionality management
+│   │   ├── lyrics/               # Lyrics management system
+│   │   │   ├── color-manager.js  # Lyrics color customization
+│   │   │   └── manager.js        # Lyrics timing and display
+│   │   ├── music-player/         # Music player customization
+│   │   │   ├── color-manager.js  # Music player color management
+│   │   │   └── theme-manager.js  # Theme system and color variants
+│   │   ├── settings-manager.js   # Settings panel management
+│   │   └── vinyl-renderer.js     # Vinyl player visual rendering
 │   ├── utils/                    # Utility functions
 │   │   ├── canvas.js             # Canvas drawing utilities
+│   │   ├── color-helper.js       # Color calculation and conversion
+│   │   ├── dom-helper.js         # DOM manipulation utilities
+│   │   ├── file.js               # File handling utilities
 │   │   ├── time.js               # Time formatting utilities
-│   │   └── file.js               # File handling utilities
+│   │   └── validation-helper.js  # Input validation utilities
 │   ├── index.js                  # Main application entry point
 │   └── toast.js                  # Toast notification system
 └── styles/                       # CSS stylesheets
     ├── variables.css             # CSS custom properties and variables
     ├── base.css                  # Base styles and resets
-    ├── layout.css                # Layout and grid systems
     ├── components.css            # Reusable component styles
     ├── forms.css                 # Form and input styles
+    ├── index.css                 # Main page layout and styles
+    ├── layout.css                # Layout and grid systems
     ├── music-player.css          # Vinyl player specific styles
     ├── responsive.css            # Responsive design styles
-    ├── index.css                 # Main page layout and styles
     └── toast.css                 # Toast notification styles
 ```
 
 ## 🎨 Customization
 
+### Color Customization
+- **Music Player Colors**: Use the built-in color picker to customize the entire vinyl player theme
+- **Lyrics Colors**: Separate color customization for lyrics with smart theme integration
+- **Color History**: Access recently used colors for quick selection
+- **Hex Input**: Direct hex color code input for precise color control
+- **Theme System**: Automatic color variant generation for cohesive design
+
 ### Styling
 - Modify CSS variables in the `variables.css` file
-- Change colors, fonts, and animations
+- Change fonts and animations
 - Adjust the vinyl player size and positioning
-- Customize lyrics colors with the built-in color picker
+- Customize colors through the built-in color management system
 
 ### Functionality
 - Add new control buttons
 - Modify the lyrics timing system
 - Add new export formats
 - Use developer tools for bulk lyrics import
+- Extend the color management system
 
 ## 🛠️ Developer Features
 
@@ -274,11 +318,14 @@ vinyl-music-player/
   ```
 
 ### Color Management System
+- **Dual Color System**: Separate color management for music player and lyrics
 - **Color Picker**: Visual color selection with real-time preview
 - **Hex Input**: Direct hex color code input with validation
-- **Color History**: Automatic saving of recently used colors
+- **Color History**: Automatic saving of recently used colors for both systems
+- **Theme Integration**: Smart lyrics color adjustment based on player theme
 - **Local Storage**: Persistent color preferences across sessions
 - **Export Integration**: Custom colors are preserved in video exports
+- **Color Variants**: Automatic generation of complementary color variants
 
 ### Browser Compatibility Check
 - **Built-in Testing**: Check browser support for video export features
@@ -330,10 +377,13 @@ vinyl-music-player/
 - Try refreshing the page
 
 **Color Customization Issues**
-- Check that hex color codes are valid (e.g., #FF5733)
+- Check that hex color codes are valid (e.g., #FF5733, #c8bda9)
 - Ensure color picker is working in your browser
 - Try resetting to default color if custom colors don't work
 - Clear browser cache if color history isn't saving
+- For music player colors: Check that the theme system is generating variants correctly
+- For lyrics colors: Verify that theme integration is working properly
+- If colors don't persist: Check browser localStorage permissions
 
 **JSON Import Problems**
 - Verify JSON format is valid (use JSON validator)

@@ -33,13 +33,50 @@ class ColorHelper {
     }
     
     /**
-     * Get player color by key
+     * Calculate all player color variants from base color
+     * This is the single source of truth for color calculations
      */
-    static getPlayerColor(colorKey, baseColor = null) {
+    static calculatePlayerColorVariants(baseColor) {
+        const base = baseColor || window.Constants?.PLAYER_BASE_COLOR || '#c8bda9';
+        const baseRgb = this.hexToRgb(base);
+        
+        if (!baseRgb) {
+            return { base: base };
+        }
+        
+        return {
+            base: base,
+            light: this.addRgbOffset(baseRgb, 24, 27, 30),
+            lighter: this.addRgbOffset(baseRgb, 28, 30, 31),
+            neutral: this.addRgbOffset(baseRgb, 9, 8, 7),
+            muted: this.addRgbOffset(baseRgb, -17, -18, -19),
+            subtle: this.addRgbOffset(baseRgb, -20, -22, -22),
+            medium: this.addRgbOffset(baseRgb, -83, -87, -87),
+            strong: this.addRgbOffset(baseRgb, -78, -82, -81),
+            dark: this.addRgbOffset(baseRgb, -105, -108, -102),
+            darker: this.addRgbOffset(baseRgb, -62, -64, -62),
+            accent: this.addRgbOffset(baseRgb, -60, -80, -100),
+            primary: this.addRgbOffset(baseRgb, -90, -110, -130)
+        };
+    }
+
+    /**
+     * Calculate lyrics optimal color from base color
+     */
+    static calculateLyricsColor(baseColor) {
         const base = baseColor || window.Constants?.PLAYER_BASE_COLOR || '#c8bda9';
         const baseRgb = this.hexToRgb(base);
         
         if (!baseRgb) return base;
+        
+        return this.addRgbOffset(baseRgb, -131, -143, -139);
+    }
+
+    /**
+     * Get player color by key (backward compatibility)
+     */
+    static getPlayerColor(colorKey, baseColor = null) {
+        const base = baseColor || window.Constants?.PLAYER_BASE_COLOR || '#c8bda9';
         
         // Get color from CSS custom properties first
         const root = document.documentElement;
@@ -49,23 +86,9 @@ class ColorHelper {
             return cssColor;
         }
         
-        // Fallback: calculate from base color
-        const colorMap = {
-            base: base,
-            light: this.addRgbOffset(baseRgb, 17, 16, 20),
-            lighter: this.addRgbOffset(baseRgb, 16, 16, 16),
-            neutral: this.addRgbOffset(baseRgb, -4, -8, -9),
-            muted: this.addRgbOffset(baseRgb, -27, -27, -27),
-            subtle: this.addRgbOffset(baseRgb, -24, -24, -24),
-            medium: this.addRgbOffset(baseRgb, -82, -92, -103),
-            strong: this.addRgbOffset(baseRgb, -80, -80, -80),
-            dark: this.addRgbOffset(baseRgb, -93, -96, -95),
-            darker: this.addRgbOffset(baseRgb, -78, -79, -57),
-            accent: this.addRgbOffset(baseRgb, -16, -74, -118),
-            primary: this.addRgbOffset(baseRgb, -61, -120, -150)
-        };
-        
-        return colorMap[colorKey] || base;
+        // Fallback: calculate from base color using centralized method
+        const variants = this.calculatePlayerColorVariants(base);
+        return variants[colorKey] || base;
     }
     
     /**

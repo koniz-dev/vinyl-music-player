@@ -48,23 +48,8 @@ class MusicPlayerThemeManager extends BaseModule {
     }
     
     calculateColorVariants(baseColor) {
-        const rgb = ColorHelper.hexToRgb(baseColor);
-        
-        // Calculate all colors based on RGB formula from CSS comments
-        return {
-            base: baseColor,
-            light: ColorHelper.addRgbOffset(rgb, 17, 16, 20),      // +17, +16, +20
-            lighter: ColorHelper.addRgbOffset(rgb, 16, 16, 16),    // +16, +16, +16
-            neutral: ColorHelper.addRgbOffset(rgb, -4, -8, -9),    // -4, -8, -9
-            muted: ColorHelper.addRgbOffset(rgb, -27, -27, -27),   // -27, -27, -27
-            subtle: ColorHelper.addRgbOffset(rgb, -24, -24, -24),  // -24, -24, -24
-            medium: ColorHelper.addRgbOffset(rgb, -82, -92, -103), // -82, -92, -103
-            strong: ColorHelper.addRgbOffset(rgb, -80, -80, -80),  // -80, -80, -80
-            dark: ColorHelper.addRgbOffset(rgb, -93, -96, -95),    // -93, -96, -95
-            darker: ColorHelper.addRgbOffset(rgb, -78, -79, -57),  // -78, -79, -57
-            accent: ColorHelper.addRgbOffset(rgb, -16, -74, -118), // -16, -74, -118
-            primary: ColorHelper.addRgbOffset(rgb, -61, -120, -150) // -61, -120, -150
-        };
+        // Use centralized color calculation from ColorHelper
+        return ColorHelper.calculatePlayerColorVariants(baseColor);
     }
     
     // Color methods are now handled by ColorHelper
@@ -107,9 +92,8 @@ class MusicPlayerThemeManager extends BaseModule {
     }
     
     updateLyricsDefaultColor(variants) {
-        // Calculate lyrics color using formula: -126, -129, -127 from base color
-        const baseRgb = ColorHelper.hexToRgb(variants.base);
-        const defaultLyricsColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+        // Use centralized lyrics color calculation
+        const defaultLyricsColor = ColorHelper.calculateLyricsColor(variants.base);
         
         // Only update if this is the first time or if lyrics color hasn't been manually changed
         if (!this.lyricsColorManuallySet) {

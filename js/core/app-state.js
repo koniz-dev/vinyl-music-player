@@ -198,8 +198,7 @@ class AppState {
     }
     
     calculateLyricsColor() {
-        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        return ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+        return ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
     }
     
     // Color methods are now handled by ColorHelper

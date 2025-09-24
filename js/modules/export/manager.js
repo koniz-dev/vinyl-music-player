@@ -32,9 +32,8 @@ class ExportManager extends BaseModule {
         this.albumArtImage = null;
         this.exportAudio = null;
         this.exportLyrics = [];
-        // Calculate lyrics color from base color using formula
-        const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-        this.exportLyricsColor = ColorHelper.addRgbOffset(baseRgb, -126, -129, -127);
+        // Use centralized lyrics color calculation
+        this.exportLyricsColor = ColorHelper.calculateLyricsColor(window.Constants.PLAYER_BASE_COLOR);
         this.exportTimeout = null;
         this.wasMainAudioPlaying = false;
     }
@@ -218,22 +217,8 @@ class ExportManager extends BaseModule {
         if (window.musicPlayerThemeManager) {
             this.exportMusicPlayerColors = window.musicPlayerThemeManager.getCurrentVariants();
         } else {
-            // Fallback to calculated colors from base color
-            const baseRgb = ColorHelper.hexToRgb(window.Constants.PLAYER_BASE_COLOR);
-            this.exportMusicPlayerColors = {
-                base: window.Constants.PLAYER_BASE_COLOR,
-                light: ColorHelper.addRgbOffset(baseRgb, 17, 16, 20),
-                lighter: ColorHelper.addRgbOffset(baseRgb, 16, 16, 16),
-                neutral: ColorHelper.addRgbOffset(baseRgb, -4, -8, -9),
-                muted: ColorHelper.addRgbOffset(baseRgb, -27, -27, -27),
-                subtle: ColorHelper.addRgbOffset(baseRgb, -24, -24, -24),
-                medium: ColorHelper.addRgbOffset(baseRgb, -82, -92, -103),
-                strong: ColorHelper.addRgbOffset(baseRgb, -80, -80, -80),
-                dark: ColorHelper.addRgbOffset(baseRgb, -93, -96, -95),
-                darker: ColorHelper.addRgbOffset(baseRgb, -78, -79, -57),
-                accent: ColorHelper.addRgbOffset(baseRgb, -16, -74, -118),
-                primary: ColorHelper.addRgbOffset(baseRgb, -61, -120, -150)
-            };
+            // Use centralized color calculation
+            this.exportMusicPlayerColors = ColorHelper.calculatePlayerColorVariants(window.Constants.PLAYER_BASE_COLOR);
         }
     }
     
