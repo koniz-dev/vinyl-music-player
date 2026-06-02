@@ -1,5 +1,6 @@
 import { emit, Events } from './lib/events.js';
 import { DEFAULT_LYRICS_COLOR } from './lib/state.js';
+import { icon } from './icons.js';
 
 const STORAGE_HISTORY = 'lyricsColorHistory';
 const STORAGE_CURRENT = 'lyricsCurrentColor';
@@ -114,7 +115,11 @@ class ColorManager {
             ta.remove();
         }
         this.copyBtn.classList.add('copied');
-        setTimeout(() => this.copyBtn.classList.remove('copied'), 1600);
+        this.copyBtn.innerHTML = icon('check', { size: 16, strokeWidth: 2.5 });
+        setTimeout(() => {
+            this.copyBtn.classList.remove('copied');
+            this.copyBtn.innerHTML = icon('copy', { size: 16 });
+        }, 1600);
     }
 
     getCurrent() {

@@ -272,6 +272,19 @@ input:focus, textarea:focus, button:focus-visible {
     border-radius: var(--r-pill);
 }
 
+/* ─── Icons (Lucide subset, hydrated by js/icons.js) ────────────── */
+
+[data-icon] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+[data-icon] svg {
+    display: block;
+}
+
 /* ─── Hide scrollbars (visual choice) ───────────────────────────── */
 
 ::-webkit-scrollbar {

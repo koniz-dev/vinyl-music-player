@@ -64,20 +64,11 @@
         <div class="topbar-actions">
             <button type="button" class="btn btn-ghost btn-icon" id="debug-btn"
                 aria-label="Check browser support" title="Check browser support">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
+                <span data-icon="info" data-icon-size="18" aria-hidden="true"></span>
             </button>
             <button type="button" class="btn" id="open-settings-btn"
                 aria-label="Open settings" aria-controls="settings-drawer" aria-expanded="false">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
+                <span data-icon="settings" data-icon-size="16" aria-hidden="true"></span>
                 <span>Settings</span>
             </button>
         </div>
@@ -114,26 +105,13 @@
 
             <div class="controls">
                 <button type="button" class="control-btn vinyl-mute-btn" disabled aria-label="Mute">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                    </svg>
+                    <span data-icon="volume" data-icon-size="20" aria-hidden="true"></span>
                 </button>
                 <button type="button" class="control-btn vinyl-play-pause-btn" disabled aria-label="Play / pause">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <polygon points="6 4 20 12 6 20 6 4"></polygon>
-                    </svg>
+                    <span data-icon="play" data-icon-size="28" aria-hidden="true"></span>
                 </button>
                 <button type="button" class="control-btn vinyl-repeat-btn" disabled aria-label="Repeat">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polyline points="17 1 21 5 17 9"></polyline>
-                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-                        <polyline points="7 23 3 19 7 15"></polyline>
-                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-                    </svg>
+                    <span data-icon="repeat" data-icon-size="20" aria-hidden="true"></span>
                 </button>
             </div>
         </section>
@@ -148,11 +126,7 @@
             <h2>Settings</h2>
             <button type="button" class="btn btn-ghost btn-icon" id="close-settings-btn"
                 aria-label="Close settings">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+                <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
             </button>
         </header>
 
@@ -194,9 +168,15 @@
                     <span class="field-label">Lyrics</span>
                     <div class="lyrics-toolbar">
                         <button type="button" class="btn btn-ghost lyrics-tool" id="add-lyrics-btn"
-                            aria-label="Add lyrics line">+ line</button>
+                            aria-label="Add lyrics line">
+                            <span data-icon="plus" data-icon-size="14" aria-hidden="true"></span>
+                            <span>Line</span>
+                        </button>
                         <button type="button" class="btn btn-ghost lyrics-tool" id="dev-lyrics-btn"
-                            aria-label="Import lyrics from JSON">{ } import</button>
+                            aria-label="Import lyrics from JSON">
+                            <span data-icon="braces" data-icon-size="14" aria-hidden="true"></span>
+                            <span>Import</span>
+                        </button>
                     </div>
                 </div>
                 <div class="lyrics-container" id="lyrics-container"></div>
@@ -210,11 +190,7 @@
                     <span class="color-hex mono" id="color-preview">#FFB3D1</span>
                     <button type="button" class="btn btn-ghost btn-icon" id="copy-hex-btn"
                         title="Copy hex" aria-label="Copy hex">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
+                        <span data-icon="copy" data-icon-size="16" aria-hidden="true"></span>
                     </button>
                 </div>
                 <div class="color-history-section">
@@ -224,12 +200,7 @@
 
             <div class="field export-field">
                 <button type="button" class="btn btn-primary export-btn" id="export-btn" disabled>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
+                    <span data-icon="download" data-icon-size="18" aria-hidden="true"></span>
                     Export WebM
                 </button>
                 <div class="export-progress" id="export-progress" hidden>
@@ -250,11 +221,7 @@
                 <h3 id="modal-title">Import lyrics from JSON</h3>
                 <button type="button" class="btn btn-ghost btn-icon" id="modal-close-btn"
                     aria-label="Close dialog">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+                    <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
                 </button>
             </header>
             <div class="modal-body">

@@ -2,6 +2,7 @@ import { on, Events } from './lib/events.js';
 import { state } from './lib/state.js';
 import { formatTime } from './lib/format.js';
 import { updateAlbumArt } from './album-art.js';
+import { icon } from './icons.js';
 
 const vinyl = document.getElementById('vinyl');
 const tonearm = document.getElementById('tonearm');
@@ -16,18 +17,10 @@ const lyricsTextEl = document.querySelector('.vinyl-lyrics-text');
 const songTitleEl = document.querySelector('.vinyl-song-title');
 const artistNameEl = document.querySelector('.vinyl-artist-name');
 
-// ---------- Inline SVG icons ----------
-
-const ICONS = {
-    play: '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
-    pause: '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
-    volume: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>',
-    muted: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
-};
-
-function setHTML(el, html) {
-    el.innerHTML = html;
-}
+const ICON_PLAY  = icon('play',     { size: 28 });
+const ICON_PAUSE = icon('pause',    { size: 28 });
+const ICON_VOL   = icon('volume',   { size: 20 });
+const ICON_MUTE  = icon('volume-x', { size: 20 });
 
 // ---------- Lyrics display ----------
 
@@ -70,11 +63,11 @@ function renderPlayState() {
     if (state.isPlaying) {
         vinyl.style.animation = 'spin 8s linear infinite';
         tonearm.classList.add('playing');
-        setHTML(playPauseBtn, ICONS.pause);
+        playPauseBtn.innerHTML = ICON_PAUSE;
     } else {
         vinyl.style.animation = 'none';
         tonearm.classList.remove('playing');
-        setHTML(playPauseBtn, ICONS.play);
+        playPauseBtn.innerHTML = ICON_PLAY;
     }
     renderLyrics();
 }
@@ -91,7 +84,7 @@ function enableControls() {
     state.isRepeat = false;
     repeatBtn.classList.remove('active');
     state.isMuted = false;
-    setHTML(muteBtn, ICONS.volume);
+    muteBtn.innerHTML = ICON_VOL;
 }
 
 function restartAudio() {
@@ -183,7 +176,7 @@ function bindControls() {
         if (!state.audioElement) return;
         state.isMuted = !state.isMuted;
         state.audioElement.muted = state.isMuted;
-        setHTML(muteBtn, state.isMuted ? ICONS.muted : ICONS.volume);
+        muteBtn.innerHTML = state.isMuted ? ICON_MUTE : ICON_VOL;
     });
 
     repeatBtn.addEventListener('click', () => {
