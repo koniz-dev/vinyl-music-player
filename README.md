@@ -38,11 +38,10 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Custom Fonts**: Beautiful typography with Patrick Hand font family
 - **Visual Effects**: Multiple gradient sets with warm, cool, and vibrant color schemes
 
-### 📱 Progressive Web App (PWA)
-- **Offline Support**: Works without internet connection
-- **App-like Experience**: Install as a native app on mobile devices
+### 📱 Mobile Friendly
+- **Web App Manifest**: Can be added to the home screen as an installable app
 - **Responsive Design**: Optimized for all screen sizes
-- **Fast Loading**: Optimized performance with service worker support
+- **Fast Loading**: Static assets, no backend required
 
 ### 🎛️ Advanced Controls
 - **Drag & Drop**: Easy file upload with drag and drop support
@@ -93,7 +92,7 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
    cd vinyl-music-player
    ```
 
-2. **Install dependencies** (optional)
+2. **Install dependencies**
    ```bash
    npm install
    ```
@@ -102,11 +101,10 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
    ```bash
    npm run dev
    ```
-   Or simply open `index.html` in your browser.
+   The app uses ES modules, so it must be served over HTTP — opening `index.html` directly via `file://` will not work.
 
 4. **Access the application**
    - Open your browser and navigate to `http://localhost:3000`
-   - Or open `index.html` directly in your browser
 
 ## 📖 How to Use
 
@@ -186,7 +184,7 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Canvas API**: For rendering the vinyl player and effects
 - **Web Audio API**: For audio processing and visualization
 - **File API**: For handling audio and image uploads
-- **PWA Support**: Service worker and manifest for app-like experience
+- **Web App Manifest**: Installable on mobile home screens
 - **Dynamic Gradient System**: Random gradient generation for visual variety
 - **JSON Processing**: Built-in JSON parsing for lyrics import functionality
 
@@ -199,30 +197,31 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ### File Structure
 ```
 vinyl-music-player/
-├── index.html                    # Main application entry point
-├── package.json                  # Project configuration and dependencies
-├── package-lock.json             # Dependency lock file
-├── README.md                     # Project documentation
-├── favicon/                      # Favicon and PWA icons
-│   ├── favicon.ico               # Main favicon
-│   ├── favicon-16x16.png         # 16x16 favicon
-│   ├── favicon-32x32.png         # 32x32 favicon
-│   ├── apple-touch-icon.png      # Apple touch icon
-│   ├── android-chrome-192x192.png # Android Chrome icon (192x192)
-│   ├── android-chrome-512x512.png # Android Chrome icon (512x512)
-│   └── site.webmanifest          # PWA manifest file
-├── js/                           # JavaScript modules
-│   ├── index.js                  # Main application logic and initialization
-│   ├── settings.js               # Settings panel and lyrics management
-│   ├── vinyl-player.js           # Vinyl player controls and animations
-│   ├── vinyl-player-export.js    # Video export functionality
-│   └── dynamic-gradient.js       # Dynamic background gradient generator
-└── styles/                       # CSS stylesheets
-    ├── common.css                # Shared styles and utilities
-    ├── index.css                 # Main page layout and styles
-    ├── settings.css              # Settings panel styles
-    └── vinyl-player.css          # Vinyl player specific styles
+├── index.html                # Application shell (loads js/main.js as a module)
+├── package.json              # Project configuration
+├── README.md                 # Documentation
+├── favicon/                  # Favicons + web manifest
+├── js/                       # ES module source
+│   ├── main.js               # Entry point — wires modules together
+│   ├── lib/
+│   │   ├── events.js         # Tiny pub/sub event bus + event name constants
+│   │   ├── state.js          # Shared player state (isPlaying, lyrics, ...)
+│   │   └── format.js         # Time formatting helpers
+│   ├── player.js             # Audio playback, vinyl/tonearm UI, lyrics display
+│   ├── album-art.js          # Album art DOM updates
+│   ├── settings.js           # Form, file uploads, lyrics CRUD, export controls
+│   ├── color-manager.js      # Lyrics color picker + recent-color history
+│   ├── export.js             # Canvas + MediaRecorder WebM export pipeline
+│   └── gradient.js           # Random background gradient
+└── styles/                   # CSS stylesheets
+    ├── common.css            # Shared styles
+    ├── index.css             # Page layout
+    ├── settings.css          # Settings panel
+    └── vinyl-player.css      # Vinyl player
 ```
+
+### Module Communication
+The two panels (settings + player) live in the same window. They communicate through a small in-process event bus (`js/lib/events.js`) rather than `window.postMessage`. Shared mutable state (current track, lyrics, play/pause flag) lives in `js/lib/state.js`.
 
 ## 🎨 Customization
 
