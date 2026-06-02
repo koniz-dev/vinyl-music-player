@@ -63,6 +63,22 @@
     word-break: break-word;
 }
 
+.toast-action {
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: background var(--dur);
+}
+
+.toast-action:hover {
+    background: var(--accent-glow);
+}
+
 @media (max-width: 480px) {
     .toast-container {
         left: var(--s-3);

@@ -1,8 +1,9 @@
 import { on, Events } from './lib/events.js';
 import { state } from './lib/state.js';
 import { formatTime } from './lib/format.js';
-import { updateAlbumArt } from './album-art.js';
+import { updateAlbumArt, clearAlbumArt } from './album-art.js';
 import { icon } from './icons.js';
+import { toastError } from './toast.js';
 
 const vinyl = document.getElementById('vinyl');
 const tonearm = document.getElementById('tonearm');
@@ -16,6 +17,7 @@ const totalTimeEl = document.querySelector('.vinyl-total-time');
 const lyricsTextEl = document.querySelector('.vinyl-lyrics-text');
 const songTitleEl = document.querySelector('.vinyl-song-title');
 const artistNameEl = document.querySelector('.vinyl-artist-name');
+const stageHint = document.getElementById('stage-hint');
 
 const ICON_PLAY  = icon('play',     { size: 28 });
 const ICON_PAUSE = icon('pause',    { size: 28 });
@@ -118,6 +120,7 @@ function togglePlayPause() {
 
 function startPlaying({ audioUrl, songTitle, artistName, albumArtUrl }) {
     if (state.audioElement) state.audioElement.pause();
+    if (stageHint) stageHint.hidden = true;
 
     state.audioElement = new Audio(audioUrl);
 
@@ -149,8 +152,40 @@ function startPlaying({ audioUrl, songTitle, artistName, albumArtUrl }) {
         setPlayerPlaying(false);
     });
 
-    state.audioElement.play().then(() => setPlayerPlaying(true));
+    state.audioElement.addEventListener('error', () => {
+        toastError("Couldn't decode that audio file. Try MP3, WAV, OGG, or M4A.");
+        setPlayerPlaying(false);
+    });
+
+    state.audioElement.play()
+        .then(() => setPlayerPlaying(true))
+        .catch((err) => {
+            // Autoplay may be blocked until user gesture — that's not an error.
+            if (err.name !== 'NotAllowedError') {
+                toastError("Couldn't start playback. Click play to retry.");
+            }
+            setPlayerPlaying(false);
+        });
     renderLyrics();
+}
+
+function stopPlayback() {
+    if (state.audioElement) {
+        state.audioElement.pause();
+        state.audioElement = null;
+    }
+    state.currentTime = 0;
+    state.totalTime = 0;
+    state.isPlaying = false;
+    songTitleEl.textContent = 'Untitled';
+    artistNameEl.textContent = '';
+    totalTimeEl.textContent = '00:00';
+    progressFill.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', 0);
+    document.querySelectorAll('.control-btn').forEach(btn => { btn.disabled = true; });
+    if (stageHint) stageHint.hidden = false;
+    renderProgress();
+    renderPlayState();
 }
 
 function setLyrics(newLyrics) {
@@ -185,22 +220,71 @@ function bindControls() {
         repeatBtn.classList.toggle('active', state.isRepeat);
     });
 
-    let seeking = false;
-    progressBar.addEventListener('click', (e) => {
-        if (seeking || !state.audioElement) return;
-        seeking = true;
+    bindProgressScrub();
+}
+
+function bindProgressScrub() {
+    let dragging = false;
+    let wasPlaying = false;
+
+    const seekTo = (clientX) => {
+        if (!state.audioElement || !state.totalTime) return;
         const rect = progressBar.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        const newTime = Math.floor(percent * state.totalTime);
+        const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        const newTime = percent * state.totalTime;
         state.currentTime = newTime;
         state.audioElement.currentTime = newTime;
         renderProgress();
-        setTimeout(() => { seeking = false; }, 100);
+    };
+
+    const onMove = (e) => {
+        if (!dragging) return;
+        e.preventDefault();
+        seekTo(e.clientX);
+    };
+
+    const onUp = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        progressBar.removeAttribute('data-scrubbing');
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onUp);
+        if (wasPlaying && state.audioElement && state.audioElement.paused) {
+            state.audioElement.play().catch(() => {});
+        }
+    };
+
+    progressBar.addEventListener('pointerdown', (e) => {
+        if (!state.audioElement || !state.totalTime) return;
+        e.preventDefault();
+        dragging = true;
+        wasPlaying = !state.audioElement.paused;
+        progressBar.setAttribute('data-scrubbing', 'true');
+        // Pause during scrub so audio doesn't stutter on rapid seeks
+        if (wasPlaying) state.audioElement.pause();
+        seekTo(e.clientX);
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
+    });
+}
+
+function bindShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Don't intercept when typing in form fields
+        const target = e.target;
+        if (target.matches('input, textarea, [contenteditable="true"]')) return;
+        if (e.key === ' ' && state.audioElement) {
+            e.preventDefault();
+            togglePlayPause();
+        }
     });
 }
 
 export function initPlayer() {
     bindControls();
+    bindShortcuts();
     renderProgress();
     renderPlayState();
     renderLyrics();
@@ -209,6 +293,8 @@ export function initPlayer() {
     on(Events.UPDATE_SONG_TITLE, (t) => { songTitleEl.textContent = t || 'Untitled'; });
     on(Events.UPDATE_ARTIST_NAME, (a) => { artistNameEl.textContent = a || ''; });
     on(Events.UPDATE_ALBUM_ART, updateAlbumArt);
+    on(Events.CLEAR_ALBUM_ART, clearAlbumArt);
+    on(Events.STOP_PLAYBACK, stopPlayback);
     on(Events.UPDATE_LYRICS, setLyrics);
     on(Events.UPDATE_LYRICS_COLOR, (color) => {
         state.lyricsColor = color;

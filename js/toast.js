@@ -13,7 +13,7 @@ function ensureContainer() {
     return container;
 }
 
-export function toast(message, { variant = 'info', duration = 3200 } = {}) {
+export function toast(message, { variant = 'info', duration = 3200, action = null } = {}) {
     const root = ensureContainer();
     if (!root) return;
 
@@ -30,7 +30,6 @@ export function toast(message, { variant = 'info', duration = 3200 } = {}) {
     text.textContent = message;
 
     el.append(iconWrap, text);
-    root.appendChild(el);
 
     const remove = () => {
         if (!el.isConnected) return;
@@ -38,7 +37,22 @@ export function toast(message, { variant = 'info', duration = 3200 } = {}) {
         el.addEventListener('animationend', () => el.remove(), { once: true });
     };
 
-    setTimeout(remove, duration);
+    if (action) {
+        const actionBtn = document.createElement('button');
+        actionBtn.type = 'button';
+        actionBtn.className = 'toast-action';
+        actionBtn.textContent = action.label;
+        actionBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            action.onClick();
+            remove();
+        });
+        el.appendChild(actionBtn);
+    }
+
+    root.appendChild(el);
+
+    if (duration > 0) setTimeout(remove, duration);
     el.addEventListener('click', remove);
 }
 

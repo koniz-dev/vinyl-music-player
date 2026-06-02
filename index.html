@@ -103,6 +103,10 @@
                 <span class="vinyl-total-time mono">00:00</span>
             </div>
 
+            <p class="stage-hint" id="stage-hint">
+                Open <strong>Settings</strong> to upload audio and start.
+            </p>
+
             <div class="controls">
                 <button type="button" class="control-btn vinyl-mute-btn" disabled aria-label="Mute">
                     <span data-icon="volume" data-icon-size="20" aria-hidden="true"></span>
@@ -137,6 +141,10 @@
                 </label>
                 <div class="drop-zone audio-upload" id="audio-upload-area">
                     <input type="file" accept="audio/*" id="audio-file">
+                    <button type="button" class="drop-zone-clear" id="audio-clear-btn"
+                        aria-label="Remove audio file">
+                        <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
+                    </button>
                     <div class="dz-title">Drop or click</div>
                     <div class="dz-hint">MP3, WAV, OGG, M4A, AAC</div>
                 </div>
@@ -158,6 +166,10 @@
                 <label class="field-label">Album art</label>
                 <div class="drop-zone" id="upload-area">
                     <input type="file" accept="image/*" id="album-art">
+                    <button type="button" class="drop-zone-clear" id="album-art-clear-btn"
+                        aria-label="Remove album art">
+                        <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
+                    </button>
                     <div class="dz-title">Drop image</div>
                     <div class="dz-hint">Used as label + ambient bg · JPG · PNG · WebP</div>
                 </div>
@@ -165,7 +177,7 @@
 
             <div class="field">
                 <div class="field-label-row">
-                    <span class="field-label">Lyrics</span>
+                    <span class="field-label">Lyrics <span class="field-hint">(optional)</span></span>
                     <div class="lyrics-toolbar">
                         <button type="button" class="btn btn-ghost lyrics-tool" id="add-lyrics-btn"
                             aria-label="Add lyrics line">
@@ -177,9 +189,18 @@
                             <span data-icon="braces" data-icon-size="14" aria-hidden="true"></span>
                             <span>Import</span>
                         </button>
+                        <button type="button" class="btn btn-ghost lyrics-tool" id="clear-lyrics-btn"
+                            aria-label="Remove all lyrics" hidden>
+                            <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
+                            <span>Clear</span>
+                        </button>
                     </div>
                 </div>
-                <div class="lyrics-container" id="lyrics-container"></div>
+                <div class="lyrics-container" id="lyrics-container">
+                    <p class="lyrics-empty" id="lyrics-empty">
+                        Skip this to export audio + vinyl only. Add lines or paste JSON if you want synced subtitles.
+                    </p>
+                </div>
             </div>
 
             <div class="field">
@@ -207,7 +228,12 @@
                     <div class="export-progress-bar">
                         <div class="export-progress-fill" id="progress-fill"></div>
                     </div>
-                    <div class="export-progress-text mono" id="progress-text">Preparing…</div>
+                    <div class="export-progress-footer">
+                        <span class="export-progress-text mono" id="progress-text">Preparing…</span>
+                        <button type="button" class="btn btn-ghost export-cancel-btn" id="export-cancel-btn">
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
@@ -226,7 +252,17 @@
             </header>
             <div class="modal-body">
                 <p class="modal-description">
-                    Paste an array of <code>{ start, end, text }</code> objects. Times are <code>mm:ss</code>.
+                    Lyrics are optional. Paste an array of <code>{ start, end, text }</code> objects below,
+                    or click <strong>Cancel</strong> to skip. Times are <code>mm:ss</code>.
+                </p>
+                <div class="import-mode-toggle" role="radiogroup" aria-label="Import mode">
+                    <button type="button" class="import-mode-btn active" data-mode="replace"
+                        aria-pressed="true" id="import-mode-replace">Replace</button>
+                    <button type="button" class="import-mode-btn" data-mode="append"
+                        aria-pressed="false" id="import-mode-append">Append</button>
+                </div>
+                <p class="modal-warning" id="import-overwrite-warning" hidden>
+                    ⚠ This will replace your <strong id="import-overwrite-count">0</strong> current lines.
                 </p>
                 <pre class="json-example">[
   {"start": "00:18", "end": "00:21", "text": "I wake up in the familiar room"},
@@ -237,6 +273,28 @@
                 <div class="modal-actions">
                     <button type="button" class="btn" id="modal-cancel-btn">Cancel</button>
                     <button type="button" class="btn btn-primary" id="modal-import-btn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Browser support modal ───────────────────────────────── -->
+
+    <div class="modal-overlay" id="browser-support-modal" hidden>
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="bs-title">
+            <header class="modal-header">
+                <h3 id="bs-title">Browser Support</h3>
+                <button type="button" class="btn btn-ghost btn-icon" id="bs-close-btn"
+                    aria-label="Close dialog">
+                    <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p class="modal-description" id="bs-summary"></p>
+                <ul class="support-list" id="bs-list"></ul>
+                <p class="modal-description" id="bs-action"></p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" id="bs-ok-btn">Got it</button>
                 </div>
             </div>
         </div>

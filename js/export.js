@@ -16,6 +16,7 @@ let animationId = null;
 let timeoutId = null;
 let progressInterval = null;
 let exportAudio = null;
+let audioCtx = null;
 let albumArtImage = null;
 let exportLyrics = [];
 let vinylRotation = 0;
@@ -65,6 +66,7 @@ function cleanup() {
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (albumArtImage) { URL.revokeObjectURL(albumArtImage.src); albumArtImage = null; }
+    if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
     disableControls(false);
     state.isExporting = false;
 }
@@ -124,8 +126,8 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         });
 
         const canvasStream = canvas.captureStream(30);
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioCtx();
+        const AudioCtxCtor = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtxCtor();
         const source = audioCtx.createMediaElementSource(exportAudio);
         const destination = audioCtx.createMediaStreamDestination();
         source.connect(destination);
@@ -154,6 +156,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             emit(Events.EXPORT_PROGRESS, { progress: 100, message: 'Done.' });
             emit(Events.EXPORT_COMPLETE, { videoBlob, fileName });
 
+            if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
             resumeMainAudioIfPaused();
             disableControls(false);
             state.isExporting = false;
@@ -194,31 +197,85 @@ function stopRecording() {
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (albumArtImage) { URL.revokeObjectURL(albumArtImage.src); albumArtImage = null; }
+    if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
     state.isExporting = false;
 }
 
-function debugBrowserSupport() {
-    const support = {
-        mediaRecorder: !!window.MediaRecorder,
-        canvas: !!document.createElement('canvas').getContext,
-        audio: !!window.Audio,
-        webm: MediaRecorder.isTypeSupported('video/webm'),
-        webm_vp8: MediaRecorder.isTypeSupported('video/webm;codecs=vp8'),
-        webm_vp9: MediaRecorder.isTypeSupported('video/webm;codecs=vp9'),
-    };
+function cancelExport() {
+    if (!state.isExporting) return;
+    if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+    if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+    if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
+    if (recorder && recorder.state === 'recording') {
+        // Detach onstop so it doesn't fire the COMPLETE event with garbage chunks
+        recorder.onstop = null;
+        recorder.stop();
+    }
+    if (exportAudio) { exportAudio.pause(); exportAudio = null; }
+    if (albumArtImage) { URL.revokeObjectURL(albumArtImage.src); albumArtImage = null; }
+    if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
+    disableControls(false);
+    state.isExporting = false;
+    resumeMainAudioIfPaused();
+    emit(Events.EXPORT_CANCELLED);
+}
 
-    const tick = (b) => b ? '✅' : '❌';
-    alert([
-        'Browser Support Check:',
-        '',
-        `MediaRecorder: ${tick(support.mediaRecorder)}`,
-        `Canvas: ${tick(support.canvas)}`,
-        `Audio: ${tick(support.audio)}`,
-        `WebM: ${tick(support.webm)}`,
-        `WebM VP8: ${tick(support.webm_vp8)}`,
-        `WebM VP9: ${tick(support.webm_vp9)}`,
-        `Browser: ${navigator.userAgent.split(' ')[0]}`,
-    ].join('\n'));
+function debugBrowserSupport() {
+    const hasMR = !!window.MediaRecorder;
+    const checks = [
+        ['MediaRecorder API', hasMR],
+        ['Canvas 2D',        !!document.createElement('canvas').getContext],
+        ['HTMLAudioElement', !!window.Audio],
+        ['AudioContext',     !!(window.AudioContext || window.webkitAudioContext)],
+        ['WebM',             hasMR && MediaRecorder.isTypeSupported('video/webm')],
+        ['WebM + VP8',       hasMR && MediaRecorder.isTypeSupported('video/webm;codecs=vp8')],
+        ['WebM + VP9',       hasMR && MediaRecorder.isTypeSupported('video/webm;codecs=vp9')],
+    ];
+
+    const allOk = checks.every(([, ok]) => ok);
+    const webmOk = checks.find(([k]) => k === 'WebM')[1];
+
+    const modal = document.getElementById('browser-support-modal');
+    const summary = document.getElementById('bs-summary');
+    const list = document.getElementById('bs-list');
+    const action = document.getElementById('bs-action');
+
+    summary.innerHTML = allOk
+        ? `<strong>${navigator.userAgent.split(' ')[0]}</strong> — everything looks good. WebM export should work.`
+        : `<strong>${navigator.userAgent.split(' ')[0]}</strong> — some features are missing.`;
+
+    list.replaceChildren();
+    for (const [label, ok] of checks) {
+        const li = document.createElement('li');
+        const name = document.createElement('span');
+        name.textContent = label;
+        const val = document.createElement('span');
+        val.className = `support-value ${ok ? 'support-ok' : 'support-fail'}`;
+        val.textContent = ok ? '✓ supported' : '✗ missing';
+        li.append(name, val);
+        list.appendChild(li);
+    }
+
+    if (allOk) {
+        action.textContent = 'You can export WebM videos.';
+    } else if (!webmOk) {
+        action.innerHTML = 'WebM export is not available. Switch to a recent <strong>Chrome</strong>, <strong>Firefox</strong>, or <strong>Edge</strong>.';
+    } else {
+        action.textContent = 'Some optional checks failed but export may still work — try it.';
+    }
+
+    modal.hidden = false;
+}
+
+function bindBrowserSupportModal() {
+    const modal = document.getElementById('browser-support-modal');
+    const close = () => { modal.hidden = true; };
+    document.getElementById('bs-close-btn').addEventListener('click', close);
+    document.getElementById('bs-ok-btn').addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.hidden) close();
+    });
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -594,6 +651,8 @@ function drawCircleBtn(cx, cy, size, fillColor, borderColor) {
 }
 
 export function initExport() {
+    bindBrowserSupportModal();
+
     on(Events.EXPORT_REQUESTED, ({ audioFile, songTitle, artistName, albumArtFile }) => {
         if (state.isExporting) return;
         if (!window.MediaRecorder) {
@@ -608,4 +667,5 @@ export function initExport() {
     });
 
     on(Events.DEBUG_BROWSER_SUPPORT, debugBrowserSupport);
+    on(Events.EXPORT_CANCEL, cancelExport);
 }

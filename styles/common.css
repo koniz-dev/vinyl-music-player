@@ -143,6 +143,14 @@ input:focus, textarea:focus, button:focus-visible {
     color: var(--accent);
 }
 
+.field-hint {
+    margin-left: 4px;
+    color: var(--fg-4);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
 .text-input {
     width: 100%;
     padding: 10px 14px;
@@ -208,6 +216,32 @@ input:focus, textarea:focus, button:focus-visible {
     border-style: solid;
     border-color: var(--success);
     background: rgba(52, 211, 153, 0.08);
+}
+
+.drop-zone-clear {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--fg-1);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: background var(--dur);
+    z-index: 1;
+}
+
+.drop-zone[data-loaded="true"] .drop-zone-clear {
+    display: inline-flex;
+}
+
+.drop-zone-clear:hover {
+    background: var(--danger);
 }
 
 /* ─── Buttons ───────────────────────────────────────────────────── */

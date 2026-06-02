@@ -1,7 +1,8 @@
 import { emit, on, Events } from './lib/events.js';
 import { timeToSeconds } from './lib/format.js';
 import { initColorManager } from './color-manager.js';
-import { toastSuccess, toastError } from './toast.js';
+import { toastSuccess, toastError, toastInfo } from './toast.js';
+import { icon } from './icons.js';
 
 const TIME_PATTERN = /^[0-9]{1,2}:[0-9]{2}$/;
 
@@ -10,7 +11,15 @@ let lastAudioObjectUrl = null;
 let lastAlbumArtObjectUrl = null;
 
 const lyricsContainer = document.getElementById('lyrics-container');
+const lyricsEmpty = document.getElementById('lyrics-empty');
 const addLyricsBtn = document.getElementById('add-lyrics-btn');
+const clearLyricsBtn = document.getElementById('clear-lyrics-btn');
+const importOverwriteWarning = document.getElementById('import-overwrite-warning');
+const importOverwriteCount = document.getElementById('import-overwrite-count');
+const importModeReplaceBtn = document.getElementById('import-mode-replace');
+const importModeAppendBtn = document.getElementById('import-mode-append');
+
+let importMode = 'replace';
 const devLyricsBtn = document.getElementById('dev-lyrics-btn');
 const devLyricsModal = document.getElementById('dev-lyrics-modal');
 const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -23,11 +32,14 @@ const audioUploadArea = document.getElementById('audio-upload-area');
 const audioFileInput = document.getElementById('audio-file');
 const songTitleInput = document.getElementById('song-title');
 const artistNameInput = document.getElementById('artist-name');
+const audioClearBtn = document.getElementById('audio-clear-btn');
+const albumArtClearBtn = document.getElementById('album-art-clear-btn');
 const exportBtn = document.getElementById('export-btn');
 const debugBtn = document.getElementById('debug-btn');
 const exportProgress = document.getElementById('export-progress');
 const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
+const exportCancelBtn = document.getElementById('export-cancel-btn');
 
 // ---------- Lyrics editor ----------
 
@@ -39,6 +51,14 @@ function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
 
     const header = document.createElement('div');
     header.className = 'lyrics-item-header';
+
+    const grip = document.createElement('span');
+    grip.className = 'lyrics-grip';
+    grip.setAttribute('aria-label', 'Drag to reorder');
+    grip.setAttribute('title', 'Drag to reorder');
+    grip.draggable = true;
+    grip.innerHTML = icon('grip-vertical', { size: 14 });
+    wireGripDragHandlers(grip, item);
 
     const title = document.createElement('span');
     title.className = 'lyrics-item-title';
@@ -52,9 +72,10 @@ function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
     removeBtn.addEventListener('click', () => {
         item.remove();
         publishLyrics();
+        refreshLyricsEmptyState();
     });
 
-    header.append(title, removeBtn);
+    header.append(grip, title, removeBtn);
 
     const inputs = document.createElement('div');
     inputs.className = 'lyrics-inputs';
@@ -97,7 +118,129 @@ function createInput({ className, placeholder, value, pattern, ariaLabel }) {
     if (pattern) input.pattern = pattern;
     if (ariaLabel) input.setAttribute('aria-label', ariaLabel);
     input.addEventListener('input', publishLyrics);
+    if (className === 'time-input') {
+        input.addEventListener('blur', () => {
+            const normalized = normalizeTimeString(input.value);
+            if (normalized !== null && normalized !== input.value) {
+                input.value = normalized;
+                publishLyrics();
+            }
+        });
+    }
     return input;
+}
+
+/**
+ * Lenient mm:ss normalizer.
+ *   "1:5"  → "01:05"
+ *   ":30"  → "00:30"
+ *   "1:30" → "01:30"
+ *   ""     → ""           (kept empty for "default end = start+5")
+ *   "abc"  → null         (let invalid-CSS feedback show the error)
+ */
+function normalizeTimeString(raw) {
+    const trimmed = String(raw).trim();
+    if (trimmed === '') return '';
+    const match = trimmed.match(/^([0-9]{0,2}):([0-9]{1,2})$/);
+    if (!match) return null;
+    const m = (match[1] || '0').padStart(2, '0');
+    const s = match[2].padStart(2, '0');
+    if (parseInt(s, 10) > 59) return null;
+    return `${m}:${s}`;
+}
+
+// ---------- Drag-to-reorder ----------
+
+let draggedItem = null;
+
+function wireGripDragHandlers(grip, item) {
+    grip.addEventListener('dragstart', (e) => {
+        draggedItem = item;
+        item.dataset.dragging = 'true';
+        // Firefox needs setData to start a drag
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', '');
+    });
+    grip.addEventListener('dragend', () => {
+        if (draggedItem) delete draggedItem.dataset.dragging;
+        draggedItem = null;
+        lyricsContainer.querySelectorAll('.lyrics-item').forEach(el => {
+            delete el.dataset.dropTarget;
+        });
+    });
+}
+
+function findClosestItem(y) {
+    const items = [...lyricsContainer.querySelectorAll('.lyrics-item:not([data-dragging="true"])')];
+    let closest = null;
+    let closestDist = Number.POSITIVE_INFINITY;
+    let insertBefore = false;
+    for (const el of items) {
+        const rect = el.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        const dist = Math.abs(y - mid);
+        if (dist < closestDist) {
+            closestDist = dist;
+            closest = el;
+            insertBefore = y < mid;
+        }
+    }
+    return { closest, insertBefore };
+}
+
+function bindReorderContainer() {
+    lyricsContainer.addEventListener('dragover', (e) => {
+        if (!draggedItem) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const { closest } = findClosestItem(e.clientY);
+        lyricsContainer.querySelectorAll('.lyrics-item').forEach(el => {
+            el.dataset.dropTarget = el === closest && el !== draggedItem ? 'true' : 'false';
+        });
+    });
+
+    lyricsContainer.addEventListener('drop', (e) => {
+        if (!draggedItem) return;
+        e.preventDefault();
+        const { closest, insertBefore } = findClosestItem(e.clientY);
+        if (closest && closest !== draggedItem) {
+            if (insertBefore) {
+                lyricsContainer.insertBefore(draggedItem, closest);
+            } else {
+                lyricsContainer.insertBefore(draggedItem, closest.nextSibling);
+            }
+            renumberLyricsTitles();
+            publishLyrics();
+        }
+    });
+}
+
+function renumberLyricsTitles() {
+    const items = lyricsContainer.querySelectorAll('.lyrics-item');
+    items.forEach((el, i) => {
+        const title = el.querySelector('.lyrics-item-title');
+        if (title) title.textContent = `Line ${i + 1}`;
+    });
+    lyricsCount = items.length;
+}
+
+function refreshLyricsEmptyState() {
+    const count = lyricsContainer.querySelectorAll('.lyrics-item').length;
+    const hasItems = count > 0;
+    if (lyricsEmpty) lyricsEmpty.hidden = hasItems;
+    if (clearLyricsBtn) clearLyricsBtn.hidden = !hasItems;
+}
+
+function clearAllLyrics() {
+    lyricsContainer.querySelectorAll('.lyrics-item').forEach(el => el.remove());
+    lyricsCount = 0;
+    refreshLyricsEmptyState();
+    publishLyrics();
+}
+
+function addLyricsLine(seed) {
+    lyricsContainer.appendChild(buildLyricsItem(seed));
+    refreshLyricsEmptyState();
 }
 
 function publishLyrics() {
@@ -137,7 +280,27 @@ function validateImportedLyrics(rows) {
     });
 }
 
+function setImportMode(mode) {
+    importMode = mode;
+    importModeReplaceBtn.classList.toggle('active', mode === 'replace');
+    importModeReplaceBtn.setAttribute('aria-pressed', mode === 'replace');
+    importModeAppendBtn.classList.toggle('active', mode === 'append');
+    importModeAppendBtn.setAttribute('aria-pressed', mode === 'append');
+    refreshImportWarning();
+}
+
+function refreshImportWarning() {
+    const existing = lyricsContainer.querySelectorAll('.lyrics-item').length;
+    if (importMode === 'replace' && existing > 0) {
+        importOverwriteCount.textContent = String(existing);
+        importOverwriteWarning.hidden = false;
+    } else {
+        importOverwriteWarning.hidden = true;
+    }
+}
+
 function openImportModal() {
+    setImportMode('replace');
     devLyricsModal.hidden = false;
     jsonLyricsInput.focus();
 }
@@ -150,20 +313,24 @@ function closeImportModal() {
 function importLyricsFromJson() {
     const raw = jsonLyricsInput.value.trim();
     if (!raw) {
-        toastError('Paste some JSON first.');
+        toastInfo('Nothing to import — paste JSON or hit Cancel.');
         return;
     }
     try {
         const rows = JSON.parse(raw);
         validateImportedLyrics(rows);
 
-        lyricsContainer.replaceChildren();
-        lyricsCount = 0;
+        if (importMode === 'replace') {
+            lyricsContainer.querySelectorAll('.lyrics-item').forEach(el => el.remove());
+            lyricsCount = 0;
+        }
         rows.forEach(row => lyricsContainer.appendChild(buildLyricsItem(row)));
+        refreshLyricsEmptyState();
 
         publishLyrics();
         closeImportModal();
-        toastSuccess(`Imported ${rows.length} lyric lines.`);
+        const verb = importMode === 'append' ? 'Appended' : 'Imported';
+        toastSuccess(`${verb} ${rows.length} lyric lines.`);
     } catch (error) {
         toastError(error.message);
     }
@@ -175,6 +342,13 @@ function describeFile(area, file) {
     area.querySelector('.dz-title').textContent = file.name;
     area.querySelector('.dz-hint').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
     area.dataset.loaded = 'true';
+}
+
+function resetDropZone(area, input, defaults) {
+    area.querySelector('.dz-title').textContent = defaults.title;
+    area.querySelector('.dz-hint').textContent = defaults.hint;
+    delete area.dataset.loaded;
+    input.value = '';
 }
 
 function wireUpload(area, input, onFile) {
@@ -223,6 +397,32 @@ function handleAudioFile(file) {
         albumArtUrl,
     });
     refreshExportButton();
+}
+
+function clearAudio() {
+    resetDropZone(audioUploadArea, audioFileInput, {
+        title: 'Drop or click',
+        hint: 'MP3, WAV, OGG, M4A, AAC',
+    });
+    if (lastAudioObjectUrl) {
+        URL.revokeObjectURL(lastAudioObjectUrl);
+        lastAudioObjectUrl = null;
+    }
+    emit(Events.STOP_PLAYBACK);
+    refreshExportButton();
+}
+
+function clearAlbumArt() {
+    resetDropZone(uploadArea, albumArtInput, {
+        title: 'Drop image',
+        hint: 'Used as label + ambient bg · JPG · PNG · WebP',
+    });
+    if (lastAlbumArtObjectUrl) {
+        URL.revokeObjectURL(lastAlbumArtObjectUrl);
+        lastAlbumArtObjectUrl = null;
+    }
+    emit(Events.CLEAR_ALBUM_ART);
+    emit(Events.UPDATE_ALBUM_ART, null); // theme.js → reset accent
 }
 
 // ---------- Form bindings ----------
@@ -291,6 +491,8 @@ function bindExport() {
 
     debugBtn.addEventListener('click', () => emit(Events.DEBUG_BROWSER_SUPPORT));
 
+    exportCancelBtn.addEventListener('click', () => emit(Events.EXPORT_CANCEL));
+
     on(Events.EXPORT_PROGRESS, ({ progress, message }) => {
         progressFill.style.width = `${progress}%`;
         progressText.textContent = message;
@@ -298,6 +500,10 @@ function bindExport() {
     on(Events.EXPORT_COMPLETE, handleExportComplete);
     on(Events.EXPORT_ERROR, (error) => {
         toastError(`Export failed: ${error}`);
+        resetExportProgress();
+    });
+    on(Events.EXPORT_CANCELLED, () => {
+        toastInfo('Export cancelled.');
         resetExportProgress();
     });
 }
@@ -309,6 +515,8 @@ function bindImportModal() {
     modalCloseBtn.addEventListener('click', closeImportModal);
     modalCancelBtn.addEventListener('click', closeImportModal);
     modalImportBtn.addEventListener('click', importLyricsFromJson);
+    importModeReplaceBtn.addEventListener('click', () => setImportMode('replace'));
+    importModeAppendBtn.addEventListener('click', () => setImportMode('append'));
     devLyricsModal.addEventListener('click', (e) => {
         if (e.target === devLyricsModal) closeImportModal();
     });
@@ -320,14 +528,17 @@ function bindImportModal() {
 // ---------- Init ----------
 
 export function initSettings() {
-    lyricsContainer.appendChild(buildLyricsItem());
+    refreshLyricsEmptyState();
+    bindReorderContainer();
 
-    addLyricsBtn.addEventListener('click', () => {
-        lyricsContainer.appendChild(buildLyricsItem());
-    });
+    addLyricsBtn.addEventListener('click', () => addLyricsLine());
+    clearLyricsBtn.addEventListener('click', clearAllLyrics);
 
     wireUpload(uploadArea, albumArtInput, handleAlbumArt);
     wireUpload(audioUploadArea, audioFileInput, handleAudioFile);
+
+    audioClearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearAudio(); });
+    albumArtClearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearAlbumArt(); });
 
     bindImportModal();
     bindInputs();
