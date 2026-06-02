@@ -15,7 +15,7 @@ function ensureContainer() {
 
 export function toast(message, { variant = 'info', duration = 3200, action = null } = {}) {
     const root = ensureContainer();
-    if (!root) return;
+    if (!root) return () => {};
 
     const el = document.createElement('div');
     el.className = `toast toast-${variant}`;
@@ -54,6 +54,8 @@ export function toast(message, { variant = 'info', duration = 3200, action = nul
 
     if (duration > 0) setTimeout(remove, duration);
     el.addEventListener('click', remove);
+
+    return remove;
 }
 
 export const toastSuccess = (msg, opts) => toast(msg, { ...opts, variant: 'success' });

@@ -1,5 +1,5 @@
 // Versioned cache — bump the suffix on every release to invalidate clients.
-const CACHE_VERSION = 'v30';
+const CACHE_VERSION = 'v32';
 const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
 
 const PRECACHE = [

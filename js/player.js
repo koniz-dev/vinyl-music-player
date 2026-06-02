@@ -129,12 +129,16 @@ function startPlaying({ audioUrl, songTitle, artistName, albumArtUrl }) {
     });
 
     state.audioElement.addEventListener('timeupdate', () => {
+        // During export, export.js drives the DOM from exportAudio.currentTime.
+        // Skip here to avoid two writers fighting over the same elements.
+        if (state.isExporting) return;
         state.currentTime = state.audioElement.currentTime;
         renderProgress();
         renderLyrics();
     });
 
     state.audioElement.addEventListener('ended', () => {
+        if (state.isExporting) return;
         if (state.isRepeat) {
             state.audioElement.currentTime = 0;
             state.audioElement.play();

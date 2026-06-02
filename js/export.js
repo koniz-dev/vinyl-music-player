@@ -18,11 +18,12 @@ let audioCtx = null;
 let canvasW = 720;
 let canvasH = 1280;
 let wasMainAudioPlaying = false;
-let wasMainAudioMuted = false;
 let rendering = false;
 let frameEl = null;
 let exportLyrics = [];
 let liveDomBindings = null;     // {ref to update progress/lyrics in editor}
+let visibilityHandler = null;
+let backgroundToastDismiss = null;
 
 // ──────────────────────────────────────────────────────────────────
 // Setup helpers
@@ -136,20 +137,53 @@ function cleanup() {
     if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
     if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
+    teardownVisibilityHandler();
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
     if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
-    if (state.audioElement && wasMainAudioPlaying) {
-        state.audioElement.muted = wasMainAudioMuted;
-    }
     disableControls(false);
     state.isExporting = false;
     rendering = false;
 }
 
+function setupVisibilityHandler() {
+    visibilityHandler = () => {
+        if (!state.isExporting || !recorder || !exportAudio) return;
+
+        if (document.hidden) {
+            // Tab backgrounded — rAF will throttle to ~1Hz. Pause everything so
+            // audio + video stay in sync; resume when the user returns.
+            try { exportAudio.pause(); } catch {}
+            try { if (recorder.state === 'recording') recorder.pause(); } catch {}
+            backgroundToastDismiss = toastInfo(
+                'Export paused — return to this tab to continue.',
+                { duration: 0 }
+            );
+        } else {
+            try { if (recorder.state === 'paused') recorder.resume(); } catch {}
+            try { exportAudio.play(); } catch {}
+            if (backgroundToastDismiss) {
+                backgroundToastDismiss();
+                backgroundToastDismiss = null;
+            }
+        }
+    };
+    document.addEventListener('visibilitychange', visibilityHandler);
+}
+
+function teardownVisibilityHandler() {
+    if (visibilityHandler) {
+        document.removeEventListener('visibilitychange', visibilityHandler);
+        visibilityHandler = null;
+    }
+    if (backgroundToastDismiss) {
+        backgroundToastDismiss();
+        backgroundToastDismiss = null;
+    }
+}
+
 function resumeMainAudioIfPaused() {
     if (!wasMainAudioPlaying || !state.audioElement) return;
-    state.audioElement.muted = wasMainAudioMuted;
     state.audioElement.play()
         .then(() => setPlayerPlaying(true))
         .catch(() => {});
@@ -194,11 +228,13 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
     state.isExporting = true;
 
     wasMainAudioPlaying = !!(state.audioElement && !state.audioElement.paused);
-    wasMainAudioMuted = state.audioElement ? state.audioElement.muted : false;
 
-    if (state.audioElement) {
-        // Keep the editor's vinyl spinning visually by NOT pausing — just mute.
-        state.audioElement.muted = true;
+    // Hard-stop the editor's audio so its timeupdate doesn't fight with our
+    // export-driven DOM updates. We force the visual spin back on below via
+    // applyLiveExportState() so the recorded frame still shows the record turning.
+    if (wasMainAudioPlaying && state.audioElement) {
+        state.audioElement.pause();
+        setPlayerPlaying(false);
     }
 
     disableControls(true);
@@ -265,6 +301,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             emit(Events.EXPORT_PROGRESS, { progress: 100, message: 'Done.' });
             emit(Events.EXPORT_COMPLETE, { videoBlob, fileName });
 
+            teardownVisibilityHandler();
             if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
             if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
             resumeMainAudioIfPaused();
@@ -277,20 +314,25 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         recorder.start();
         exportAudio.play();
 
+        // Pause render + recorder if the user switches tabs; resume when they return.
+        setupVisibilityHandler();
+
         renderLoop();
 
+        // Drive progress off exportAudio.currentTime so it auto-pauses
+        // when the user backgrounds the tab.
         const duration = exportAudio.duration;
-        const startTime = performance.now();
         progressInterval = setInterval(() => {
-            const elapsed = (performance.now() - startTime) / 1000;
+            if (!exportAudio || exportAudio.paused) return;
+            const elapsed = exportAudio.currentTime;
             const progress = Math.min(20 + (elapsed / duration) * 60, 80);
             emit(Events.EXPORT_PROGRESS, { progress, message: `Recording… ${Math.round(progress)}%` });
-            if (elapsed >= duration) {
+            if (elapsed >= duration - 0.05) {
                 clearInterval(progressInterval);
                 progressInterval = null;
                 stopRecording();
             }
-        }, 100);
+        }, 200);
 
     } catch (error) {
         cleanup();
@@ -313,16 +355,14 @@ function cancelExport() {
     if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
     if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
-    if (recorder && recorder.state === 'recording') {
+    teardownVisibilityHandler();
+    if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
         recorder.onstop = null;
         recorder.stop();
     }
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
     if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
-    if (state.audioElement) {
-        state.audioElement.muted = wasMainAudioMuted;
-    }
     disableControls(false);
     state.isExporting = false;
     rendering = false;
