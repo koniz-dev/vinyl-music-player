@@ -13,6 +13,41 @@
     backface-visibility: hidden;
 }
 
+.music-player.has-album-art {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.music-player.has-album-art::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.3) 50%,
+        rgba(0, 0, 0, 0.2) 100%);
+    backdrop-filter: blur(2px);
+    border-radius: 30px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.music-player.has-album-art > .vinyl-section,
+.music-player.has-album-art > .progress-container,
+.music-player.has-album-art > .controls {
+    position: relative;
+    z-index: 2;
+}
+
+.music-player.has-album-art .vinyl-album-art {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 50%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
 .vinyl-section {
     flex: 1;
     display: flex;

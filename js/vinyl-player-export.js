@@ -82,11 +82,9 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
     if (audioElement && !audioElement.paused) {
         wasMainAudioPlaying = true;
         audioElement.pause();
-        
+
         isPlaying = false;
         updatePlayerState();
-        stopProgressTimer();
-        stopLyricsTimer();
     }
     
     const controls = document.querySelectorAll('.control-btn');
@@ -104,10 +102,7 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                 audioElement.play().then(() => {
                     isPlaying = true;
                     updatePlayerState();
-                    startProgressTimer();
-                    startLyricsTimer();
-                }).catch(error => {
-                });
+                }).catch(() => {});
             }
             
             const controls = document.querySelectorAll('.control-btn');
@@ -235,26 +230,20 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
                 fileName: fileName
             }, '*');
             
-            // Restore main audio playback state
             if (wasMainAudioPlaying && audioElement) {
                 audioElement.play().then(() => {
                     isPlaying = true;
                     updatePlayerState();
-                    startProgressTimer();
-                    startLyricsTimer();
-                }).catch(error => {
-                });
+                }).catch(() => {});
             }
-            
-            // Re-enable all control buttons
+
             const controls = document.querySelectorAll('.control-btn');
             controls.forEach(btn => {
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.style.cursor = 'pointer';
             });
-            
-            // Reset export flag
+
             isExporting = false;
         };
 
@@ -319,16 +308,11 @@ async function startVideoRecording(audioFile, songTitle, artistName, albumArtFil
             exportAnimationId = null;
         }
         
-        // Restore main audio playback state
         if (wasMainAudioPlaying && audioElement) {
             audioElement.play().then(() => {
                 isPlaying = true;
                 updatePlayerState();
-                startProgressTimer();
-                startLyricsTimer();
-            }).catch(error => {
-                // Audio resume failed silently
-            });
+            }).catch(() => {});
         }
         
         // Re-enable all control buttons

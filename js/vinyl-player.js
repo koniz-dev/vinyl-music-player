@@ -22,10 +22,6 @@ function init() {
     updateProgress();
     updateTonearm();
     updateLyrics();
-    if (isPlaying) {
-        startProgressTimer();
-        startLyricsTimer();
-    }
 }
 
 function updateLyrics() {
@@ -67,26 +63,18 @@ function getCurrentLyric(time) {
     return null;
 }
 
-function startLyricsTimer() {
-}
-
-function stopLyricsTimer() {
-}
-
 function restartAudio() {
     if (!audioElement) return;
-    
+
     audioElement.currentTime = 0;
     currentTime = 0;
     updateProgress();
-    
+
     setTimeout(() => {
         audioElement.play().then(() => {
             isPlaying = true;
             updatePlayerState();
-            startProgressTimer();
-            startLyricsTimer();
-        }).catch(error => {
+        }).catch(() => {
             isPlaying = false;
             updatePlayerState();
         });
@@ -95,34 +83,26 @@ function restartAudio() {
 
 function togglePlayPause() {
     if (!audioElement) return;
-    
+
     if (isPlaying) {
         audioElement.pause();
         isPlaying = false;
         updatePlayerState();
-        stopProgressTimer();
-        stopLyricsTimer();
-    } else {
-        if (audioElement.ended) {
-            restartAudio();
-        } else {
-            audioElement.play().then(() => {
-                isPlaying = true;
-                updatePlayerState();
-                startProgressTimer();
-                startLyricsTimer();
-            }).catch(error => {
-                isPlaying = false;
-                updatePlayerState();
-            });
-        }
+        return;
     }
-}
 
-function startProgressTimer() {
-}
+    if (audioElement.ended) {
+        restartAudio();
+        return;
+    }
 
-function stopProgressTimer() {
+    audioElement.play().then(() => {
+        isPlaying = true;
+        updatePlayerState();
+    }).catch(() => {
+        isPlaying = false;
+        updatePlayerState();
+    });
 }
 
 function updateProgress() {
@@ -165,43 +145,57 @@ progressBar.addEventListener('click', (e) => {
     }, 100);
 });
 window.addEventListener('message', function(event) {
-    if (event.data.type === 'START_PLAY') {
-        startPlaying(event.data);
-    } else if (event.data.type === 'UPDATE_SONG_TITLE') {
-        updateSongTitle(event.data.songTitle);
-    } else if (event.data.type === 'UPDATE_ARTIST_NAME') {
-        updateArtistName(event.data.artistName);
-    } else if (event.data.type === 'UPDATE_ALBUM_ART') {
-        updateAlbumArt(event.data.imageUrl);
-    } else if (event.data.type === 'REMOVE_ALBUM_ART') {
-        removeAlbumArt();
-    } else if (event.data.type === 'UPDATE_LYRICS') {
-        updateLyricsFromSettings(event.data.lyrics);
-    } else if (event.data.type === 'DEBUG_BROWSER_SUPPORT') {
-        debugBrowserSupport();
-    } else if (event.data.type === 'EXPORT_WEBM') {
-        if (isExporting) {
-            return;
+    const data = event.data;
+    if (!data || !data.type) return;
+
+    switch (data.type) {
+        case 'START_PLAY':
+            startPlaying(data);
+            break;
+        case 'UPDATE_SONG_TITLE':
+            updateSongTitle(data.songTitle);
+            break;
+        case 'UPDATE_ARTIST_NAME':
+            updateArtistName(data.artistName);
+            break;
+        case 'UPDATE_ALBUM_ART':
+            updateAlbumArt(data.imageUrl);
+            break;
+        case 'REMOVE_ALBUM_ART':
+            removeAlbumArt();
+            break;
+        case 'UPDATE_LYRICS':
+            updateLyricsFromSettings(data.lyrics);
+            break;
+        case 'UPDATE_LYRICS_COLOR':
+            lyricsText.style.color = data.color;
+            break;
+        case 'DEBUG_BROWSER_SUPPORT':
+            debugBrowserSupport();
+            break;
+        case 'EXPORT_WEBM': {
+            if (isExporting) return;
+
+            const { audioFile, songTitle, artistName, albumArtFile } = data;
+
+            if (!window.MediaRecorder) {
+                window.postMessage({
+                    type: 'EXPORT_ERROR',
+                    error: 'MediaRecorder API is not supported in this browser. Please use Chrome, Firefox, or Edge.'
+                }, '*');
+                return;
+            }
+
+            if (songTitle) {
+                document.querySelector('.vinyl-song-title').textContent = songTitle;
+            }
+            if (artistName) {
+                document.querySelector('.vinyl-artist-name').textContent = artistName;
+            }
+
+            startVideoRecording(audioFile, songTitle, artistName, albumArtFile);
+            break;
         }
-        
-        const { audioFile, songTitle, artistName, albumArtFile } = event.data;
-        
-        if (!window.MediaRecorder) {
-            window.postMessage({
-                type: 'EXPORT_ERROR',
-                error: 'MediaRecorder API is not supported in this browser. Please use Chrome, Firefox, or Edge.'
-            }, '*');
-            return;
-        }
-        
-        if (songTitle) {
-            document.querySelector('.vinyl-song-title').textContent = songTitle;
-        }
-        if (artistName) {
-            document.querySelector('.vinyl-artist-name').textContent = artistName;
-        }
-        
-        startVideoRecording(audioFile, songTitle, artistName, albumArtFile);
     }
 });
 
@@ -247,94 +241,36 @@ function updateLyricsFromSettings(newLyrics) {
 
 
 function updateAlbumArt(imageUrl) {
+    if (!imageUrl) return;
+
     const musicPlayer = document.querySelector('.music-player');
     const albumArt = document.querySelector('.vinyl-album-art');
-    
-    if (musicPlayer && imageUrl) {
-        musicPlayer.style.backgroundImage = `url(${imageUrl})`;
-        musicPlayer.style.backgroundSize = 'cover';
-        musicPlayer.style.backgroundPosition = 'center';
-        musicPlayer.style.backgroundRepeat = 'no-repeat';
-        musicPlayer.style.position = 'relative';
-        
-        let overlay = musicPlayer.querySelector('.album-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.className = 'album-overlay';
-            overlay.style.cssText = `
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: linear-gradient(135deg, 
-                    rgba(0, 0, 0, 0.2) 0%, 
-                    rgba(0, 0, 0, 0.3) 50%, 
-                    rgba(0, 0, 0, 0.2) 100%);
-                backdrop-filter: blur(2px);
-                border-radius: 30px;
-                pointer-events: none;
-                z-index: 1;
-            `;
-            musicPlayer.appendChild(overlay);
-        }
-        
-        const vinylSection = musicPlayer.querySelector('.vinyl-section');
-        const progressContainer = musicPlayer.querySelector('.progress-container');
-        const controls = musicPlayer.querySelector('.controls');
-        
-        if (vinylSection) vinylSection.style.position = 'relative';
-        if (vinylSection) vinylSection.style.zIndex = '2';
-        if (progressContainer) progressContainer.style.position = 'relative';
-        if (progressContainer) progressContainer.style.zIndex = '2';
-        if (controls) controls.style.position = 'relative';
-        if (controls) controls.style.zIndex = '2';
+    // imageUrl is a blob: URL from createObjectURL — safe to embed, but
+    // escape backslashes/quotes defensively in case the source ever changes.
+    const safeUrl = String(imageUrl).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    const bg = `url("${safeUrl}")`;
+
+    if (musicPlayer) {
+        musicPlayer.classList.add('has-album-art');
+        musicPlayer.style.backgroundImage = bg;
     }
-    
-    if (albumArt && imageUrl) {
-        albumArt.style.backgroundImage = `url(${imageUrl})`;
-        albumArt.style.backgroundSize = 'cover';
-        albumArt.style.backgroundPosition = 'center';
-        albumArt.style.backgroundRepeat = 'no-repeat';
-        albumArt.style.borderRadius = '50%';
-        albumArt.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1)';
+
+    if (albumArt) {
+        albumArt.style.backgroundImage = bg;
     }
 }
 
 function removeAlbumArt() {
     const musicPlayer = document.querySelector('.music-player');
     const albumArt = document.querySelector('.vinyl-album-art');
-    
+
     if (musicPlayer) {
+        musicPlayer.classList.remove('has-album-art');
         musicPlayer.style.backgroundImage = '';
-        musicPlayer.style.backgroundSize = '';
-        musicPlayer.style.backgroundPosition = '';
-        musicPlayer.style.backgroundRepeat = '';
-        
-        const overlay = musicPlayer.querySelector('.album-overlay');
-        if (overlay) {
-            overlay.remove();
-        }
-        
-        const vinylSection = musicPlayer.querySelector('.vinyl-section');
-        const progressContainer = musicPlayer.querySelector('.progress-container');
-        const controls = musicPlayer.querySelector('.controls');
-        
-        if (vinylSection) vinylSection.style.position = '';
-        if (vinylSection) vinylSection.style.zIndex = '';
-        if (progressContainer) progressContainer.style.position = '';
-        if (progressContainer) progressContainer.style.zIndex = '';
-        if (controls) controls.style.position = '';
-        if (controls) controls.style.zIndex = '';
     }
-    
+
     if (albumArt) {
         albumArt.style.backgroundImage = '';
-        albumArt.style.backgroundSize = '';
-        albumArt.style.backgroundPosition = '';
-        albumArt.style.backgroundRepeat = '';
-        albumArt.style.borderRadius = '';
-        albumArt.style.boxShadow = '';
     }
 }
 
@@ -369,22 +305,18 @@ function startPlaying(data) {
         if (isRepeat) {
             audioElement.currentTime = 0;
             audioElement.play();
-        } else {
-            isPlaying = false;
-            updatePlayerState();
-            stopProgressTimer();
-            stopLyricsTimer();
-            updateTonearm();
-            currentTime = 0;
-            updateProgress();
+            return;
         }
+        isPlaying = false;
+        updatePlayerState();
+        updateTonearm();
+        currentTime = 0;
+        updateProgress();
     });
-    
+
     audioElement.play().then(() => {
         isPlaying = true;
         updatePlayerState();
-        startProgressTimer();
-        startLyricsTimer();
     });
     
     updateLyrics();
@@ -406,10 +338,6 @@ function enableControls() {
 }
 
 function updatePlayerState() {
-    const vinyl = document.getElementById('vinyl');
-    const tonearm = document.getElementById('tonearm');
-    const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
-    
     if (isPlaying) {
         vinyl.style.animation = 'spin 8s linear infinite';
         tonearm.classList.add('playing');
@@ -419,7 +347,7 @@ function updatePlayerState() {
         tonearm.classList.remove('playing');
         playPauseBtn.textContent = '▶';
     }
-    
+
     updateLyrics();
 }
 
@@ -453,13 +381,6 @@ repeatBtn.addEventListener('click', function() {
     } else {
         repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
         repeatBtn.style.color = 'white';
-    }
-});
-
-// Listen for lyrics color updates from settings
-window.addEventListener('message', function(event) {
-    if (event.data.type === 'UPDATE_LYRICS_COLOR') {
-        lyricsText.style.color = event.data.color;
     }
 });
 

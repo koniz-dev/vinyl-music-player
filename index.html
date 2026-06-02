@@ -135,8 +135,9 @@
                                 <div class="color-picker-section">
                                     <input type="color" class="color-picker" id="lyrics-color-picker" value="#ffb3d1">
                                     <span class="color-preview" id="color-preview">Current Color</span>
-                                    <button type="button" class="copy-hex-btn" id="copy-hex-btn" title="Copy hex code">
-                                        <span class="copy-icon">📋</span>
+                                    <button type="button" class="copy-hex-btn" id="copy-hex-btn"
+                                        title="Copy hex code" aria-label="Copy hex code">
+                                        <span class="copy-icon" aria-hidden="true">📋</span>
                                     </button>
                                 </div>
                                 <div class="color-history-section">
@@ -205,15 +206,15 @@
 
                         <div class="controls">
                             <button type="button" class="control-btn vinyl-mute-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">🔊</button>
+                                aria-label="Mute" style="opacity: 0.5; cursor: not-allowed;">🔊</button>
                             <button type="button" class="control-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">⏮</button>
+                                aria-label="Previous track" style="opacity: 0.5; cursor: not-allowed;">⏮</button>
                             <button type="button" class="control-btn vinyl-play-pause-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">▶</button>
+                                aria-label="Play / pause" style="opacity: 0.5; cursor: not-allowed;">▶</button>
                             <button type="button" class="control-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">⏭</button>
+                                aria-label="Next track" style="opacity: 0.5; cursor: not-allowed;">⏭</button>
                             <button type="button" class="control-btn vinyl-repeat-btn" disabled
-                                style="opacity: 0.5; cursor: not-allowed;">↻</button>
+                                aria-label="Repeat" style="opacity: 0.5; cursor: not-allowed;">↻</button>
                         </div>
                     </div>
                 </div>
@@ -225,7 +226,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>For Dev - Import JSON Lyrics</h3>
-                <button type="button" class="modal-close-btn" id="modal-close-btn">×</button>
+                <button type="button" class="modal-close-btn" id="modal-close-btn"
+                    aria-label="Close dialog">×</button>
             </div>
             <div class="modal-body">
                 <p class="modal-description">

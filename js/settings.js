@@ -3,55 +3,92 @@ const addLyricsBtn = document.getElementById('add-lyrics-btn');
 let lyricsCount = 0;
 
 addLyricsItem();
-function addLyricsItem() {
+
+function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
     lyricsCount++;
-    const lyricsItem = document.createElement('div');
-    lyricsItem.className = 'lyrics-item';
-    lyricsItem.innerHTML = `
-        <div class="lyrics-item-header">
-            <div class="lyrics-item-title">Lyrics ${lyricsCount}</div>
-            <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)">×</button>
-        </div>
-        <div class="lyrics-inputs">
-            <div>
-                <div class="time-label">Start Time (mm:ss)</div>
-                <input type="text" class="time-input" placeholder="00:00" pattern="[0-9]{1,2}:[0-9]{2}" oninput="updateLyricsData()">
-            </div>
-            <div>
-                <div class="time-label">End Time (mm:ss)</div>
-                <input type="text" class="time-input" placeholder="00:05" pattern="[0-9]{1,2}:[0-9]{2}" oninput="updateLyricsData()">
-            </div>
-            <div>
-                <div class="lyrics-label">Lyrics Content</div>
-                <input type="text" class="lyrics-text-input" placeholder="Enter lyrics..." oninput="updateLyricsData()">
-            </div>
-        </div>
-    `;
-    lyricsContainer.appendChild(lyricsItem);
+
+    const item = document.createElement('div');
+    item.className = 'lyrics-item';
+
+    const header = document.createElement('div');
+    header.className = 'lyrics-item-header';
+
+    const title = document.createElement('div');
+    title.className = 'lyrics-item-title';
+    title.textContent = `Lyrics ${lyricsCount}`;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-lyrics-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => {
+        item.remove();
+        updateLyricsData();
+    });
+
+    header.append(title, removeBtn);
+
+    const inputs = document.createElement('div');
+    inputs.className = 'lyrics-inputs';
+    inputs.append(
+        buildTimeField('Start Time (mm:ss)', '00:00', start, 'time-input'),
+        buildTimeField('End Time (mm:ss)', '00:05', end, 'time-input'),
+        buildTextField('Lyrics Content', 'Enter lyrics...', text, 'lyrics-text-input', 'lyrics-label')
+    );
+
+    item.append(header, inputs);
+    return item;
 }
 
-function removeLyricsItem(button) {
-    const lyricsItem = button.closest('.lyrics-item');
-    lyricsItem.remove();
-    updateLyricsData();
+function buildTimeField(labelText, placeholder, value, inputClass) {
+    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = 'time-label';
+    label.textContent = labelText;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = inputClass;
+    input.placeholder = placeholder;
+    input.pattern = '[0-9]{1,2}:[0-9]{2}';
+    input.value = value;
+    input.addEventListener('input', updateLyricsData);
+
+    wrap.append(label, input);
+    return wrap;
+}
+
+function buildTextField(labelText, placeholder, value, inputClass, labelClass) {
+    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = labelClass;
+    label.textContent = labelText;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = inputClass;
+    input.placeholder = placeholder;
+    input.value = value;
+    input.addEventListener('input', updateLyricsData);
+
+    wrap.append(label, input);
+    return wrap;
+}
+
+function addLyricsItem() {
+    lyricsContainer.appendChild(buildLyricsItem());
 }
 
 function timeToSeconds(timeString) {
-    if (!timeString || timeString === '') return 0;
-    
+    if (!timeString) return 0;
+
     const parts = timeString.split(':');
     if (parts.length !== 2) return 0;
-    
-    const minutes = parseInt(parts[0]) || 0;
-    const seconds = parseInt(parts[1]) || 0;
-    
-    return minutes * 60 + seconds;
-}
 
-function secondsToTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const minutes = parseInt(parts[0], 10) || 0;
+    const seconds = parseInt(parts[1], 10) || 0;
+
+    return minutes * 60 + seconds;
 }
 function updateLyricsData() {
     const lyricsItems = lyricsContainer.querySelectorAll('.lyrics-item');
@@ -160,35 +197,12 @@ modalImportBtn.addEventListener('click', function() {
             }
         }
         
-        lyricsContainer.innerHTML = '';
+        lyricsContainer.replaceChildren();
         lyricsCount = 0;
-        lyricsData.forEach((item, index) => {
-            lyricsCount++;
-            const lyricsItem = document.createElement('div');
-            lyricsItem.className = 'lyrics-item';
-            lyricsItem.innerHTML = `
-                <div class="lyrics-item-header">
-                    <div class="lyrics-item-title">Lyrics ${lyricsCount}</div>
-                    <button type="button" class="remove-lyrics-btn" onclick="removeLyricsItem(this)">×</button>
-                </div>
-                <div class="lyrics-inputs">
-                    <div>
-                        <div class="time-label">Start Time (mm:ss)</div>
-                        <input type="text" class="time-input" placeholder="00:00" pattern="[0-9]{1,2}:[0-9]{2}" value="${item.start}" oninput="updateLyricsData()">
-                    </div>
-                    <div>
-                        <div class="time-label">End Time (mm:ss)</div>
-                        <input type="text" class="time-input" placeholder="00:05" pattern="[0-9]{1,2}:[0-9]{2}" value="${item.end}" oninput="updateLyricsData()">
-                    </div>
-                    <div>
-                        <div class="lyrics-label">Lyrics Content</div>
-                        <input type="text" class="lyrics-text-input" placeholder="Enter lyrics..." value="${item.text}" oninput="updateLyricsData()">
-                    </div>
-                </div>
-            `;
-            lyricsContainer.appendChild(lyricsItem);
+        lyricsData.forEach((item) => {
+            lyricsContainer.appendChild(buildLyricsItem(item));
         });
-        
+
         updateLyricsData();
         closeModal();
         alert(`Successfully imported ${lyricsData.length} lyrics items!`);
@@ -286,28 +300,36 @@ function updateAudioUploadDisplay(file) {
     startAutoPlay(file);
 }
 
+let lastAudioObjectUrl = null;
+let lastAlbumArtObjectUrl = null;
+
 function startAutoPlay(file) {
+    if (lastAudioObjectUrl) URL.revokeObjectURL(lastAudioObjectUrl);
     const audioUrl = URL.createObjectURL(file);
+    lastAudioObjectUrl = audioUrl;
+
     const songTitle = document.getElementById('song-title').value;
     const artistName = document.getElementById('artist-name').value;
-    
+
     const albumArtFile = document.getElementById('album-art').files[0];
     let albumArtUrl = null;
     if (albumArtFile) {
+        if (lastAlbumArtObjectUrl) URL.revokeObjectURL(lastAlbumArtObjectUrl);
         albumArtUrl = URL.createObjectURL(albumArtFile);
+        lastAlbumArtObjectUrl = albumArtUrl;
     }
-    
+
     const messageData = {
         type: 'START_PLAY',
         audioUrl: audioUrl,
         songTitle: songTitle,
         artistName: artistName
     };
-    
+
     if (albumArtUrl) {
         messageData.albumArtUrl = albumArtUrl;
     }
-    
+
     window.postMessage(messageData, '*');
 }
 const inputs = document.querySelectorAll('input, textarea');
@@ -346,19 +368,15 @@ function sendRealTimeUpdate(input) {
 }
 
 function sendAlbumArtToPlayer(file) {
-    if (file) {
-        const imageUrl = URL.createObjectURL(file);
-        
-        window.postMessage({
-            type: 'UPDATE_ALBUM_ART',
-            imageUrl: imageUrl
-        }, '*');
-    }
-}
+    if (!file) return;
 
-function sendRemoveAlbumArtToPlayer() {
+    if (lastAlbumArtObjectUrl) URL.revokeObjectURL(lastAlbumArtObjectUrl);
+    const imageUrl = URL.createObjectURL(file);
+    lastAlbumArtObjectUrl = imageUrl;
+
     window.postMessage({
-        type: 'REMOVE_ALBUM_ART'
+        type: 'UPDATE_ALBUM_ART',
+        imageUrl: imageUrl
     }, '*');
 }
 
@@ -484,16 +502,15 @@ if (!window.exportMessageListenerAdded) {
     }
 }
 
+const DEFAULT_LYRICS_COLOR = '#ffb3d1';
+
 // Lyrics Color Management
 class LyricsColorManager {
     constructor() {
         this.colorHistory = this.loadColorHistory();
         this.currentColor = this.loadCurrentColor();
         this.maxHistorySize = 5;
-        
-        // Clear any old default colors from localStorage
-        this.cleanupOldDefaultColors();
-        
+
         this.initializeElements();
         this.setupEventListeners();
         this.updateColorPreview();
@@ -542,21 +559,14 @@ class LyricsColorManager {
     
     addToHistory(color) {
         // Don't add default color to history
-        if (color === '#ffb3d1') {
+        if (color === DEFAULT_LYRICS_COLOR) {
             return;
         }
-        
-        // Remove if already exists
-        this.colorHistory = this.colorHistory.filter(c => c !== color);
-        
-        // Add to beginning
-        this.colorHistory.unshift(color);
-        
-        // Keep only max history size
-        if (this.colorHistory.length > this.maxHistorySize) {
-            this.colorHistory = this.colorHistory.slice(0, this.maxHistorySize);
-        }
-        
+
+        // De-dupe and put newest first
+        this.colorHistory = [color, ...this.colorHistory.filter(c => c !== color)]
+            .slice(0, this.maxHistorySize);
+
         this.saveColorHistory();
     }
     
@@ -580,30 +590,22 @@ class LyricsColorManager {
     }
     
     renderColorHistory() {
-        this.colorHistoryContainer.innerHTML = '';
-        
-        // Only show color history section if there are colors
+        this.colorHistoryContainer.replaceChildren();
+
         const colorHistorySection = document.querySelector('.color-history-section');
-        
-        
-        if (this.colorHistory.length === 0) {
-            colorHistorySection.style.display = 'none';
-            return;
-        } else {
-            colorHistorySection.style.display = 'block';
-        }
-        
-        // Render existing colors
+        colorHistorySection.style.display = this.colorHistory.length === 0 ? 'none' : 'block';
+
         this.colorHistory.forEach(color => {
             const colorItem = document.createElement('div');
             colorItem.className = 'color-history-item';
             colorItem.style.backgroundColor = color;
             colorItem.title = color.toUpperCase();
-            
+
             colorItem.addEventListener('click', () => {
-                this.setCurrentColor(color, false); // Don't add to history when clicking existing color
+                // Don't re-add to history when clicking an existing swatch
+                this.setCurrentColor(color, false);
             });
-            
+
             this.colorHistoryContainer.appendChild(colorItem);
         });
     }
@@ -620,51 +622,38 @@ class LyricsColorManager {
         try {
             const saved = localStorage.getItem('lyricsColorHistory');
             const history = saved ? JSON.parse(saved) : [];
-            // Filter out any default colors that might have been saved before
-            return history.filter(color => color !== '#ffb3d1' && color !== '#ffffff');
+            return Array.isArray(history)
+                ? history.filter(color => typeof color === 'string' && color !== DEFAULT_LYRICS_COLOR)
+                : [];
         } catch (e) {
             return [];
         }
     }
-    
+
     saveColorHistory() {
         try {
             localStorage.setItem('lyricsColorHistory', JSON.stringify(this.colorHistory));
-        } catch (e) {
-        }
+        } catch (e) {}
     }
-    
+
     loadCurrentColor() {
         try {
-            return localStorage.getItem('lyricsCurrentColor') || '#ffb3d1';
+            return localStorage.getItem('lyricsCurrentColor') || DEFAULT_LYRICS_COLOR;
         } catch (e) {
-            return '#ffb3d1';
+            return DEFAULT_LYRICS_COLOR;
         }
     }
-    
+
     saveCurrentColor() {
         try {
             localStorage.setItem('lyricsCurrentColor', this.currentColor);
-        } catch (e) {
-        }
+        } catch (e) {}
     }
-    
+
     getCurrentColor() {
         return this.currentColor;
     }
-    
-    cleanupOldDefaultColors() {
-        // Force clear any existing color history to start fresh
-        this.colorHistory = [];
-        this.saveColorHistory();
-        
-        // Also clear any old default colors from localStorage
-        try {
-            localStorage.removeItem('lyricsColorHistory');
-        } catch (e) {
-        }
-    }
-    
+
     async copyHexToClipboard() {
         try {
             await navigator.clipboard.writeText(this.currentColor);
@@ -702,14 +691,6 @@ class LyricsColorManager {
     }
 }
 
-// Initialize color manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Force clear localStorage first
-    try {
-        localStorage.removeItem('lyricsColorHistory');
-        localStorage.removeItem('lyricsCurrentColor');
-    } catch (e) {
-    }
-    
     window.lyricsColorManager = new LyricsColorManager();
 });
