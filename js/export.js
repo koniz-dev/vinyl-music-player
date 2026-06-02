@@ -1,6 +1,7 @@
 import { emit, on, Events } from './lib/events.js';
 import { state } from './lib/state.js';
 import { setPlayerPlaying } from './player.js';
+import { toastSuccess } from './toast.js';
 
 const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
 const CANVAS_W = 720;
@@ -235,14 +236,18 @@ function debugBrowserSupport() {
     const allOk = checks.every(([, ok]) => ok);
     const webmOk = checks.find(([k]) => k === 'WebM')[1];
 
+    // Happy path: just a toast, no modal blocking the user.
+    if (allOk) {
+        toastSuccess('Your browser supports WebM export.');
+        return;
+    }
+
     const modal = document.getElementById('browser-support-modal');
     const summary = document.getElementById('bs-summary');
     const list = document.getElementById('bs-list');
     const action = document.getElementById('bs-action');
 
-    summary.innerHTML = allOk
-        ? `<strong>${navigator.userAgent.split(' ')[0]}</strong> — everything looks good. WebM export should work.`
-        : `<strong>${navigator.userAgent.split(' ')[0]}</strong> — some features are missing.`;
+    summary.innerHTML = `<strong>${navigator.userAgent.split(' ')[0]}</strong> — some features are missing.`;
 
     list.replaceChildren();
     for (const [label, ok] of checks) {
@@ -256,13 +261,9 @@ function debugBrowserSupport() {
         list.appendChild(li);
     }
 
-    if (allOk) {
-        action.textContent = 'You can export WebM videos.';
-    } else if (!webmOk) {
-        action.innerHTML = 'WebM export is not available. Switch to a recent <strong>Chrome</strong>, <strong>Firefox</strong>, or <strong>Edge</strong>.';
-    } else {
-        action.textContent = 'Some optional checks failed but export may still work — try it.';
-    }
+    action.innerHTML = webmOk
+        ? 'Some optional checks failed but export may still work — try it.'
+        : 'WebM export is not available. Switch to a recent <strong>Chrome</strong>, <strong>Firefox</strong>, or <strong>Edge</strong>.';
 
     modal.hidden = false;
 }

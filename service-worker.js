@@ -1,5 +1,5 @@
 // Versioned cache — bump the suffix on every release to invalidate clients.
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v8';
 const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
 
 const PRECACHE = [
@@ -23,6 +23,7 @@ const PRECACHE = [
     'js/lib/events.js',
     'js/lib/state.js',
     'js/lib/format.js',
+    'favicon/icon.svg',
     'favicon/favicon.ico',
     'favicon/favicon-16x16.png',
     'favicon/favicon-32x32.png',
@@ -33,9 +34,18 @@ const PRECACHE = [
 ];
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
-    );
+    // Cache items individually so one 404 doesn't reject the whole install.
+    event.waitUntil((async () => {
+        const cache = await caches.open(CACHE_NAME);
+        await Promise.all(PRECACHE.map(async (url) => {
+            try {
+                const response = await fetch(url, { cache: 'reload' });
+                if (response.ok) await cache.put(url, response);
+            } catch {
+                // Skip missing assets — SW still installs.
+            }
+        }));
+    })());
     self.skipWaiting();
 });
 
