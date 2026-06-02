@@ -19,10 +19,10 @@ const songTitleEl = document.querySelector('.vinyl-song-title');
 const artistNameEl = document.querySelector('.vinyl-artist-name');
 const stageHint = document.getElementById('stage-hint');
 
-const ICON_PLAY  = icon('play',     { size: 28 });
-const ICON_PAUSE = icon('pause',    { size: 28 });
-const ICON_VOL   = icon('volume',   { size: 20 });
-const ICON_MUTE  = icon('volume-x', { size: 20 });
+const ICON_PLAY  = icon('play',     { size: 24 });
+const ICON_PAUSE = icon('pause',    { size: 24 });
+const ICON_VOL   = icon('volume',   { size: 18 });
+const ICON_MUTE  = icon('volume-x', { size: 18 });
 
 // ---------- Lyrics display ----------
 

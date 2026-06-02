@@ -31,14 +31,14 @@
     align-items: center;
     gap: var(--s-2);
     font-weight: 600;
-    font-size: 15px;
+    font-size: 14px;
     letter-spacing: -0.01em;
     color: var(--fg-1);
 }
 
 .brand-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 12px var(--accent-glow);
@@ -60,7 +60,11 @@
     gap: var(--s-2);
 }
 
-/* ─── Stage / player layout ─────────────────────────────────────── */
+.topbar-actions-left {
+    /* placeholder for symmetry — info button lives here */
+}
+
+/* ─── Stage + 9:16 phone frame ──────────────────────────────────── */
 
 .stage {
     height: 100vh;
@@ -70,12 +74,64 @@
     overflow-y: auto;
 }
 
+.frame {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    width: min(420px, calc(100vw - 48px), calc((100vh - 120px) * 9 / 16));
+    max-height: calc(100vh - 120px);
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    border-radius: 32px;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 24px 80px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: var(--s-5) var(--s-4) var(--s-4);
+}
+
+/* Cinematic accent radials — match the WebM export render exactly */
+.frame-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(80% 60% at 50% -5%, var(--accent-soft), transparent 70%),
+        radial-gradient(60% 50% at 110% 110%, var(--accent-soft), transparent 70%);
+    transition: background var(--dur-slow) var(--ease-out);
+}
+
+.frame > *:not(.frame-bg) {
+    position: relative;
+    z-index: 1;
+}
+
+.frame-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--s-2) var(--s-3);
+}
+
+.frame-ratio {
+    font-size: 10px;
+    color: var(--fg-4);
+    padding: 2px 8px;
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-pill);
+    letter-spacing: 0.04em;
+}
+
 .player {
-    width: min(440px, 100%);
+    flex: 1;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--s-6);
+    justify-content: center;
+    gap: var(--s-4);
+    min-height: 0;
 }
 
 /* ─── Drawer ────────────────────────────────────────────────────── */
@@ -148,6 +204,50 @@
 
 /* ─── Responsive ────────────────────────────────────────────────── */
 
+/* ─── Desktop ≥ 880px: split panel — drawer becomes permanent left column */
+
+@media (min-width: 880px) {
+    body {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        grid-template-rows: 1fr;
+    }
+
+    .drawer {
+        position: relative;
+        top: auto;
+        right: auto;
+        grid-column: 1;
+        grid-row: 1;
+        width: 100%;
+        height: 100vh;
+        transform: none !important;
+        transition: none;
+        visibility: visible;
+        border-left: none;
+        border-right: 1px solid var(--border-1);
+        box-shadow: none;
+    }
+
+    .stage {
+        grid-column: 2;
+        grid-row: 1;
+        height: 100vh;
+    }
+
+    .topbar {
+        left: 380px;
+    }
+
+    .drawer-backdrop,
+    #open-settings-btn,
+    #close-settings-btn {
+        display: none !important;
+    }
+}
+
+/* ─── Mobile ≤ 640px: bottom sheet + topbar slimming */
+
 @media (max-width: 640px) {
     .topbar {
         padding: var(--s-3) var(--s-4);
@@ -176,7 +276,8 @@
         transform: translateY(0);
     }
 
-    .topbar-actions .btn span {
+    /* Hide label text on topbar buttons — keep their icon */
+    .topbar-actions .btn > span:not([data-icon]) {
         display: none;
     }
 }
