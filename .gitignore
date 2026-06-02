@@ -144,13 +144,17 @@ dist/
 *.ogg
 *.m4a
 
-# Image files (if you want to ignore sample images)
+# Image files (sample images devs might drop in for testing)
 *.jpg
 *.jpeg
 *.png
 *.gif
 *.svg
 *.webp
+
+# …but real assets bundled with the app must be committed
+!favicon/**
+!screenshots/**
 
 # Backup files
 *.bak
