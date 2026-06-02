@@ -3,6 +3,7 @@ import { timeToSeconds } from './lib/format.js';
 import { initColorManager } from './color-manager.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { icon } from './icons.js';
+import { state, RATIOS, DEFAULT_ASPECT_RATIO } from './lib/state.js';
 
 const TIME_PATTERN = /^[0-9]{1,2}:[0-9]{2}$/;
 
@@ -525,6 +526,55 @@ function bindImportModal() {
     });
 }
 
+// ---------- Aspect ratio ----------
+
+function setAspectRatio(ratio, { persist = true } = {}) {
+    if (!RATIOS[ratio]) return;
+    state.aspectRatio = ratio;
+    const { w, h, label } = RATIOS[ratio];
+    const [rw, rh] = ratio.split(':');
+
+    // Update toggle visual state
+    document.querySelectorAll('.ratio-btn').forEach(btn => {
+        const active = btn.dataset.ratio === ratio;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active);
+    });
+
+    // Update help text + frame badge + frame aspect-ratio
+    const help = document.getElementById('ratio-help');
+    if (help) help.textContent = `${w}×${h} · ${label}`;
+    const badge = document.getElementById('frame-ratio');
+    if (badge) badge.textContent = ratio;
+
+    const frame = document.querySelector('.frame');
+    if (frame) {
+        frame.style.setProperty('--ratio-w', rw);
+        frame.style.setProperty('--ratio-h', rh);
+        frame.setAttribute('aria-label', `Video preview (${ratio}, ${w}×${h})`);
+    }
+
+    if (persist) {
+        try { localStorage.setItem('aspectRatio', ratio); } catch {}
+    }
+
+    emit(Events.UPDATE_ASPECT_RATIO, ratio);
+}
+
+function loadPersistedRatio() {
+    try {
+        const saved = localStorage.getItem('aspectRatio');
+        if (saved && RATIOS[saved]) return saved;
+    } catch {}
+    return DEFAULT_ASPECT_RATIO;
+}
+
+function bindRatioToggle() {
+    document.querySelectorAll('.ratio-btn').forEach(btn => {
+        btn.addEventListener('click', () => setAspectRatio(btn.dataset.ratio));
+    });
+}
+
 // ---------- Init ----------
 
 export function initSettings() {
@@ -543,6 +593,8 @@ export function initSettings() {
     bindImportModal();
     bindInputs();
     bindExport();
+    bindRatioToggle();
+    setAspectRatio(loadPersistedRatio(), { persist: false });
 
     audioFileInput.addEventListener('change', refreshExportButton);
     songTitleInput.addEventListener('input', refreshExportButton);

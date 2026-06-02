@@ -75,20 +75,27 @@
 }
 
 .frame {
+    --ratio-w: 9;
+    --ratio-h: 16;
     position: relative;
-    aspect-ratio: 9 / 16;
-    width: min(420px, calc(100vw - 48px), calc((100vh - 120px) * 9 / 16));
+    aspect-ratio: var(--ratio-w) / var(--ratio-h);
+    width: min(
+        700px,
+        calc(100vw - 48px),
+        calc((100vh - 120px) * var(--ratio-w) / var(--ratio-h))
+    );
     max-height: calc(100vh - 120px);
     background: var(--bg-1);
     border: 1px solid var(--border-2);
-    border-radius: 32px;
+    border-radius: clamp(20px, 5cqmin, 32px);
     box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.02),
         0 24px 80px rgba(0, 0, 0, 0.6);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    padding: var(--s-5) var(--s-4) var(--s-4);
+    padding: clamp(12px, 3cqmin, 20px);
+    container-type: size;
 }
 
 /* Cinematic accent radials — match the WebM export render exactly */

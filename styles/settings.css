@@ -383,6 +383,46 @@
     color: var(--fg-0);
 }
 
+/* ─── Aspect ratio toggle ──────────────────────────────────────── */
+
+.ratio-toggle {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 3px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-md);
+    gap: 2px;
+}
+
+.ratio-btn {
+    padding: 8px 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fg-3);
+    background: transparent;
+    border: none;
+    border-radius: calc(var(--r-md) - 4px);
+    cursor: pointer;
+    transition: background var(--dur), color var(--dur);
+}
+
+.ratio-btn:hover {
+    color: var(--fg-1);
+}
+
+.ratio-btn.active {
+    background: var(--bg-3);
+    color: var(--fg-0);
+}
+
+.field-help {
+    font-size: 11px;
+    color: var(--fg-3);
+    line-height: 1.4;
+}
+
 .json-example {
     padding: var(--s-3);
     background: var(--bg-2);

@@ -1,13 +1,14 @@
 import { emit, on, Events } from './lib/events.js';
-import { state } from './lib/state.js';
+import { state, RATIOS } from './lib/state.js';
 import { setPlayerPlaying } from './player.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 
 const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
-const CANVAS_W = 720;
-const CANVAS_H = 1280;
 const ACCENT_FALLBACK = '#818cf8';
 const ACCENT_HI_FALLBACK = '#a5b4fc';
+
+let canvasW = 720;
+let canvasH = 1280;
 
 let canvas = null;
 let ctx = null;
@@ -30,9 +31,12 @@ let exportAccentHi = ACCENT_HI_FALLBACK;
 // ──────────────────────────────────────────────────────────────────
 
 function createCanvas() {
+    const dims = RATIOS[state.aspectRatio] || RATIOS['9:16'];
+    canvasW = dims.w;
+    canvasH = dims.h;
     canvas = document.createElement('canvas');
-    canvas.width = CANVAS_W;
-    canvas.height = CANVAS_H;
+    canvas.width = canvasW;
+    canvas.height = canvasH;
     ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -387,8 +391,10 @@ function renderToCanvas() {
     // 1.5°/frame at 30fps = 45°/s = 8s per full rotation (matches CSS `spin 8s linear`)
     vinylRotation = (vinylRotation + 1.5) % 360;
 
-    const W = CANVAS_W;
-    const H = CANVAS_H;
+    const W = canvasW;
+    const H = canvasH;
+    const S = Math.min(W, H);
+    const isWide = W > H * 1.15;
 
     /* ── Background: zinc-950 + accent radial ambient ── */
 
@@ -410,28 +416,27 @@ function renderToCanvas() {
 
     /* ── Brand mark ── */
 
-    ctx.fillStyle = '#fafafa';
-    ctx.font = '600 24px Inter, system-ui, sans-serif';
+    const brandSize = Math.max(16, S * 0.025);
+    const brandX = W * 0.045;
+    const brandY = H * 0.058;
+    ctx.font = `600 ${brandSize}px Inter, system-ui, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    // accent dot
     ctx.fillStyle = exportAccent;
     ctx.beginPath();
-    ctx.arc(60, 70, 6, 0, Math.PI * 2);
+    ctx.arc(brandX, brandY, brandSize * 0.26, 0, Math.PI * 2);
     ctx.fill();
-    // wordmark
     ctx.fillStyle = '#fafafa';
-    ctx.fillText('vinyl', 78, 70);
+    ctx.fillText('vinyl', brandX + brandSize * 0.7, brandY);
+    const vmW = ctx.measureText('vinyl').width;
     ctx.fillStyle = '#71717a';
-    const vinylWidth = ctx.measureText('vinyl').width;
-    ctx.fillText('.player', 78 + vinylWidth, 70);
+    ctx.fillText('.player', brandX + brandSize * 0.7 + vmW, brandY);
 
     /* ── Vinyl record ── */
 
-    const vinylSize = 460;
+    const vr = S * (isWide ? 0.22 : 0.28);
     const vx = W / 2;
-    const vy = 380;
-    const vr = vinylSize / 2;
+    const vy = H * (isWide ? 0.42 : 0.30);
 
     // Outer soft shadow (not rotated)
     const shadow = ctx.createRadialGradient(vx, vy + 14, vr * 0.9, vx, vy + 14, vr * 1.18);
@@ -520,48 +525,58 @@ function renderToCanvas() {
     ctx.translate(armStartX, armStartY);
     ctx.rotate(28 * Math.PI / 180);
 
+    const armW = Math.max(4, S * 0.008);
+    const pivotR = Math.max(10, S * 0.022);
+    const needleH = Math.max(10, S * 0.02);
+
     // Arm body
     const armGrad = ctx.createLinearGradient(0, 0, 0, armLen);
     armGrad.addColorStop(0, '#f4f4f5');
     armGrad.addColorStop(1, '#a1a1aa');
     ctx.fillStyle = armGrad;
-    ctx.fillRect(-3, 0, 6, armLen);
+    ctx.fillRect(-armW / 2, 0, armW, armLen);
 
     // Pivot
-    const pivot = ctx.createRadialGradient(-5, -5, 0, 0, 0, 14);
+    const pivot = ctx.createRadialGradient(-5, -5, 0, 0, 0, pivotR);
     pivot.addColorStop(0, '#fafafa');
     pivot.addColorStop(1, '#71717a');
     ctx.fillStyle = pivot;
     ctx.beginPath();
-    ctx.arc(0, 0, 14, 0, Math.PI * 2);
+    ctx.arc(0, 0, pivotR, 0, Math.PI * 2);
     ctx.fill();
 
     // Needle
     ctx.fillStyle = '#27272a';
-    ctx.fillRect(-4, armLen - 4, 8, 14);
+    ctx.fillRect(-armW, armLen - needleH * 0.4, armW * 2, needleH);
 
     ctx.restore();
 
-    /* ── Song title + artist ── */
+    /* ── Song title + artist + lyrics (text stack below vinyl) ── */
 
     const songTitleText = document.querySelector('.vinyl-song-title')?.textContent || 'Untitled';
     const artistText = document.querySelector('.vinyl-artist-name')?.textContent || '';
     const liveLyricsText = document.querySelector('.vinyl-lyrics-text')?.textContent || '';
 
+    const titleFont = Math.max(20, S * (isWide ? 0.045 : 0.055));
+    const artistFont = Math.max(14, S * 0.025);
+    const lyricsFont = Math.max(16, S * 0.034);
+
+    const stackStart = vy + vr + S * 0.06;
+
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
 
+    let cursorY = stackStart + titleFont;
     ctx.fillStyle = '#fafafa';
-    ctx.font = '700 48px Inter, system-ui, sans-serif';
-    ctx.fillText(songTitleText, W / 2, 728);
+    ctx.font = `700 ${titleFont}px Inter, system-ui, sans-serif`;
+    ctx.fillText(songTitleText, W / 2, cursorY);
 
     if (artistText) {
+        cursorY += artistFont + S * 0.012;
         ctx.fillStyle = '#a1a1aa';
-        ctx.font = '500 22px Inter, system-ui, sans-serif';
-        ctx.fillText(artistText, W / 2, 768);
+        ctx.font = `500 ${artistFont}px Inter, system-ui, sans-serif`;
+        ctx.fillText(artistText, W / 2, cursorY);
     }
-
-    /* ── Lyrics ── */
 
     let lyricToShow = '';
     if (exportAudio && exportLyrics.length > 0) {
@@ -573,17 +588,19 @@ function renderToCanvas() {
     }
 
     if (lyricToShow) {
+        cursorY += lyricsFont + S * 0.025;
         ctx.fillStyle = state.lyricsColor || exportAccent;
-        ctx.font = '600 30px Inter, system-ui, sans-serif';
-        ctx.fillText(lyricToShow, W / 2, 836);
+        ctx.font = `600 ${lyricsFont}px Inter, system-ui, sans-serif`;
+        ctx.fillText(lyricToShow, W / 2, cursorY);
     }
 
-    /* ── Progress bar ── */
+    /* ── Progress bar (anchored to bottom) ── */
 
-    const pw = W - 120;
-    const px = 60;
-    const py = 950;
-    const ph = 6;
+    const controlsCY = H - S * 0.085;
+    const py = controlsCY - S * 0.12;
+    const pw = W * 0.88;
+    const px = (W - pw) / 2;
+    const ph = Math.max(4, S * 0.006);
     const pr = ph / 2;
 
     ctx.fillStyle = '#27272a';
@@ -608,49 +625,54 @@ function renderToCanvas() {
 
     /* ── Time labels ── */
 
+    const timeFont = Math.max(12, S * 0.02);
     ctx.fillStyle = '#71717a';
-    ctx.font = '500 18px "JetBrains Mono", ui-monospace, monospace';
+    ctx.font = `500 ${timeFont}px "JetBrains Mono", ui-monospace, monospace`;
     ctx.textAlign = 'left';
     const cur = exportAudio && !isNaN(exportAudio.currentTime) ? exportAudio.currentTime : 0;
     const tot = exportAudio && !isNaN(exportAudio.duration) ? exportAudio.duration : 0;
-    ctx.fillText(fmt(cur), px, py + 36);
+    const timeOffsetY = py + ph + timeFont * 1.5;
+    ctx.fillText(fmt(cur), px, timeOffsetY);
     ctx.textAlign = 'right';
-    ctx.fillText(fmt(tot), px + pw, py + 36);
+    ctx.fillText(fmt(tot), px + pw, timeOffsetY);
 
     /* ── Controls: 3 circles centered ── */
 
-    const btnY = 1110;
-    const playSize = 96;
-    const sideSize = 68;
-    const gap = 28;
+    const btnY = controlsCY;
+    const playSize = Math.max(60, S * 0.11);
+    const sideSize = Math.max(44, S * 0.075);
+    const gap = S * 0.032;
     const totalW = sideSize + gap + playSize + gap + sideSize;
     const startX = (W - totalW) / 2;
+
+    const sideIconSize = sideSize * 0.42;
+    const playIconSize = playSize * 0.40;
 
     // Mute (left)
     const muteCX = startX + sideSize / 2;
     drawCircleBtn(muteCX, btnY, sideSize, '#18181b', 'rgba(255,255,255,0.06)');
-    drawVolumeIcon(muteCX, btnY, 26, '#e4e4e7');
+    drawVolumeIcon(muteCX, btnY, sideIconSize, '#e4e4e7');
 
     // Play (center, accent + glow)
     const playCX = startX + sideSize + gap + playSize / 2;
     ctx.save();
     ctx.shadowColor = rgba(exportAccent, 0.55);
-    ctx.shadowBlur = 36;
+    ctx.shadowBlur = S * 0.05;
     ctx.fillStyle = exportAccent;
     ctx.beginPath();
     ctx.arc(playCX, btnY, playSize / 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     if (exportAudio && !exportAudio.paused) {
-        drawPauseIcon(playCX, btnY, 36, '#09090b');
+        drawPauseIcon(playCX, btnY, playIconSize, '#09090b');
     } else {
-        drawPlayIcon(playCX, btnY, 36, '#09090b');
+        drawPlayIcon(playCX, btnY, playIconSize, '#09090b');
     }
 
     // Repeat (right)
     const repCX = startX + sideSize + gap + playSize + gap + sideSize / 2;
     drawCircleBtn(repCX, btnY, sideSize, '#18181b', 'rgba(255,255,255,0.06)');
-    drawRepeatIcon(repCX, btnY, 24, '#e4e4e7');
+    drawRepeatIcon(repCX, btnY, sideIconSize, '#e4e4e7');
 }
 
 function drawCircleBtn(cx, cy, size, fillColor, borderColor) {

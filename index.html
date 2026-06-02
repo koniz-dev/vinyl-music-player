@@ -80,7 +80,7 @@
                     <span class="brand-dot" aria-hidden="true"></span>
                     <span class="brand-text">vinyl<span class="brand-accent">.player</span></span>
                 </div>
-                <span class="frame-ratio mono">9:16</span>
+                <span class="frame-ratio mono" id="frame-ratio">9:16</span>
             </div>
             <section class="player" aria-label="Vinyl music player">
                 <div class="vinyl-wrap">
@@ -143,6 +143,17 @@
         </header>
 
         <form id="musicForm" class="drawer-body">
+            <div class="field">
+                <label class="field-label">Aspect ratio</label>
+                <div class="ratio-toggle" role="radiogroup" aria-label="Aspect ratio">
+                    <button type="button" class="ratio-btn" data-ratio="9:16" aria-pressed="true">9:16</button>
+                    <button type="button" class="ratio-btn" data-ratio="4:5"  aria-pressed="false">4:5</button>
+                    <button type="button" class="ratio-btn" data-ratio="1:1"  aria-pressed="false">1:1</button>
+                    <button type="button" class="ratio-btn" data-ratio="16:9" aria-pressed="false">16:9</button>
+                </div>
+                <p class="field-help" id="ratio-help">720×1280 · Vertical · TikTok / Reels / Shorts</p>
+            </div>
+
             <div class="field">
                 <label class="field-label" for="audio-file">
                     Audio file <span class="req">*</span>

@@ -25,6 +25,7 @@ export const Events = Object.freeze({
     CLEAR_ALBUM_ART: 'clear-album-art',
     UPDATE_LYRICS: 'update-lyrics',
     UPDATE_LYRICS_COLOR: 'update-lyrics-color',
+    UPDATE_ASPECT_RATIO: 'update-aspect-ratio',
     EXPORT_REQUESTED: 'export-requested',
     EXPORT_CANCEL: 'export-cancel',
     EXPORT_CANCELLED: 'export-cancelled',
