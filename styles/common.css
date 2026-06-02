@@ -1,3 +1,28 @@
+:root {
+    --primary: #667eea;
+    --primary-dark: #5a67d8;
+    --purple: #764ba2;
+    --pink: #f093fb;
+
+    --gray-50: #f7fafc;
+    --gray-100: #edf2f7;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e0;
+    --gray-400: #a0aec0;
+    --gray-500: #718096;
+    --gray-600: #4a5568;
+    --gray-700: #2d3748;
+
+    --success: #38a169;
+    --danger: #e53e3e;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    --ring: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    --ease: 0.3s ease;
+}
 
 * {
     margin: 0;
@@ -9,26 +34,29 @@ body {
     font-family: 'Patrick Hand', cursive;
     background-attachment: fixed;
     background-size: 100% 100%;
-    min-height: 100vh;
-    transition: background 3s ease-in-out;
     background-repeat: no-repeat;
     background-position: center center;
+    height: 100vh;
+    overflow-x: hidden;
+    transition: background 3s ease-in-out;
 }
+
+/* ----- Form primitives (shared by settings + future panels) ----- */
 
 .form-input {
     width: 100%;
     padding: 14px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
     font-size: 16px;
-    transition: all 0.3s ease;
+    transition: all var(--ease);
     background: #fff;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    box-shadow: var(--ring);
     transform: translateY(-1px);
 }
 
@@ -38,19 +66,21 @@ body {
     gap: 8px;
     font-weight: 600;
     font-size: 14px;
-    color: #4a5568;
+    color: var(--gray-700);
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
+/* ----- File drop zones ----- */
+
 .upload-area {
-    border: 2px dashed #cbd5e0;
-    border-radius: 12px;
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-md);
     padding: 20px 15px;
     text-align: center;
-    background: #f7fafc;
-    transition: all 0.3s ease;
+    background: var(--gray-50);
+    transition: all var(--ease);
     cursor: pointer;
     position: relative;
     overflow: visible;
@@ -58,7 +88,7 @@ body {
 }
 
 .upload-area:hover {
-    border-color: #667eea;
+    border-color: var(--primary);
     background: rgba(102, 126, 234, 0.08);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
@@ -76,25 +106,27 @@ body {
 
 .upload-icon {
     font-size: 36px;
-    color: #a0aec0;
+    color: var(--gray-400);
     margin-bottom: 8px;
 }
 
 .upload-text {
-    color: #4a5568;
+    color: var(--gray-600);
     font-weight: 500;
     margin-bottom: 4px;
 }
 
 .upload-hint {
-    color: #a0aec0;
+    color: var(--gray-400);
     font-size: 14px;
 }
+
+/* ----- Generic progress bar (settings export UI) ----- */
 
 .progress-bar {
     width: 100%;
     height: 8px;
-    background: #e2e8f0;
+    background: var(--gray-200);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 8px;
@@ -102,50 +134,41 @@ body {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, var(--primary), var(--purple));
     width: 0%;
-    transition: width 0.3s ease;
+    transition: width var(--ease);
 }
 
 .progress-text {
     text-align: center;
     font-size: 14px;
-    color: #4a5568;
+    color: var(--gray-600);
     font-weight: 500;
 }
 
-::-webkit-scrollbar {
-    width: 8px;
-}
+/* ----- Hide scrollbars everywhere (design choice) ----- */
 
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
+    background: transparent;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+html {
+    scrollbar-width: none;
 }
 
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
-    }
-}
+/* ----- Responsive shared rules ----- */
 
 @media (max-width: 480px) {
-    .container {
-        padding: 16px;
-    }
-    
     .upload-area {
         padding: 16px 12px;
     }
-    
+
     .form-input {
         padding: 12px 14px;
         font-size: 14px;

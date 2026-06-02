@@ -1,0 +1,67 @@
+// Versioned cache — bump the suffix on every release to invalidate clients.
+const CACHE_VERSION = 'v1';
+const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
+
+const PRECACHE = [
+    './',
+    'index.html',
+    'styles/common.css',
+    'styles/index.css',
+    'styles/settings.css',
+    'styles/vinyl-player.css',
+    'js/main.js',
+    'js/player.js',
+    'js/settings.js',
+    'js/export.js',
+    'js/album-art.js',
+    'js/color-manager.js',
+    'js/gradient.js',
+    'js/lib/events.js',
+    'js/lib/state.js',
+    'js/lib/format.js',
+    'favicon/favicon.ico',
+    'favicon/favicon-16x16.png',
+    'favicon/favicon-32x32.png',
+    'favicon/apple-touch-icon.png',
+    'favicon/android-chrome-192x192.png',
+    'favicon/android-chrome-512x512.png',
+    'favicon/site.webmanifest',
+];
+
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
+    );
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((keys) =>
+            Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+        )
+    );
+    self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+    const request = event.request;
+    if (request.method !== 'GET') return;
+
+    const url = new URL(request.url);
+    if (url.origin !== self.location.origin) return;
+
+    // Stale-while-revalidate: serve cache fast, refresh in background.
+    event.respondWith(
+        caches.open(CACHE_NAME).then(async (cache) => {
+            const cached = await cache.match(request);
+            const networkPromise = fetch(request)
+                .then((response) => {
+                    if (response.ok) cache.put(request, response.clone());
+                    return response;
+                })
+                .catch(() => cached);
+            return cached || networkPromise;
+        })
+    );
+});

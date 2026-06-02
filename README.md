@@ -38,10 +38,10 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Custom Fonts**: Beautiful typography with Patrick Hand font family
 - **Visual Effects**: Multiple gradient sets with warm, cool, and vibrant color schemes
 
-### 📱 Mobile Friendly
-- **Web App Manifest**: Can be added to the home screen as an installable app
+### 📱 Progressive Web App (PWA)
+- **Offline Support**: After the first load, the service worker caches everything (HTML/CSS/JS/icons) so the app keeps working without a network connection
+- **Installable**: The web app manifest lets you add the player to the home screen
 - **Responsive Design**: Optimized for all screen sizes
-- **Fast Loading**: Static assets, no backend required
 
 ### 🎛️ Advanced Controls
 - **Drag & Drop**: Easy file upload with drag and drop support
@@ -184,6 +184,7 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 - **Canvas API**: For rendering the vinyl player and effects
 - **Web Audio API**: For audio processing and visualization
 - **File API**: For handling audio and image uploads
+- **Service Worker**: Caches the app shell for offline use
 - **Web App Manifest**: Installable on mobile home screens
 - **Dynamic Gradient System**: Random gradient generation for visual variety
 - **JSON Processing**: Built-in JSON parsing for lyrics import functionality
@@ -198,6 +199,7 @@ A beautiful, modern vinyl music player built with HTML, CSS, and JavaScript. Cre
 ```
 vinyl-music-player/
 ├── index.html                # Application shell (loads js/main.js as a module)
+├── service-worker.js         # Offline app-shell cache (stale-while-revalidate)
 ├── package.json              # Project configuration
 ├── README.md                 # Documentation
 ├── favicon/                  # Favicons + web manifest
