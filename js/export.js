@@ -5,6 +5,8 @@ import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { toCanvas } from './vendor/html-to-image.js';
 
 const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
+const CAPTURE_FPS = 24;                            // film-standard, less main-thread blocking
+const CAPTURE_INTERVAL_MS = 1000 / CAPTURE_FPS;
 
 let canvas = null;
 let ctx = null;
@@ -24,6 +26,7 @@ let exportLyrics = [];
 let liveDomBindings = null;     // {ref to update progress/lyrics in editor}
 let visibilityHandler = null;
 let backgroundToastDismiss = null;
+let lastCaptureTime = 0;
 
 // ──────────────────────────────────────────────────────────────────
 // Setup helpers
@@ -199,9 +202,10 @@ async function renderFrame() {
 
     try {
         const captured = await toCanvas(frameEl, {
-            pixelRatio: 2,
+            // pixelRatio 1 = capture at the frame's natural CSS size; drawImage
+            // then scales up to 720×1280. Halves the DOM-cloning work vs 2x.
+            pixelRatio: 1,
             cacheBust: false,
-            // Skip remote font CSS re-fetching every frame — they're already in the page.
             skipFonts: true,
         });
         ctx.clearRect(0, 0, canvasW, canvasH);
@@ -211,8 +215,12 @@ async function renderFrame() {
     }
 }
 
-function renderLoop() {
-    if (!rendering) {
+function renderLoop(now) {
+    if (!state.isExporting) return;
+    // Throttle to CAPTURE_FPS so html-to-image doesn't hog the main thread —
+    // CSS animations stay smooth in the editor while we record.
+    if (!rendering && (now - lastCaptureTime >= CAPTURE_INTERVAL_MS)) {
+        lastCaptureTime = now;
         rendering = true;
         renderFrame().finally(() => { rendering = false; });
     }
@@ -269,7 +277,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             setTimeout(() => reject(new Error('Audio loading timeout')), 10000);
         });
 
-        const canvasStream = canvas.captureStream(30);
+        const canvasStream = canvas.captureStream(CAPTURE_FPS);
         const AudioCtxCtor = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioCtxCtor();
         const source = audioCtx.createMediaElementSource(exportAudio);
@@ -317,7 +325,8 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         // Pause render + recorder if the user switches tabs; resume when they return.
         setupVisibilityHandler();
 
-        renderLoop();
+        lastCaptureTime = 0;
+        animationId = requestAnimationFrame(renderLoop);
 
         // Drive progress off exportAudio.currentTime so it auto-pauses
         // when the user backgrounds the tab.
