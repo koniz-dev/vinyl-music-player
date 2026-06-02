@@ -1,4 +1,5 @@
-import { on, Events } from './lib/events.js';
+import { on, emit, Events } from './lib/events.js';
+import { isOverridden } from './color-manager.js';
 
 const FALLBACK = '#818cf8'; // indigo-400
 const SAMPLE_SIZE = 32;
@@ -40,11 +41,6 @@ function hexToRgb(hex) {
     ];
 }
 
-/**
- * Extract a vibrant accent color from an image.
- * Sample a small grid of pixels, weight by saturation, return the most
- * vibrant hue that's neither too dark nor too washed-out.
- */
 async function extractAccent(imageUrl) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -62,15 +58,14 @@ async function extractAccent(imageUrl) {
     ctx.drawImage(img, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
     const { data } = ctx.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
 
-    // Bucket pixels by hue (16 buckets), accumulate saturation weight
     const buckets = new Array(16).fill(0).map(() => ({ count: 0, s: 0, l: 0, h: 0 }));
 
     for (let i = 0; i < data.length; i += 4) {
         const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
         if (a < 128) continue;
         const [h, s, l] = rgbToHsl(r, g, b);
-        if (s < 0.25) continue;          // too washed
-        if (l < 0.15 || l > 0.85) continue; // too dark / too bright
+        if (s < 0.25) continue;
+        if (l < 0.15 || l > 0.85) continue;
         const bucket = buckets[Math.floor(h * 16) % 16];
         bucket.count += 1;
         bucket.s += s;
@@ -87,7 +82,6 @@ async function extractAccent(imageUrl) {
     let h = winner.h / winner.count;
     let s = Math.min(0.85, winner.s / winner.count + 0.15);
     let l = winner.l / winner.count;
-    // Nudge into a "vibrant but visible on dark bg" zone
     l = Math.max(0.55, Math.min(0.72, l));
 
     return hslToHex(h, s, l);
@@ -100,24 +94,37 @@ function applyAccent(hex) {
     document.documentElement.style.setProperty('--accent-hi', hiH);
     document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.35)`);
     document.documentElement.style.setProperty('--accent-soft', `rgba(${r}, ${g}, ${b}, 0.12)`);
+    emit(Events.ACCENT_DERIVED, hex);
 }
 
 function resetAccent() {
     applyAccent(FALLBACK);
 }
 
+let lastImageUrl = null;
+
+async function deriveAndApply(imageUrl) {
+    // Manual override wins — don't clobber user's chosen accent.
+    if (isOverridden('accent')) return;
+    if (!imageUrl) { resetAccent(); return; }
+    try {
+        const hex = await extractAccent(imageUrl);
+        applyAccent(hex);
+    } catch {
+        resetAccent();
+    }
+}
+
 export function initTheme() {
     resetAccent();
-    on(Events.UPDATE_ALBUM_ART, async (imageUrl) => {
-        if (!imageUrl) {
-            resetAccent();
-            return;
-        }
-        try {
-            const hex = await extractAccent(imageUrl);
-            applyAccent(hex);
-        } catch {
-            resetAccent();
-        }
+
+    on(Events.UPDATE_ALBUM_ART, (imageUrl) => {
+        lastImageUrl = imageUrl;
+        deriveAndApply(imageUrl);
+    });
+
+    // When user clears their accent override, re-derive from current album art.
+    on(Events.ACCENT_OVERRIDE_CLEARED, () => {
+        deriveAndApply(lastImageUrl);
     });
 }

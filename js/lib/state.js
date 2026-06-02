@@ -2,7 +2,6 @@ export const state = {
     isPlaying: false,
     currentTime: 0,
     totalTime: 0,
-    isMuted: false,
     isRepeat: false,
     isExporting: false,
     audioElement: null,

@@ -83,24 +83,67 @@
                 <span class="frame-ratio mono" id="frame-ratio">9:16</span>
             </div>
             <section class="player" aria-label="Vinyl music player">
+                <div class="player-top">
                 <div class="vinyl-wrap">
                 <div class="vinyl-record" id="vinyl">
-                    <div class="vinyl-grooves groove-1"></div>
-                    <div class="vinyl-grooves groove-2"></div>
-                    <div class="vinyl-grooves groove-3"></div>
                     <div class="vinyl-center">
                         <div class="vinyl-album-art"></div>
+                        <div class="vinyl-spindle" aria-hidden="true"></div>
                     </div>
                 </div>
-                <div class="tonearm" id="tonearm" aria-hidden="true"></div>
+                <div class="vinyl-sheen" aria-hidden="true"></div>
+                <svg class="tonearm" id="tonearm" viewBox="0 0 60 220"
+                    preserveAspectRatio="xMidYMin meet" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="armGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="#fafafa"/>
+                            <stop offset="0.5" stop-color="#e4e4e7"/>
+                            <stop offset="1" stop-color="#a1a1aa"/>
+                        </linearGradient>
+                        <radialGradient id="pivotGrad" cx="0.35" cy="0.35" r="0.7">
+                            <stop offset="0" stop-color="#fafafa"/>
+                            <stop offset="0.7" stop-color="#71717a"/>
+                            <stop offset="1" stop-color="#27272a"/>
+                        </radialGradient>
+                        <linearGradient id="cwGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0" stop-color="#3f3f46"/>
+                            <stop offset="0.5" stop-color="#71717a"/>
+                            <stop offset="1" stop-color="#27272a"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Counterweight (behind pivot) -->
+                    <rect x="14" y="2" width="32" height="14" rx="3" fill="url(#cwGrad)"/>
+                    <circle cx="14" cy="9" r="4" fill="#52525b"/>
+                    <circle cx="46" cy="9" r="4" fill="#52525b"/>
+                    <!-- Pivot housing -->
+                    <circle cx="30" cy="22" r="11" fill="#3f3f46"/>
+                    <circle cx="30" cy="22" r="9" fill="url(#pivotGrad)"/>
+                    <!-- Arm: straight then bezier curve to headshell -->
+                    <path d="M30 32 L30 158 C30 178 38 188 50 196"
+                          stroke="url(#armGrad)" stroke-width="4" fill="none"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Headshell mount -->
+                    <rect x="44" y="190" width="14" height="8" rx="1.5" fill="#27272a"/>
+                    <!-- Cartridge -->
+                    <rect x="46" y="196" width="10" height="6" rx="1" fill="#18181b"/>
+                    <!-- Stylus tip -->
+                    <rect x="50" y="201" width="2" height="4" fill="#fafafa" opacity="0.6"/>
+                </svg>
+                </div>
+                </div>
+
+            <div class="player-mid">
+                <div class="meta">
+                    <h1 class="vinyl-song-title"></h1>
+                    <p class="vinyl-artist-name"></p>
+                    <p class="vinyl-lyrics-text"></p>
+                </div>
+                <p class="stage-hint" id="stage-hint">
+                    Open <strong>Settings</strong> to upload audio.
+                </p>
             </div>
 
-            <div class="meta">
-                <h1 class="vinyl-song-title">Untitled</h1>
-                <p class="vinyl-artist-name"></p>
-                <p class="vinyl-lyrics-text"></p>
-            </div>
-
+            <div class="player-bottom">
             <div class="progress-row">
                 <span class="vinyl-current-time mono">00:00</span>
                 <div class="vinyl-progress-bar" role="progressbar" aria-label="Playback progress"
@@ -110,20 +153,23 @@
                 <span class="vinyl-total-time mono">00:00</span>
             </div>
 
-            <p class="stage-hint" id="stage-hint">
-                Open <strong>Settings</strong> to upload audio and start.
-            </p>
-
             <div class="controls">
-                <button type="button" class="control-btn vinyl-mute-btn" disabled aria-label="Mute">
-                    <span data-icon="volume" data-icon-size="20" aria-hidden="true"></span>
+                <button type="button" class="control-btn vinyl-shuffle-btn" disabled aria-label="Shuffle">
+                    <span data-icon="shuffle" data-icon-size="18" aria-hidden="true"></span>
+                </button>
+                <button type="button" class="control-btn vinyl-prev-btn" disabled aria-label="Restart song">
+                    <span data-icon="skip-back" data-icon-size="18" aria-hidden="true"></span>
                 </button>
                 <button type="button" class="control-btn vinyl-play-pause-btn" disabled aria-label="Play / pause">
                     <span data-icon="play" data-icon-size="24" aria-hidden="true"></span>
                 </button>
-                <button type="button" class="control-btn vinyl-repeat-btn" disabled aria-label="Repeat">
-                    <span data-icon="repeat" data-icon-size="20" aria-hidden="true"></span>
+                <button type="button" class="control-btn vinyl-next-btn" disabled aria-label="Skip to end">
+                    <span data-icon="skip-forward" data-icon-size="18" aria-hidden="true"></span>
                 </button>
+                <button type="button" class="control-btn vinyl-repeat-btn" disabled aria-label="Repeat">
+                    <span data-icon="repeat" data-icon-size="18" aria-hidden="true"></span>
+                </button>
+            </div>
             </div>
             </section>
         </div>
@@ -133,7 +179,7 @@
 
     <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
 
-    <aside class="drawer" id="settings-drawer" aria-label="Settings" aria-hidden="true">
+    <aside class="drawer" id="settings-drawer" aria-label="Settings" inert>
         <header class="drawer-head">
             <h2>Settings</h2>
             <button type="button" class="btn btn-ghost btn-icon" id="close-settings-btn"
@@ -171,9 +217,9 @@
 
             <div class="field">
                 <label class="field-label" for="song-title">
-                    Song title <span class="req">*</span>
+                    Song title <span class="field-hint">(optional)</span>
                 </label>
-                <input type="text" class="text-input" id="song-title" placeholder="Untitled">
+                <input type="text" class="text-input" id="song-title" placeholder="Leave blank for untitled">
             </div>
 
             <div class="field">
@@ -223,18 +269,10 @@
             </div>
 
             <div class="field">
-                <label class="field-label" for="lyrics-color-picker">Lyrics color</label>
-                <div class="color-row">
-                    <input type="color" class="color-swatch" id="lyrics-color-picker" value="#ffb3d1"
-                        aria-label="Pick lyrics color">
-                    <span class="color-hex mono" id="color-preview">#FFB3D1</span>
-                    <button type="button" class="btn btn-ghost btn-icon" id="copy-hex-btn"
-                        title="Copy hex" aria-label="Copy hex">
-                        <span data-icon="copy" data-icon-size="16" aria-hidden="true"></span>
-                    </button>
-                </div>
-                <div class="color-history-section">
-                    <div class="color-history" id="color-history"></div>
+                <label class="field-label">Colors</label>
+                <div class="color-list" id="color-list">
+                    <!-- Populated by color-manager.js. Each row:
+                         <swatch picker> · label + hex/status · reset button -->
                 </div>
             </div>
 

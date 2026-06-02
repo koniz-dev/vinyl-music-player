@@ -151,67 +151,123 @@
     border-color: var(--danger);
 }
 
-/* ─── Color picker ──────────────────────────────────────────────── */
+/* ─── Color customization (6 elements, 2-col grid) ──────────────── */
 
-.color-row {
-    display: flex;
-    align-items: center;
+.color-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: var(--s-2);
 }
 
-.color-swatch {
-    width: 40px;
-    height: 40px;
+.color-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
     border-radius: var(--r-md);
-    border: 1px solid var(--border-2);
-    cursor: pointer;
-    padding: 0;
-    background: none;
-    overflow: hidden;
+    transition: border-color var(--dur), background var(--dur);
 }
 
-.color-swatch::-webkit-color-swatch-wrapper {
+.color-row:hover {
+    border-color: var(--border-2);
+    background: var(--bg-3);
+}
+
+.color-row[data-overridden="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.color-row-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: transform var(--dur), border-color var(--dur);
+}
+
+.color-row-swatch:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.color-row-swatch::-webkit-color-swatch-wrapper {
     padding: 0;
     border-radius: inherit;
 }
 
-.color-swatch::-webkit-color-swatch {
+.color-row-swatch::-webkit-color-swatch {
     border: none;
     border-radius: inherit;
 }
 
-.color-hex {
+.color-row-info {
     flex: 1;
-    font-size: 13px;
-    color: var(--fg-1);
-    padding: 8px 12px;
-    background: var(--bg-2);
-    border: 1px solid var(--border-1);
-    border-radius: var(--r-md);
-}
-
-.color-history-section {
-    margin-top: var(--s-2);
-}
-
-.color-history {
     display: flex;
-    gap: var(--s-2);
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
-.color-history-item {
-    width: 28px;
-    height: 28px;
+.color-row-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg-0);
+    line-height: 1.2;
+}
+
+.color-row-hex {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-3);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.color-row[data-auto="true"] .color-row-hex {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+
+.color-row-reset {
+    width: 26px;
+    height: 26px;
     border-radius: var(--r-sm);
-    border: 1px solid var(--border-2);
+    background: transparent;
+    border: none;
+    color: var(--fg-2);
+    display: grid;
+    place-items: center;
     cursor: pointer;
-    transition: transform var(--dur), border-color var(--dur);
+    transition: background var(--dur), color var(--dur);
+    flex-shrink: 0;
 }
 
-.color-history-item:hover {
-    transform: scale(1.1);
-    border-color: var(--accent);
+.color-row-reset:hover {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--accent);
+}
+
+/* Only show the reset button when an override is active — no clutter otherwise. */
+.color-row:not([data-overridden="true"]) .color-row-reset {
+    display: none;
 }
 
 /* ─── Export ────────────────────────────────────────────────────── */

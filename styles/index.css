@@ -137,8 +137,33 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--s-4);
+    /* Gap between vinyl ↔ meta ↔ controls. Tight enough to feel grouped,
+       wide enough to breathe. Cluster centered vertically in available space. */
+    gap: clamp(10px, 2.8cqmin, 22px);
     min-height: 0;
+}
+
+.player-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.player-mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2px, 1cqmin, 8px);
+    width: 100%;
+}
+
+.player-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(6px, 1.5cqmin, 12px);
+    width: 100%;
 }
 
 /* ─── Drawer ────────────────────────────────────────────────────── */

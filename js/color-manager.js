@@ -1,132 +1,270 @@
-import { emit, Events } from './lib/events.js';
-import { DEFAULT_LYRICS_COLOR } from './lib/state.js';
+import { emit, on, Events } from './lib/events.js';
+import { state } from './lib/state.js';
 import { icon } from './icons.js';
 
-const STORAGE_HISTORY = 'lyricsColorHistory';
-const STORAGE_CURRENT = 'lyricsCurrentColor';
-const MAX_HISTORY = 5;
+/* Each customizable element. Order = render order in drawer. */
+const COLOR_DEFS = [
+    {
+        key: 'accent',
+        label: 'Accent',
+        cssVar: '--accent',                 // primary token; theme.js may auto-fill
+        hasAuto: true,                       // accent can derive from album art
+        defaultColor: '#818cf8',
+        applyOverride: applyAccentOverride,
+        applyReset: applyAccentReset,
+    },
+    {
+        key: 'title',
+        label: 'Title',
+        cssVar: '--color-title',
+        defaultColor: '#fafafa',
+    },
+    {
+        key: 'artist',
+        label: 'Artist',
+        cssVar: '--color-artist',
+        defaultColor: '#a1a1aa',
+    },
+    {
+        key: 'lyrics',
+        label: 'Lyrics',
+        cssVar: '--color-lyrics',
+        defaultColor: '#ffb3d1',
+    },
+    {
+        key: 'bg',
+        label: 'Background',
+        cssVar: '--color-bg',
+        defaultColor: '#09090b',
+    },
+    {
+        key: 'vinyl',
+        label: 'Vinyl tint',
+        cssVar: '--color-vinyl-tint',
+        defaultColor: 'transparent',     // CSS keyword — picker can't render this
+        pickerDefault: '#404040',         // shown in <input type=color> when no override
+        defaultLabel: 'None',
+        valueToCssOverride: (hex) => hexToRgba(hex, 0.25),  // subtle overlay
+    },
+];
 
-function loadHistory() {
+const STORAGE_KEY = 'colorOverrides';
+
+// Map<key, hexString>. Only contains user-overridden keys.
+let overrides = loadOverrides();
+let listEl = null;
+
+/* Public state queries — used by theme.js + export.js */
+export function isOverridden(key) {
+    return Object.prototype.hasOwnProperty.call(overrides, key);
+}
+
+export function getOverride(key) {
+    return overrides[key];
+}
+
+// ───────────────────── Persistence ─────────────────────
+
+function loadOverrides() {
     try {
-        const raw = localStorage.getItem(STORAGE_HISTORY);
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed)
-            ? parsed.filter(c => typeof c === 'string' && c !== DEFAULT_LYRICS_COLOR)
-            : [];
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return (parsed && typeof parsed === 'object') ? parsed : {};
     } catch {
-        return [];
+        return {};
     }
 }
 
-function loadCurrent() {
+function persist() {
     try {
-        return localStorage.getItem(STORAGE_CURRENT) || DEFAULT_LYRICS_COLOR;
-    } catch {
-        return DEFAULT_LYRICS_COLOR;
-    }
-}
-
-function save(key, value) {
-    try {
-        localStorage.setItem(key, value);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
     } catch {}
 }
 
-function contrastColor(hex) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.5 ? '#000000' : '#ffffff';
+// ───────────────────── Color math helpers ─────────────────────
+
+function hexToRgb(hex) {
+    const h = hex.startsWith('#') ? hex.slice(1) : hex;
+    return [
+        parseInt(h.slice(0, 2), 16) || 0,
+        parseInt(h.slice(2, 4), 16) || 0,
+        parseInt(h.slice(4, 6), 16) || 0,
+    ];
 }
 
-class ColorManager {
-    constructor() {
-        this.history = loadHistory();
-        this.current = loadCurrent();
+function hexToRgba(hex, alpha) {
+    const [r, g, b] = hexToRgb(hex);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
-        this.picker = document.getElementById('lyrics-color-picker');
-        this.preview = document.getElementById('color-preview');
-        this.historyContainer = document.getElementById('color-history');
-        this.copyBtn = document.getElementById('copy-hex-btn');
-        this.historySection = document.querySelector('.color-history-section');
+function lightenHex(hex, amount) {
+    const [r, g, b] = hexToRgb(hex);
+    return '#' + [r, g, b]
+        .map(c => Math.min(255, Math.round(c + (255 - c) * amount)).toString(16).padStart(2, '0'))
+        .join('');
+}
 
-        this.picker.addEventListener('input', (e) => this.previewLive(e.target.value));
-        this.picker.addEventListener('change', (e) => this.setColor(e.target.value));
-        this.copyBtn.addEventListener('click', () => this.copyHex());
+// ───────────────────── Accent custom hooks ─────────────────────
 
-        this.renderPreview();
-        this.renderHistory();
-        this.broadcast();
+function applyAccentOverride(hex) {
+    const hi = lightenHex(hex, 0.18);
+    document.documentElement.style.setProperty('--accent', hex);
+    document.documentElement.style.setProperty('--accent-hi', hi);
+    document.documentElement.style.setProperty('--accent-glow', hexToRgba(hex, 0.35));
+    document.documentElement.style.setProperty('--accent-soft', hexToRgba(hex, 0.12));
+    state.lyricsColor = state.lyricsColor; // unchanged; keeps existing emit contract
+}
+
+function applyAccentReset() {
+    // Let theme.js decide based on current album art.
+    document.documentElement.style.removeProperty('--accent');
+    document.documentElement.style.removeProperty('--accent-hi');
+    document.documentElement.style.removeProperty('--accent-glow');
+    document.documentElement.style.removeProperty('--accent-soft');
+    emit(Events.ACCENT_OVERRIDE_CLEARED);
+}
+
+// ───────────────────── Apply / reset ─────────────────────
+
+function applyOverride(def, hex) {
+    if (def.applyOverride) {
+        def.applyOverride(hex);
+        return;
     }
-
-    setColor(color, addToHistory = true) {
-        this.current = color;
-        if (addToHistory && color !== DEFAULT_LYRICS_COLOR) {
-            this.history = [color, ...this.history.filter(c => c !== color)].slice(0, MAX_HISTORY);
-            save(STORAGE_HISTORY, JSON.stringify(this.history));
-        }
-        save(STORAGE_CURRENT, color);
-        this.renderPreview();
-        this.renderHistory();
-        this.broadcast();
-    }
-
-    previewLive(color) {
-        this.current = color;
-        this.renderPreview();
-        this.broadcast();
-    }
-
-    renderPreview() {
-        this.preview.textContent = this.current.toUpperCase();
-        this.preview.style.backgroundColor = this.current;
-        this.preview.style.color = contrastColor(this.current);
-        this.picker.value = this.current;
-    }
-
-    renderHistory() {
-        this.historyContainer.replaceChildren();
-        this.historySection.style.display = this.history.length === 0 ? 'none' : 'block';
-
-        for (const color of this.history) {
-            const swatch = document.createElement('div');
-            swatch.className = 'color-history-item';
-            swatch.style.backgroundColor = color;
-            swatch.title = color.toUpperCase();
-            swatch.addEventListener('click', () => this.setColor(color, false));
-            this.historyContainer.appendChild(swatch);
-        }
-    }
-
-    broadcast() {
-        emit(Events.UPDATE_LYRICS_COLOR, this.current);
-    }
-
-    async copyHex() {
-        try {
-            await navigator.clipboard.writeText(this.current);
-        } catch {
-            const ta = document.createElement('textarea');
-            ta.value = this.current;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-        }
-        this.copyBtn.classList.add('copied');
-        this.copyBtn.innerHTML = icon('check', { size: 16, strokeWidth: 2.5 });
-        setTimeout(() => {
-            this.copyBtn.classList.remove('copied');
-            this.copyBtn.innerHTML = icon('copy', { size: 16 });
-        }, 1600);
-    }
-
-    getCurrent() {
-        return this.current;
+    const cssValue = def.valueToCssOverride ? def.valueToCssOverride(hex) : hex;
+    document.documentElement.style.setProperty(def.cssVar, cssValue);
+    if (def.key === 'lyrics') {
+        state.lyricsColor = hex;
+        emit(Events.UPDATE_LYRICS_COLOR, hex);
     }
 }
+
+function applyReset(def) {
+    if (def.applyReset) {
+        def.applyReset();
+        return;
+    }
+    document.documentElement.style.removeProperty(def.cssVar);
+    if (def.key === 'lyrics') {
+        state.lyricsColor = def.defaultColor;
+        emit(Events.UPDATE_LYRICS_COLOR, def.defaultColor);
+    }
+}
+
+function setColor(key, hex) {
+    const def = COLOR_DEFS.find(d => d.key === key);
+    if (!def) return;
+    overrides[key] = hex;
+    persist();
+    applyOverride(def, hex);
+    renderRow(def);
+}
+
+function resetColor(key) {
+    const def = COLOR_DEFS.find(d => d.key === key);
+    if (!def) return;
+    delete overrides[key];
+    persist();
+    applyReset(def);
+    renderRow(def);
+}
+
+// ───────────────────── Rendering ─────────────────────
+
+function currentDisplayColor(def) {
+    if (overrides[def.key]) return overrides[def.key];
+    if (def.key === 'accent') {
+        // Read live computed value (theme.js or default fallback)
+        const cs = getComputedStyle(document.documentElement);
+        return cs.getPropertyValue('--accent').trim() || def.defaultColor;
+    }
+    return def.defaultColor;
+}
+
+function isHex(value) {
+    return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
+}
+
+function renderRow(def) {
+    const row = listEl.querySelector(`[data-color-key="${def.key}"]`);
+    if (!row) return;
+
+    const overrideHex = overrides[def.key];
+    const isOverriddenNow = !!overrideHex;
+    const isAuto = def.hasAuto && !isOverriddenNow;
+
+    const swatch = row.querySelector('.color-row-swatch');
+    const hexLabel = row.querySelector('.color-row-hex');
+
+    // <input type="color"> only accepts #RRGGBB. Resolve a valid fallback chain.
+    const liveHex = isOverriddenNow ? overrideHex : currentDisplayColor(def);
+    const swatchHex = isHex(liveHex)
+        ? liveHex
+        : (def.pickerDefault || (isHex(def.defaultColor) ? def.defaultColor : '#888888'));
+    swatch.value = swatchHex;
+
+    row.dataset.auto = String(isAuto);
+    row.dataset.overridden = String(isOverriddenNow);
+
+    let display;
+    if (isAuto) display = 'Auto · album art';
+    else if (isOverriddenNow) display = overrideHex.toUpperCase();
+    else if (isHex(def.defaultColor)) display = def.defaultColor.toUpperCase();
+    else display = def.defaultLabel || 'Default';
+    hexLabel.textContent = display;
+}
+
+function buildRow(def) {
+    const row = document.createElement('div');
+    row.className = 'color-row';
+    row.dataset.colorKey = def.key;
+
+    const swatch = document.createElement('input');
+    swatch.type = 'color';
+    swatch.className = 'color-row-swatch';
+    swatch.setAttribute('aria-label', `Pick ${def.label} color`);
+    swatch.addEventListener('input', (e) => setColor(def.key, e.target.value));
+
+    const info = document.createElement('div');
+    info.className = 'color-row-info';
+    const label = document.createElement('div');
+    label.className = 'color-row-label';
+    label.textContent = def.label;
+    const hexEl = document.createElement('div');
+    hexEl.className = 'color-row-hex';
+    info.append(label, hexEl);
+
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'color-row-reset';
+    resetBtn.setAttribute('aria-label', `Reset ${def.label}`);
+    resetBtn.title = 'Reset to default';
+    resetBtn.innerHTML = icon('rotate-ccw', { size: 13 });
+    resetBtn.addEventListener('click', () => resetColor(def.key));
+
+    row.append(swatch, info, resetBtn);
+    return row;
+}
+
+// ───────────────────── Init ─────────────────────
 
 export function initColorManager() {
-    return new ColorManager();
+    listEl = document.getElementById('color-list');
+    if (!listEl) return;
+
+    listEl.replaceChildren(...COLOR_DEFS.map(buildRow));
+
+    // Apply persisted overrides + initial render
+    for (const def of COLOR_DEFS) {
+        if (overrides[def.key]) {
+            applyOverride(def, overrides[def.key]);
+        }
+        renderRow(def);
+    }
+
+    // Re-render accent row when theme.js updates --accent from a new album art
+    on(Events.ACCENT_DERIVED, () => {
+        const def = COLOR_DEFS.find(d => d.key === 'accent');
+        if (def) renderRow(def);
+    });
 }

@@ -8,8 +8,10 @@ import { toastError } from './toast.js';
 const vinyl = document.getElementById('vinyl');
 const tonearm = document.getElementById('tonearm');
 const playPauseBtn = document.querySelector('.vinyl-play-pause-btn');
-const muteBtn = document.querySelector('.vinyl-mute-btn');
 const repeatBtn = document.querySelector('.vinyl-repeat-btn');
+const prevBtn = document.querySelector('.vinyl-prev-btn');
+const nextBtn = document.querySelector('.vinyl-next-btn');
+const shuffleBtn = document.querySelector('.vinyl-shuffle-btn');
 const progressBar = document.querySelector('.vinyl-progress-bar');
 const progressFill = document.querySelector('.vinyl-progress');
 const currentTimeEl = document.querySelector('.vinyl-current-time');
@@ -19,10 +21,8 @@ const songTitleEl = document.querySelector('.vinyl-song-title');
 const artistNameEl = document.querySelector('.vinyl-artist-name');
 const stageHint = document.getElementById('stage-hint');
 
-const ICON_PLAY  = icon('play',     { size: 24 });
-const ICON_PAUSE = icon('pause',    { size: 24 });
-const ICON_VOL   = icon('volume',   { size: 18 });
-const ICON_MUTE  = icon('volume-x', { size: 18 });
+const ICON_PLAY  = icon('play',  { size: 24 });
+const ICON_PAUSE = icon('pause', { size: 24 });
 
 // ---------- Lyrics display ----------
 
@@ -62,15 +62,9 @@ function renderProgress() {
 }
 
 function renderPlayState() {
-    if (state.isPlaying) {
-        vinyl.style.animation = 'spin 8s linear infinite';
-        tonearm.classList.add('playing');
-        playPauseBtn.innerHTML = ICON_PAUSE;
-    } else {
-        vinyl.style.animation = 'none';
-        tonearm.classList.remove('playing');
-        playPauseBtn.innerHTML = ICON_PLAY;
-    }
+    vinyl.style.animationPlayState = state.isPlaying ? 'running' : 'paused';
+    tonearm.classList.toggle('playing', state.isPlaying);
+    playPauseBtn.innerHTML = state.isPlaying ? ICON_PAUSE : ICON_PLAY;
     renderLyrics();
 }
 
@@ -85,8 +79,7 @@ function enableControls() {
     });
     state.isRepeat = false;
     repeatBtn.classList.remove('active');
-    state.isMuted = false;
-    muteBtn.innerHTML = ICON_VOL;
+    shuffleBtn.classList.remove('active');
 }
 
 function restartAudio() {
@@ -124,7 +117,7 @@ function startPlaying({ audioUrl, songTitle, artistName, albumArtUrl }) {
 
     state.audioElement = new Audio(audioUrl);
 
-    if (songTitle !== undefined) songTitleEl.textContent = songTitle || 'Untitled';
+    if (songTitle !== undefined) songTitleEl.textContent = songTitle || '';
     if (artistName !== undefined) artistNameEl.textContent = artistName || '';
     if (albumArtUrl) updateAlbumArt(albumArtUrl);
 
@@ -177,13 +170,20 @@ function stopPlayback() {
     state.currentTime = 0;
     state.totalTime = 0;
     state.isPlaying = false;
-    songTitleEl.textContent = 'Untitled';
+    songTitleEl.textContent = '';
     artistNameEl.textContent = '';
     totalTimeEl.textContent = '00:00';
     progressFill.style.width = '0%';
     progressBar.setAttribute('aria-valuenow', 0);
     document.querySelectorAll('.control-btn').forEach(btn => { btn.disabled = true; });
     if (stageHint) stageHint.hidden = false;
+
+    // Full reset: hard-restart the animation so vinyl returns to 0° (paused).
+    vinyl.style.animation = 'none';
+    // Force reflow so the next assignment re-triggers the animation.
+    void vinyl.offsetWidth;
+    vinyl.style.animation = '';
+
     renderProgress();
     renderPlayState();
 }
@@ -207,11 +207,23 @@ function setLyrics(newLyrics) {
 function bindControls() {
     playPauseBtn.addEventListener('click', togglePlayPause);
 
-    muteBtn.addEventListener('click', () => {
+    prevBtn.addEventListener('click', () => {
         if (!state.audioElement) return;
-        state.isMuted = !state.isMuted;
-        state.audioElement.muted = state.isMuted;
-        muteBtn.innerHTML = state.isMuted ? ICON_MUTE : ICON_VOL;
+        state.audioElement.currentTime = 0;
+        state.currentTime = 0;
+        renderProgress();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (!state.audioElement) return;
+        // Jump near the end so the 'ended' handler fires naturally — this respects repeat.
+        state.audioElement.currentTime = Math.max(0, state.totalTime - 0.1);
+    });
+
+    shuffleBtn.addEventListener('click', () => {
+        if (!state.audioElement) return;
+        shuffleBtn.classList.toggle('active');
+        // Visual-only — single-song app, no playlist to shuffle.
     });
 
     repeatBtn.addEventListener('click', () => {
@@ -290,7 +302,7 @@ export function initPlayer() {
     renderLyrics();
 
     on(Events.PLAY_FILE, startPlaying);
-    on(Events.UPDATE_SONG_TITLE, (t) => { songTitleEl.textContent = t || 'Untitled'; });
+    on(Events.UPDATE_SONG_TITLE, (t) => { songTitleEl.textContent = t || ''; });
     on(Events.UPDATE_ARTIST_NAME, (a) => { artistNameEl.textContent = a || ''; });
     on(Events.UPDATE_ALBUM_ART, updateAlbumArt);
     on(Events.CLEAR_ALBUM_ART, clearAlbumArt);

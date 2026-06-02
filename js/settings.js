@@ -441,8 +441,7 @@ function bindInputs() {
 // ---------- Export UI ----------
 
 function refreshExportButton() {
-    const ready = !!audioFileInput.files[0] && !!songTitleInput.value.trim();
-    exportBtn.disabled = !ready;
+    exportBtn.disabled = !audioFileInput.files[0];
 }
 
 function resetExportProgress() {
@@ -479,8 +478,8 @@ function bindExport() {
         const artistName = artistNameInput.value.trim();
         const albumArtFile = albumArtInput.files[0];
 
-        if (!audioFile || !songTitle) {
-            toastError('Add an audio file and a song title first.');
+        if (!audioFile) {
+            toastError('Upload an audio file first.');
             return;
         }
 

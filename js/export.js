@@ -25,6 +25,11 @@ let vinylRotation = 0;
 let wasMainAudioPlaying = false;
 let exportAccent = ACCENT_FALLBACK;
 let exportAccentHi = ACCENT_HI_FALLBACK;
+let exportColorBg = '#09090b';
+let exportColorTitle = '#fafafa';
+let exportColorArtist = '#a1a1aa';
+let exportColorLyrics = '#ffb3d1';
+let exportColorVinylTint = 'transparent';
 
 // ──────────────────────────────────────────────────────────────────
 // Setup
@@ -44,8 +49,14 @@ function createCanvas() {
 
 function readAccentFromCss() {
     const cs = getComputedStyle(document.documentElement);
-    exportAccent = cs.getPropertyValue('--accent').trim() || ACCENT_FALLBACK;
-    exportAccentHi = cs.getPropertyValue('--accent-hi').trim() || ACCENT_HI_FALLBACK;
+    const read = (name, fallback) => cs.getPropertyValue(name).trim() || fallback;
+    exportAccent = read('--accent', ACCENT_FALLBACK);
+    exportAccentHi = read('--accent-hi', ACCENT_HI_FALLBACK);
+    exportColorBg = read('--color-bg', '#09090b');
+    exportColorTitle = read('--color-title', '#fafafa');
+    exportColorArtist = read('--color-artist', '#a1a1aa');
+    exportColorLyrics = read('--color-lyrics', '#ffb3d1');
+    exportColorVinylTint = read('--color-vinyl-tint', 'transparent');
 }
 
 function pickMimeType() {
@@ -156,7 +167,8 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
 
             const videoBlob = new Blob(recordedChunks, { type: mimeType });
-            const fileName = `${songTitle.replace(/[<>:"/\\|?*]/g, '')}.webm`;
+            const safeName = (songTitle || '').replace(/[<>:"/\\|?*]/g, '').trim();
+            const fileName = (safeName || 'untitled') + '.webm';
 
             emit(Events.EXPORT_PROGRESS, { progress: 100, message: 'Done.' });
             emit(Events.EXPORT_COMPLETE, { videoBlob, fileName });
@@ -367,18 +379,29 @@ function drawPauseIcon(cx, cy, size, color) {
     drawSvgPath('M6 4 H10 V20 H6 Z M14 4 H18 V20 H14 Z', cx, cy, size, { fill: color });
 }
 
-function drawVolumeIcon(cx, cy, size, color) {
-    drawSvgPath(
-        'M11 5 L6 9 H2 V15 H6 L11 19 Z M15.54 8.46 a5 5 0 0 1 0 7.07 M19.07 4.93 a10 10 0 0 1 0 14.14',
-        cx, cy, size, { stroke: color, strokeWidth: 2 }
-    );
-}
-
 function drawRepeatIcon(cx, cy, size, color) {
     drawSvgPath(
         'M17 1 L21 5 L17 9 M3 11 V9 a4 4 0 0 1 4-4 h14 M7 23 L3 19 L7 15 M21 13 V15 a4 4 0 0 1-4 4 H3',
         cx, cy, size, { stroke: color, strokeWidth: 2 }
     );
+}
+
+function drawShuffleIcon(cx, cy, size, color) {
+    drawSvgPath(
+        'M2 18 h1.4 c1.3 0 2.5-.6 3.3-1.7 l6.1-8.6 c.7-1.1 2-1.7 3.3-1.7 H22 M18 2 l4 4 -4 4 M2 6 h1.9 c1.5 0 2.9.9 3.6 2.2 M22 18 h-5.9 c-1.3 0-2.6-.7-3.3-1.8 l-.5-.8 M18 14 l4 4 -4 4',
+        cx, cy, size, { stroke: color, strokeWidth: 2 }
+    );
+}
+
+function drawSkipBackIcon(cx, cy, size, color) {
+    // polygon + line as fills
+    drawSvgPath('M19 20 L9 12 L19 4 Z', cx, cy, size, { fill: color });
+    drawSvgPath('M5 19 V5', cx, cy, size, { stroke: color, strokeWidth: 2 });
+}
+
+function drawSkipForwardIcon(cx, cy, size, color) {
+    drawSvgPath('M5 4 L15 12 L5 20 Z', cx, cy, size, { fill: color });
+    drawSvgPath('M19 5 V19', cx, cy, size, { stroke: color, strokeWidth: 2 });
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -396,9 +419,9 @@ function renderToCanvas() {
     const S = Math.min(W, H);
     const isWide = W > H * 1.15;
 
-    /* ── Background: zinc-950 + accent radial ambient ── */
+    /* ── Background (user-customizable) + accent radial ambient ── */
 
-    ctx.fillStyle = '#09090b';
+    ctx.fillStyle = exportColorBg;
     ctx.fillRect(0, 0, W, H);
 
     const topGlow = ctx.createRadialGradient(W / 2, -60, 0, W / 2, -60, W * 0.95);
@@ -462,18 +485,20 @@ function renderToCanvas() {
     ctx.fill();
 
     // 1px highlight ring at edge
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(0, 0, vr - 0.5, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Grooves
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.lineWidth = 1.5;
-    for (const factor of [0.84, 0.70, 0.58]) {
+    // Dense concentric grooves — ~50 rings from label edge to outer rim
+    const labelEdge = vr * 0.44;
+    const grooveStep = Math.max(2, vr * 0.012);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = Math.max(0.6, vr * 0.003);
+    for (let r = labelEdge + grooveStep * 1.5; r < vr - grooveStep; r += grooveStep) {
         ctx.beginPath();
-        ctx.arc(0, 0, vr * factor, 0, Math.PI * 2);
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.stroke();
     }
 
@@ -515,46 +540,151 @@ function renderToCanvas() {
 
     ctx.restore();
 
-    /* ── Tonearm (not rotated) ── */
+    /* ── Vinyl tint overlay (NOT rotated; sits on top of grooves) ── */
+    if (exportColorVinylTint && exportColorVinylTint !== 'transparent') {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(vx, vy, vr, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.fillStyle = exportColorVinylTint;
+        ctx.fillRect(vx - vr, vy - vr, vr * 2, vr * 2);
+        ctx.restore();
+    }
 
-    const armStartX = vx + vr * 0.96;
-    const armStartY = vy - vr * 0.96;
-    const armLen = vr * 0.78;
-
+    /* ── Sheen reflection (NOT rotated — ambient light) ── */
     ctx.save();
-    ctx.translate(armStartX, armStartY);
-    ctx.rotate(28 * Math.PI / 180);
+    ctx.beginPath();
+    ctx.arc(vx, vy, vr, 0, Math.PI * 2);
+    ctx.clip();
+    const sheen1 = ctx.createRadialGradient(
+        vx - vr * 0.42, vy - vr * 0.55, 0,
+        vx - vr * 0.42, vy - vr * 0.55, vr * 0.9
+    );
+    sheen1.addColorStop(0, 'rgba(255,255,255,0.12)');
+    sheen1.addColorStop(0.35, 'rgba(255,255,255,0.04)');
+    sheen1.addColorStop(0.7, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sheen1;
+    ctx.fillRect(vx - vr, vy - vr, vr * 2, vr * 2);
 
-    const armW = Math.max(4, S * 0.008);
-    const pivotR = Math.max(10, S * 0.022);
-    const needleH = Math.max(10, S * 0.02);
+    const sheen2 = ctx.createRadialGradient(
+        vx + vr * 0.5, vy + vr * 0.5, 0,
+        vx + vr * 0.5, vy + vr * 0.5, vr * 0.6
+    );
+    sheen2.addColorStop(0, 'rgba(255,255,255,0.04)');
+    sheen2.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sheen2;
+    ctx.fillRect(vx - vr, vy - vr, vr * 2, vr * 2);
+    ctx.restore();
 
-    // Arm body
-    const armGrad = ctx.createLinearGradient(0, 0, 0, armLen);
-    armGrad.addColorStop(0, '#f4f4f5');
-    armGrad.addColorStop(1, '#a1a1aa');
-    ctx.fillStyle = armGrad;
-    ctx.fillRect(-armW / 2, 0, armW, armLen);
+    /* ── Spindle hole (tiny dark dot at center) ── */
+    const spindleR = Math.max(2, vr * 0.025);
+    const spindleGrad = ctx.createRadialGradient(
+        vx - spindleR * 0.3, vy - spindleR * 0.3, 0,
+        vx, vy, spindleR
+    );
+    spindleGrad.addColorStop(0, '#18181b');
+    spindleGrad.addColorStop(1, '#050506');
+    ctx.fillStyle = spindleGrad;
+    ctx.beginPath();
+    ctx.arc(vx, vy, spindleR, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Pivot
-    const pivot = ctx.createRadialGradient(-5, -5, 0, 0, 0, pivotR);
-    pivot.addColorStop(0, '#fafafa');
-    pivot.addColorStop(1, '#71717a');
-    ctx.fillStyle = pivot;
+    /* ── Realistic tonearm (J-shape with counterweight + headshell) ── */
+
+    const armPivotX = vx + vr * 0.96;
+    const armPivotY = vy - vr * 0.96;
+    const armLen = vr * 0.88;
+
+    // Export always renders the "playing" angle since the WebM captures audio playback.
+    const tonearmAngleDeg = 16;
+    ctx.save();
+    ctx.translate(armPivotX, armPivotY);
+    ctx.rotate(tonearmAngleDeg * Math.PI / 180);
+
+    const armW = Math.max(3, S * 0.007);
+    const pivotR = Math.max(8, S * 0.020);
+    const cwW = pivotR * 2.6;
+    const cwH = pivotR * 1.15;
+
+    // Counterweight (rectangle BEHIND pivot, y<0)
+    const cwGrad = ctx.createLinearGradient(-cwW / 2, 0, cwW / 2, 0);
+    cwGrad.addColorStop(0, '#3f3f46');
+    cwGrad.addColorStop(0.5, '#71717a');
+    cwGrad.addColorStop(1, '#27272a');
+    ctx.fillStyle = cwGrad;
+    roundedRect(-cwW / 2, -pivotR - cwH, cwW, cwH, pivotR * 0.25);
+    ctx.fill();
+
+    // End caps on counterweight
+    ctx.fillStyle = '#52525b';
+    ctx.beginPath();
+    ctx.arc(-cwW / 2, -pivotR - cwH / 2, pivotR * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cwW / 2, -pivotR - cwH / 2, pivotR * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pivot housing — outer ring + glossy inner sphere
+    ctx.fillStyle = '#3f3f46';
     ctx.beginPath();
     ctx.arc(0, 0, pivotR, 0, Math.PI * 2);
     ctx.fill();
+    const pivotGrad = ctx.createRadialGradient(-pivotR * 0.35, -pivotR * 0.35, 0, 0, 0, pivotR);
+    pivotGrad.addColorStop(0, '#fafafa');
+    pivotGrad.addColorStop(0.7, '#71717a');
+    pivotGrad.addColorStop(1, '#27272a');
+    ctx.fillStyle = pivotGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, pivotR * 0.82, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Needle
+    // Arm: straight section + bezier curve into headshell
+    const straightLen = armLen * 0.72;
+    const armGrad = ctx.createLinearGradient(-armW, 0, armW, 0);
+    armGrad.addColorStop(0, '#a1a1aa');
+    armGrad.addColorStop(0.5, '#fafafa');
+    armGrad.addColorStop(1, '#a1a1aa');
+    ctx.strokeStyle = armGrad;
+    ctx.lineWidth = armW * 1.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, pivotR * 0.6);
+    ctx.lineTo(0, straightLen);
+    // bezier curve out to the cartridge
+    ctx.bezierCurveTo(
+        0, straightLen + armLen * 0.18,
+        armLen * 0.12, straightLen + armLen * 0.24,
+        armLen * 0.22, armLen
+    );
+    ctx.stroke();
+
+    // Headshell mount block at end of curve
+    const csX = armLen * 0.22;
+    const csY = armLen;
+    ctx.save();
+    ctx.translate(csX, csY);
+    ctx.rotate(20 * Math.PI / 180);
+    const hsW = armW * 5;
+    const hsH = armW * 3;
     ctx.fillStyle = '#27272a';
-    ctx.fillRect(-armW, armLen - needleH * 0.4, armW * 2, needleH);
+    roundedRect(-hsW / 2, -hsH / 2, hsW, hsH, armW);
+    ctx.fill();
+    // Cartridge body
+    ctx.fillStyle = '#18181b';
+    roundedRect(-hsW / 2.5, hsH * 0.2, hsW * 0.8, hsH * 0.7, armW * 0.5);
+    ctx.fill();
+    // Stylus tip
+    ctx.fillStyle = 'rgba(250,250,250,0.7)';
+    ctx.fillRect(-armW * 0.4, hsH * 0.9, armW * 0.8, armW * 2);
+    ctx.restore();
 
     ctx.restore();
 
     /* ── Song title + artist + lyrics (text stack below vinyl) ── */
 
-    const songTitleText = document.querySelector('.vinyl-song-title')?.textContent || 'Untitled';
-    const artistText = document.querySelector('.vinyl-artist-name')?.textContent || '';
+    const songTitleText = (document.querySelector('.vinyl-song-title')?.textContent || '').trim();
+    const artistText = (document.querySelector('.vinyl-artist-name')?.textContent || '').trim();
     const liveLyricsText = document.querySelector('.vinyl-lyrics-text')?.textContent || '';
 
     const titleFont = Math.max(20, S * (isWide ? 0.045 : 0.055));
@@ -566,14 +696,18 @@ function renderToCanvas() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
 
-    let cursorY = stackStart + titleFont;
-    ctx.fillStyle = '#fafafa';
-    ctx.font = `700 ${titleFont}px Inter, system-ui, sans-serif`;
-    ctx.fillText(songTitleText, W / 2, cursorY);
+    let cursorY = stackStart;
+
+    if (songTitleText) {
+        cursorY += titleFont;
+        ctx.fillStyle = exportColorTitle;
+        ctx.font = `700 ${titleFont}px Inter, system-ui, sans-serif`;
+        ctx.fillText(songTitleText, W / 2, cursorY);
+    }
 
     if (artistText) {
-        cursorY += artistFont + S * 0.012;
-        ctx.fillStyle = '#a1a1aa';
+        cursorY += (songTitleText ? artistFont + S * 0.012 : artistFont);
+        ctx.fillStyle = exportColorArtist;
         ctx.font = `500 ${artistFont}px Inter, system-ui, sans-serif`;
         ctx.fillText(artistText, W / 2, cursorY);
     }
@@ -588,8 +722,9 @@ function renderToCanvas() {
     }
 
     if (lyricToShow) {
-        cursorY += lyricsFont + S * 0.025;
-        ctx.fillStyle = state.lyricsColor || exportAccent;
+        const hasAbove = !!(songTitleText || artistText);
+        cursorY += hasAbove ? lyricsFont + S * 0.025 : lyricsFont;
+        ctx.fillStyle = exportColorLyrics;
         ctx.font = `600 ${lyricsFont}px Inter, system-ui, sans-serif`;
         ctx.fillText(lyricToShow, W / 2, cursorY);
     }
@@ -639,40 +774,60 @@ function renderToCanvas() {
     /* ── Controls: 3 circles centered ── */
 
     const btnY = controlsCY;
-    const playSize = Math.max(60, S * 0.11);
-    const sideSize = Math.max(44, S * 0.075);
-    const gap = S * 0.032;
-    const totalW = sideSize + gap + playSize + gap + sideSize;
+    const playSize = Math.max(54, S * 0.10);
+    const sideSize = Math.max(38, S * 0.065);
+    const gap = S * 0.022;
+    // 4 side buttons + 1 play + 4 gaps
+    const totalW = 4 * sideSize + playSize + 4 * gap;
     const startX = (W - totalW) / 2;
 
-    const sideIconSize = sideSize * 0.42;
+    const sideIconSize = sideSize * 0.45;
     const playIconSize = playSize * 0.40;
 
-    // Mute (left)
-    const muteCX = startX + sideSize / 2;
-    drawCircleBtn(muteCX, btnY, sideSize, '#18181b', 'rgba(255,255,255,0.06)');
-    drawVolumeIcon(muteCX, btnY, sideIconSize, '#e4e4e7');
+    const muteFill = '#18181b';
+    const muteBorder = 'rgba(255,255,255,0.06)';
+    const iconColor = '#e4e4e7';
 
-    // Play (center, accent + glow)
-    const playCX = startX + sideSize + gap + playSize / 2;
+    let cx = startX + sideSize / 2;
+
+    // 1. Shuffle
+    drawCircleBtn(cx, btnY, sideSize, muteFill, muteBorder);
+    drawShuffleIcon(cx, btnY, sideIconSize, iconColor);
+    cx += sideSize / 2 + gap;
+
+    // 2. Skip-back
+    cx += sideSize / 2;
+    drawCircleBtn(cx, btnY, sideSize, muteFill, muteBorder);
+    drawSkipBackIcon(cx, btnY, sideIconSize, iconColor);
+    cx += sideSize / 2 + gap;
+
+    // 3. Play (center, accent + glow)
+    cx += playSize / 2;
     ctx.save();
     ctx.shadowColor = rgba(exportAccent, 0.55);
     ctx.shadowBlur = S * 0.05;
     ctx.fillStyle = exportAccent;
     ctx.beginPath();
-    ctx.arc(playCX, btnY, playSize / 2, 0, Math.PI * 2);
+    ctx.arc(cx, btnY, playSize / 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     if (exportAudio && !exportAudio.paused) {
-        drawPauseIcon(playCX, btnY, playIconSize, '#09090b');
+        drawPauseIcon(cx, btnY, playIconSize, '#09090b');
     } else {
-        drawPlayIcon(playCX, btnY, playIconSize, '#09090b');
+        drawPlayIcon(cx, btnY, playIconSize, '#09090b');
     }
+    cx += playSize / 2 + gap;
 
-    // Repeat (right)
-    const repCX = startX + sideSize + gap + playSize + gap + sideSize / 2;
-    drawCircleBtn(repCX, btnY, sideSize, '#18181b', 'rgba(255,255,255,0.06)');
-    drawRepeatIcon(repCX, btnY, sideIconSize, '#e4e4e7');
+    // 4. Skip-forward
+    cx += sideSize / 2;
+    drawCircleBtn(cx, btnY, sideSize, muteFill, muteBorder);
+    drawSkipForwardIcon(cx, btnY, sideIconSize, iconColor);
+    cx += sideSize / 2 + gap;
+
+    // 5. Repeat
+    cx += sideSize / 2;
+    drawCircleBtn(cx, btnY, sideSize, muteFill, muteBorder);
+    drawRepeatIcon(cx, btnY, sideIconSize, iconColor);
 }
 
 function drawCircleBtn(cx, cy, size, fillColor, borderColor) {
