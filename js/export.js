@@ -1,7 +1,7 @@
 import { emit, on, Events } from './lib/events.js';
 import { state } from './lib/state.js';
 import { setPlayerPlaying } from './player.js';
-import { toastSuccess } from './toast.js';
+import { toastSuccess, toastError, toastInfo } from './toast.js';
 
 const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
 const CANVAS_W = 720;
@@ -236,13 +236,32 @@ function debugBrowserSupport() {
     const allOk = checks.every(([, ok]) => ok);
     const webmOk = checks.find(([k]) => k === 'WebM')[1];
 
-    // Happy path: just a toast, no modal blocking the user.
+    // Always reach the user via toast first. Modal is opt-in via "Details".
     if (allOk) {
         toastSuccess('Your browser supports WebM export.');
         return;
     }
 
-    const modal = document.getElementById('browser-support-modal');
+    renderBrowserSupportModal(checks, webmOk);
+
+    const openDetails = () => {
+        document.getElementById('browser-support-modal').hidden = false;
+    };
+
+    if (webmOk) {
+        toastInfo('Some optional features missing — export should still work.', {
+            duration: 0,
+            action: { label: 'Details', onClick: openDetails },
+        });
+    } else {
+        toastError('WebM export not supported in this browser.', {
+            duration: 0,
+            action: { label: 'Details', onClick: openDetails },
+        });
+    }
+}
+
+function renderBrowserSupportModal(checks, webmOk) {
     const summary = document.getElementById('bs-summary');
     const list = document.getElementById('bs-list');
     const action = document.getElementById('bs-action');
@@ -264,8 +283,6 @@ function debugBrowserSupport() {
     action.innerHTML = webmOk
         ? 'Some optional checks failed but export may still work — try it.'
         : 'WebM export is not available. Switch to a recent <strong>Chrome</strong>, <strong>Firefox</strong>, or <strong>Edge</strong>.';
-
-    modal.hidden = false;
 }
 
 function bindBrowserSupportModal() {
