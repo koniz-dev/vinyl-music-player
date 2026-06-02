@@ -1,6 +1,7 @@
 import { emit, on, Events } from './lib/events.js';
 import { timeToSeconds } from './lib/format.js';
 import { initColorManager } from './color-manager.js';
+import { toastSuccess, toastError } from './toast.js';
 
 const TIME_PATTERN = /^[0-9]{1,2}:[0-9]{2}$/;
 
@@ -28,7 +29,7 @@ const exportProgress = document.getElementById('export-progress');
 const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
 
-// ---------- Lyrics form ----------
+// ---------- Lyrics editor ----------
 
 function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
     lyricsCount++;
@@ -39,13 +40,14 @@ function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
     const header = document.createElement('div');
     header.className = 'lyrics-item-header';
 
-    const title = document.createElement('div');
+    const title = document.createElement('span');
     title.className = 'lyrics-item-title';
-    title.textContent = `Lyrics ${lyricsCount}`;
+    title.textContent = `Line ${lyricsCount}`;
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'remove-lyrics-btn';
+    removeBtn.setAttribute('aria-label', 'Remove this line');
     removeBtn.textContent = '×';
     removeBtn.addEventListener('click', () => {
         item.remove();
@@ -56,36 +58,46 @@ function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
 
     const inputs = document.createElement('div');
     inputs.className = 'lyrics-inputs';
-    inputs.append(
-        buildField({ labelText: 'Start Time (mm:ss)', placeholder: '00:00', value: start,
-                     inputClass: 'time-input', labelClass: 'time-label', pattern: '[0-9]{1,2}:[0-9]{2}' }),
-        buildField({ labelText: 'End Time (mm:ss)', placeholder: '00:05', value: end,
-                     inputClass: 'time-input', labelClass: 'time-label', pattern: '[0-9]{1,2}:[0-9]{2}' }),
-        buildField({ labelText: 'Lyrics Content', placeholder: 'Enter lyrics...', value: text,
-                     inputClass: 'lyrics-text-input', labelClass: 'lyrics-label' })
-    );
 
+    const startInput = createInput({
+        className: 'time-input',
+        placeholder: '00:00',
+        value: start,
+        pattern: '[0-9]{1,2}:[0-9]{2}',
+        ariaLabel: 'Start time',
+    });
+    const endInput = createInput({
+        className: 'time-input',
+        placeholder: '00:05',
+        value: end,
+        pattern: '[0-9]{1,2}:[0-9]{2}',
+        ariaLabel: 'End time',
+    });
+    const textWrap = document.createElement('div');
+    textWrap.className = 'lyrics-text-wrap';
+    const textInput = createInput({
+        className: 'lyrics-text-input',
+        placeholder: 'Lyric line…',
+        value: text,
+        ariaLabel: 'Lyric text',
+    });
+    textWrap.appendChild(textInput);
+
+    inputs.append(startInput, endInput, textWrap);
     item.append(header, inputs);
     return item;
 }
 
-function buildField({ labelText, placeholder, value, inputClass, labelClass, pattern }) {
-    const wrap = document.createElement('div');
-
-    const label = document.createElement('div');
-    label.className = labelClass;
-    label.textContent = labelText;
-
+function createInput({ className, placeholder, value, pattern, ariaLabel }) {
     const input = document.createElement('input');
     input.type = 'text';
-    input.className = inputClass;
+    input.className = className;
     input.placeholder = placeholder;
     input.value = value;
     if (pattern) input.pattern = pattern;
+    if (ariaLabel) input.setAttribute('aria-label', ariaLabel);
     input.addEventListener('input', publishLyrics);
-
-    wrap.append(label, input);
-    return wrap;
+    return input;
 }
 
 function publishLyrics() {
@@ -104,6 +116,8 @@ function publishLyrics() {
     emit(Events.UPDATE_LYRICS, data);
 }
 
+// ---------- JSON import ----------
+
 function validateImportedLyrics(rows) {
     if (!Array.isArray(rows)) throw new Error('JSON must be an array of objects');
 
@@ -112,26 +126,31 @@ function validateImportedLyrics(rows) {
             throw new Error(`Item at index ${i} must be an object`);
         }
         if (typeof row.start !== 'string' || typeof row.end !== 'string' || typeof row.text !== 'string') {
-            throw new Error(`Item at index ${i} must have 'start' (mm:ss), 'end' (mm:ss), and 'text' (string) properties`);
+            throw new Error(`Item ${i}: needs 'start', 'end', 'text' strings`);
         }
         if (!TIME_PATTERN.test(row.start) || !TIME_PATTERN.test(row.end)) {
-            throw new Error(`Item at index ${i} has invalid time format. Use mm:ss format (e.g., "01:30")`);
+            throw new Error(`Item ${i}: invalid time format (use mm:ss)`);
         }
         if (timeToSeconds(row.start) >= timeToSeconds(row.end)) {
-            throw new Error(`Item at index ${i} has invalid time values: start must be >= 00:00, end must be > start`);
+            throw new Error(`Item ${i}: end must be after start`);
         }
     });
 }
 
+function openImportModal() {
+    devLyricsModal.hidden = false;
+    jsonLyricsInput.focus();
+}
+
 function closeImportModal() {
-    devLyricsModal.style.display = 'none';
+    devLyricsModal.hidden = true;
     jsonLyricsInput.value = '';
 }
 
 function importLyricsFromJson() {
     const raw = jsonLyricsInput.value.trim();
     if (!raw) {
-        alert('Please paste your JSON lyrics first.');
+        toastError('Paste some JSON first.');
         return;
     }
     try {
@@ -144,32 +163,27 @@ function importLyricsFromJson() {
 
         publishLyrics();
         closeImportModal();
-        alert(`Successfully imported ${rows.length} lyrics items!`);
+        toastSuccess(`Imported ${rows.length} lyric lines.`);
     } catch (error) {
-        alert('Error parsing JSON: ' + error.message);
+        toastError(error.message);
     }
 }
 
 // ---------- File uploads ----------
 
 function describeFile(area, file) {
-    area.querySelector('.upload-text').textContent = file.name;
-    area.querySelector('.upload-hint').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-    area.style.borderColor = '#38a169';
-    area.style.background = 'rgba(56, 161, 105, 0.05)';
-}
-
-function highlightDrag(area, dragging) {
-    area.style.borderColor = dragging ? '#667eea' : '#cbd5e0';
-    area.style.background = dragging ? 'rgba(102, 126, 234, 0.1)' : '#f7fafc';
+    area.querySelector('.dz-title').textContent = file.name;
+    area.querySelector('.dz-hint').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+    area.dataset.loaded = 'true';
 }
 
 function wireUpload(area, input, onFile) {
-    area.addEventListener('dragover', (e) => { e.preventDefault(); highlightDrag(area, true); });
-    area.addEventListener('dragleave', (e) => { e.preventDefault(); highlightDrag(area, false); });
+    const setDrag = (on) => area.dataset.drag = on ? 'true' : 'false';
+    area.addEventListener('dragover',  (e) => { e.preventDefault(); setDrag(true); });
+    area.addEventListener('dragleave', (e) => { e.preventDefault(); setDrag(false); });
     area.addEventListener('drop', (e) => {
         e.preventDefault();
-        highlightDrag(area, false);
+        setDrag(false);
         if (e.dataTransfer.files.length > 0) {
             input.files = e.dataTransfer.files;
             onFile(e.dataTransfer.files[0]);
@@ -231,10 +245,10 @@ function refreshExportButton() {
 }
 
 function resetExportProgress() {
-    exportProgress.style.display = 'none';
+    exportProgress.hidden = true;
     exportBtn.disabled = false;
     progressFill.style.width = '0%';
-    progressText.textContent = 'Preparing export...';
+    progressText.textContent = 'Preparing…';
 }
 
 let isExportCompleted = false;
@@ -252,7 +266,7 @@ function handleExportComplete({ videoBlob, fileName }) {
     URL.revokeObjectURL(url);
 
     resetExportProgress();
-    alert('WebM video exported successfully!');
+    toastSuccess('WebM saved.');
 
     setTimeout(() => { isExportCompleted = false; }, 2000);
 }
@@ -265,15 +279,12 @@ function bindExport() {
         const albumArtFile = albumArtInput.files[0];
 
         if (!audioFile || !songTitle) {
-            alert('Please upload an audio file and enter a song title before exporting.');
+            toastError('Add an audio file and a song title first.');
             return;
         }
 
-        exportProgress.style.display = 'block';
+        exportProgress.hidden = false;
         exportBtn.disabled = true;
-        setTimeout(() => {
-            exportProgress.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
 
         emit(Events.EXPORT_REQUESTED, { audioFile, songTitle, artistName, albumArtFile });
     });
@@ -286,7 +297,7 @@ function bindExport() {
     });
     on(Events.EXPORT_COMPLETE, handleExportComplete);
     on(Events.EXPORT_ERROR, (error) => {
-        alert('Export failed: ' + error);
+        toastError(`Export failed: ${error}`);
         resetExportProgress();
     });
 }
@@ -294,10 +305,7 @@ function bindExport() {
 // ---------- Modal ----------
 
 function bindImportModal() {
-    devLyricsBtn.addEventListener('click', () => {
-        devLyricsModal.style.display = 'flex';
-        jsonLyricsInput.focus();
-    });
+    devLyricsBtn.addEventListener('click', openImportModal);
     modalCloseBtn.addEventListener('click', closeImportModal);
     modalCancelBtn.addEventListener('click', closeImportModal);
     modalImportBtn.addEventListener('click', importLyricsFromJson);
@@ -305,7 +313,7 @@ function bindImportModal() {
         if (e.target === devLyricsModal) closeImportModal();
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && devLyricsModal.style.display === 'flex') closeImportModal();
+        if (e.key === 'Escape' && !devLyricsModal.hidden) closeImportModal();
     });
 }
 

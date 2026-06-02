@@ -1,176 +1,294 @@
+/* ─── Design tokens ─────────────────────────────────────────────── */
+
 :root {
-    --primary: #667eea;
-    --primary-dark: #5a67d8;
-    --purple: #764ba2;
-    --pink: #f093fb;
+    /* Surfaces (zinc scale, darkest → lightest) */
+    --bg-0: #09090b;
+    --bg-1: #0e0e10;
+    --bg-2: #18181b;
+    --bg-3: #27272a;
+    --bg-4: #3f3f46;
 
-    --gray-50: #f7fafc;
-    --gray-100: #edf2f7;
-    --gray-200: #e2e8f0;
-    --gray-300: #cbd5e0;
-    --gray-400: #a0aec0;
-    --gray-500: #718096;
-    --gray-600: #4a5568;
-    --gray-700: #2d3748;
+    /* Text */
+    --fg-0: #fafafa;
+    --fg-1: #e4e4e7;
+    --fg-2: #a1a1aa;
+    --fg-3: #71717a;
+    --fg-4: #52525b;
 
-    --success: #38a169;
-    --danger: #e53e3e;
+    /* Borders */
+    --border-1: rgba(255, 255, 255, 0.06);
+    --border-2: rgba(255, 255, 255, 0.10);
+    --border-3: rgba(255, 255, 255, 0.16);
 
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
+    /* Accent — dynamically overridden by theme.js from album art */
+    --accent: #818cf8;
+    --accent-hi: #a5b4fc;
+    --accent-glow: rgba(129, 140, 248, 0.35);
+    --accent-soft: rgba(129, 140, 248, 0.12);
 
-    --ring: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    --ease: 0.3s ease;
+    /* Semantic */
+    --success: #34d399;
+    --danger: #f87171;
+    --warn: #fbbf24;
+
+    /* Radii */
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+    --r-pill: 999px;
+
+    /* Spacing scale (4-pt) */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 24px;
+    --s-8: 32px;
+    --s-10: 40px;
+    --s-12: 48px;
+    --s-16: 64px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 32px var(--accent-glow);
+
+    /* Motion */
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.6, 0, 0.4, 1);
+    --dur-fast: 120ms;
+    --dur: 200ms;
+    --dur-slow: 320ms;
+
+    /* Typography */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
-* {
+/* ─── Reset ─────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
-    font-family: 'Patrick Hand', cursive;
-    background-attachment: fixed;
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center center;
-    height: 100vh;
-    overflow-x: hidden;
-    transition: background 3s ease-in-out;
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv01", "cv03";
+    color: var(--fg-1);
+    background: var(--bg-0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
 }
 
-/* ----- Form primitives (shared by settings + future panels) ----- */
-
-.form-input {
-    width: 100%;
-    padding: 14px 16px;
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius-md);
-    font-size: 16px;
-    transition: all var(--ease);
-    background: #fff;
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
-.form-input:focus {
+button:disabled {
+    cursor: not-allowed;
+}
+
+input, textarea {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+}
+
+input:focus, textarea:focus, button:focus-visible {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: var(--ring);
-    transform: translateY(-1px);
 }
 
-.form-label {
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+}
+
+/* ─── Form primitives ───────────────────────────────────────────── */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+}
+
+.field-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--gray-700);
-    margin-bottom: 8px;
+    gap: var(--s-2);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fg-2);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.06em;
 }
 
-/* ----- File drop zones ----- */
+.field-label .req {
+    color: var(--accent);
+}
 
-.upload-area {
-    border: 2px dashed var(--gray-300);
-    border-radius: var(--radius-md);
-    padding: 20px 15px;
-    text-align: center;
-    background: var(--gray-50);
-    transition: all var(--ease);
-    cursor: pointer;
+.text-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--fg-0);
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-md);
+    transition: border-color var(--dur), background var(--dur);
+}
+
+.text-input::placeholder {
+    color: var(--fg-3);
+}
+
+.text-input:hover {
+    border-color: var(--border-2);
+}
+
+.text-input:focus {
+    border-color: var(--accent);
+    background: var(--bg-1);
+}
+
+/* ─── File drop zone ────────────────────────────────────────────── */
+
+.drop-zone {
     position: relative;
-    overflow: visible;
-    margin: 15px 0;
+    padding: var(--s-4);
+    background: var(--bg-2);
+    border: 1px dashed var(--border-2);
+    border-radius: var(--r-md);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--dur), background var(--dur);
 }
 
-.upload-area:hover {
-    border-color: var(--primary);
-    background: rgba(102, 126, 234, 0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+.drop-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
 }
 
-.upload-area input[type="file"] {
+.drop-zone input[type="file"] {
     position: absolute;
-    width: calc(100% + 30px);
-    height: calc(100% + 30px);
-    top: -15px;
-    left: -15px;
+    inset: 0;
     opacity: 0;
     cursor: pointer;
 }
 
-.upload-icon {
-    font-size: 36px;
-    color: var(--gray-400);
-    margin-bottom: 8px;
-}
-
-.upload-text {
-    color: var(--gray-600);
+.drop-zone .dz-title {
+    font-size: 13px;
     font-weight: 500;
-    margin-bottom: 4px;
+    color: var(--fg-1);
+    margin-bottom: 2px;
 }
 
-.upload-hint {
-    color: var(--gray-400);
+.drop-zone .dz-hint {
+    font-size: 11px;
+    color: var(--fg-3);
+}
+
+.drop-zone[data-loaded="true"] {
+    border-style: solid;
+    border-color: var(--success);
+    background: rgba(52, 211, 153, 0.08);
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────── */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    padding: 10px 16px;
     font-size: 14px;
-}
-
-/* ----- Generic progress bar (settings export UI) ----- */
-
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--gray-200);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(45deg, var(--primary), var(--purple));
-    width: 0%;
-    transition: width var(--ease);
-}
-
-.progress-text {
-    text-align: center;
-    font-size: 14px;
-    color: var(--gray-600);
     font-weight: 500;
+    border-radius: var(--r-md);
+    background: var(--bg-3);
+    color: var(--fg-0);
+    border: 1px solid var(--border-1);
+    transition: background var(--dur), border-color var(--dur), transform var(--dur);
 }
 
-/* ----- Hide scrollbars everywhere (design choice) ----- */
+.btn:hover:not(:disabled) {
+    background: var(--bg-4);
+    border-color: var(--border-2);
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: var(--bg-0);
+    border-color: transparent;
+    font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--accent-hi);
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:disabled {
+    background: var(--bg-3);
+    color: var(--fg-3);
+    box-shadow: none;
+}
+
+.btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--fg-2);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background: var(--bg-2);
+    color: var(--fg-0);
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--r-pill);
+}
+
+/* ─── Hide scrollbars (visual choice) ───────────────────────────── */
 
 ::-webkit-scrollbar {
     width: 0;
     height: 0;
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: transparent;
 }
 
 html {
     scrollbar-width: none;
 }
 
-/* ----- Responsive shared rules ----- */
+/* ─── Motion sensitivity ────────────────────────────────────────── */
 
-@media (max-width: 480px) {
-    .upload-area {
-        padding: 16px 12px;
-    }
-
-    .form-input {
-        padding: 12px 14px;
-        font-size: 14px;
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
     }
 }

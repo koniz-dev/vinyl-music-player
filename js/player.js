@@ -16,6 +16,21 @@ const lyricsTextEl = document.querySelector('.vinyl-lyrics-text');
 const songTitleEl = document.querySelector('.vinyl-song-title');
 const artistNameEl = document.querySelector('.vinyl-artist-name');
 
+// ---------- Inline SVG icons ----------
+
+const ICONS = {
+    play: '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
+    pause: '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
+    volume: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>',
+    muted: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
+};
+
+function setHTML(el, html) {
+    el.innerHTML = html;
+}
+
+// ---------- Lyrics display ----------
+
 function getCurrentLyric(time) {
     for (const lyric of state.lyrics) {
         if (time >= lyric.start && time < lyric.end) return lyric;
@@ -35,17 +50,18 @@ function renderLyrics() {
         lyricsTextEl.textContent = '';
         return;
     }
-    lyricsTextEl.style.opacity = '0.5';
+    lyricsTextEl.style.opacity = '0.4';
     setTimeout(() => {
         lyricsTextEl.textContent = next;
         lyricsTextEl.style.opacity = '1';
-    }, 150);
+    }, 130);
 }
 
 function renderProgress() {
     if (state.totalTime > 0) {
         const percent = (state.currentTime / state.totalTime) * 100;
         progressFill.style.width = `${Math.min(percent, 100)}%`;
+        progressBar.setAttribute('aria-valuenow', Math.round(percent));
     }
     currentTimeEl.textContent = formatTime(state.currentTime);
 }
@@ -54,11 +70,11 @@ function renderPlayState() {
     if (state.isPlaying) {
         vinyl.style.animation = 'spin 8s linear infinite';
         tonearm.classList.add('playing');
-        playPauseBtn.textContent = '⏸';
+        setHTML(playPauseBtn, ICONS.pause);
     } else {
         vinyl.style.animation = 'none';
         tonearm.classList.remove('playing');
-        playPauseBtn.textContent = '▶';
+        setHTML(playPauseBtn, ICONS.play);
     }
     renderLyrics();
 }
@@ -71,15 +87,11 @@ export function setPlayerPlaying(isPlaying) {
 function enableControls() {
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
     });
-
-    muteBtn.textContent = '🔊';
-    muteBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-    repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-    repeatBtn.style.color = 'white';
     state.isRepeat = false;
+    repeatBtn.classList.remove('active');
+    state.isMuted = false;
+    setHTML(muteBtn, ICONS.volume);
 }
 
 function restartAudio() {
@@ -116,7 +128,7 @@ function startPlaying({ audioUrl, songTitle, artistName, albumArtUrl }) {
 
     state.audioElement = new Audio(audioUrl);
 
-    if (songTitle !== undefined) songTitleEl.textContent = songTitle || '';
+    if (songTitle !== undefined) songTitleEl.textContent = songTitle || 'Untitled';
     if (artistName !== undefined) artistNameEl.textContent = artistName || '';
     if (albumArtUrl) updateAlbumArt(albumArtUrl);
 
@@ -171,19 +183,13 @@ function bindControls() {
         if (!state.audioElement) return;
         state.isMuted = !state.isMuted;
         state.audioElement.muted = state.isMuted;
-        muteBtn.textContent = state.isMuted ? '🔇' : '🔊';
+        setHTML(muteBtn, state.isMuted ? ICONS.muted : ICONS.volume);
     });
 
     repeatBtn.addEventListener('click', () => {
         if (!state.audioElement) return;
         state.isRepeat = !state.isRepeat;
-        if (state.isRepeat) {
-            repeatBtn.style.background = 'rgba(102, 126, 234, 0.3)';
-            repeatBtn.style.color = '#667eea';
-        } else {
-            repeatBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-            repeatBtn.style.color = 'white';
-        }
+        repeatBtn.classList.toggle('active', state.isRepeat);
     });
 
     let seeking = false;
@@ -207,7 +213,7 @@ export function initPlayer() {
     renderLyrics();
 
     on(Events.PLAY_FILE, startPlaying);
-    on(Events.UPDATE_SONG_TITLE, (t) => { songTitleEl.textContent = t || ''; });
+    on(Events.UPDATE_SONG_TITLE, (t) => { songTitleEl.textContent = t || 'Untitled'; });
     on(Events.UPDATE_ARTIST_NAME, (a) => { artistNameEl.textContent = a || ''; });
     on(Events.UPDATE_ALBUM_ART, updateAlbumArt);
     on(Events.UPDATE_LYRICS, setLyrics);

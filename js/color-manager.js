@@ -103,17 +103,6 @@ class ColorManager {
     }
 
     async copyHex() {
-        const flash = () => {
-            const icon = this.copyBtn.querySelector('.copy-icon');
-            const original = icon.textContent;
-            this.copyBtn.classList.add('copied');
-            icon.textContent = '✓';
-            setTimeout(() => {
-                this.copyBtn.classList.remove('copied');
-                icon.textContent = original;
-            }, 2000);
-        };
-
         try {
             await navigator.clipboard.writeText(this.current);
         } catch {
@@ -124,7 +113,8 @@ class ColorManager {
             document.execCommand('copy');
             ta.remove();
         }
-        flash();
+        this.copyBtn.classList.add('copied');
+        setTimeout(() => this.copyBtn.classList.remove('copied'), 1600);
     }
 
     getCurrent() {

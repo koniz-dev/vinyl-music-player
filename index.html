@@ -4,36 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinyl Music Player - Create Beautiful Music Videos with Lyrics</title>
+    <title>Vinyl Music Player — Turn audio into vinyl-style music videos</title>
 
     <meta name="description"
-        content="A beautiful vinyl music player with synchronized lyrics and WebM video export. Create stunning music videos with your favorite songs and share them with the world.">
+        content="Turn any audio file into a vinyl-spin music video with synced lyrics — right in your browser. Export 720×1280 WebM for TikTok, Reels, and Shorts. No upload, no install.">
     <meta name="keywords"
-        content="music player, vinyl, lyrics, video export, music video, audio player, synchronized lyrics, WebM export">
+        content="music player, vinyl, lyrics video, WebM export, music video maker, synced lyrics, MediaRecorder, browser tool">
     <meta name="author" content="koniz-dev">
     <meta name="robots" content="index, follow">
 
-    <meta property="og:title" content="Vinyl Music Player - Create Beautiful Music Videos">
+    <meta property="og:title" content="Vinyl Music Player — Turn audio into vinyl-style music videos">
     <meta property="og:description"
-        content="A beautiful vinyl music player with synchronized lyrics and WebM video export functionality.">
+        content="Browser-based vinyl music video maker with synced lyrics and WebM export. No upload required.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://github.com/koniz-dev/vinyl-music-player">
+    <meta property="og:url" content="https://koniz-dev.github.io/vinyl-music-player/">
     <meta property="og:image" content="favicon/android-chrome-512x512.png">
     <meta property="og:site_name" content="Vinyl Music Player">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Vinyl Music Player - Create Beautiful Music Videos">
+    <meta name="twitter:title" content="Vinyl Music Player">
     <meta name="twitter:description"
-        content="A beautiful vinyl music player with synchronized lyrics and WebM video export functionality.">
+        content="Browser-based vinyl music video maker with synced lyrics and WebM export.">
     <meta name="twitter:image" content="favicon/android-chrome-512x512.png">
 
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#09090b">
+    <meta name="color-scheme" content="dark">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Vinyl Player">
     <meta name="application-name" content="Vinyl Music Player">
-    <meta name="msapplication-TileColor" content="#1e1b4b">
-    <meta name="msapplication-config" content="favicon/browserconfig.xml">
 
     <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
@@ -43,213 +42,242 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="styles/common.css">
-    <link rel="stylesheet" type="text/css" href="styles/index.css">
-    <link rel="stylesheet" type="text/css" href="styles/settings.css">
-    <link rel="stylesheet" type="text/css" href="styles/vinyl-player.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/index.css">
+    <link rel="stylesheet" href="styles/vinyl-player.css">
+    <link rel="stylesheet" href="styles/settings.css">
+    <link rel="stylesheet" href="styles/toast.css">
 </head>
 
 <body>
-    <div class="main-header">
-        <h1 class="main-title">
-            <span class="main-icon">🎵</span>
-            Vinyl Music Player
-        </h1>
-    </div>
+    <!-- Ambient background tinted by album-art accent -->
+    <div class="ambient" aria-hidden="true"></div>
 
-    <div class="container">
-        <div class="left-panel">
-            <div class="panel-content">
-                <div class="settings-container">
-                    <div class="header">
-                        <h1>
-                            <span class="music-icon">🎵</span>
-                            Music Player Controls
-                        </h1>
-                        <p class="subtitle">Customize your music experience</p>
-                    </div>
-
-                    <form id="musicForm">
-                        <div class="form-group">
-                            <label class="form-label">
-                                🎵 Audio File<span style="color: #e53e3e;">*</span>
-                            </label>
-                            <div class="upload-area audio-upload" id="audio-upload-area">
-                                <input type="file" accept="audio/*" id="audio-file">
-                                <div class="upload-icon">🎵</div>
-                                <div class="upload-text">Upload MP3 File</div>
-                                <div class="upload-hint">Click to browse or drag & drop</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                📝 Song Title<span style="color: #e53e3e;">*</span>
-                            </label>
-                            <input type="text" class="form-input" id="song-title" placeholder="Enter song title"
-                                value="">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                🎤 Song Artist
-                            </label>
-                            <input type="text" class="form-input" id="artist-name" placeholder="Enter artist name"
-                                value="">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                🎨 Album Art
-                            </label>
-                            <div class="upload-area" id="upload-area">
-                                <input type="file" accept="image/*" id="album-art">
-                                <div class="upload-icon">📷</div>
-                                <div class="upload-text">Upload Album Art</div>
-                                <div class="upload-hint">Click to browse or drag & drop</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                📝 Lyrics
-                            </label>
-                            <div class="lyrics-container" id="lyrics-container">
-                            </div>
-                            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                                <button type="button" class="add-lyrics-btn" id="add-lyrics-btn">
-                                    <span class="add-icon">+</span> Add Lyrics
-                                </button>
-                                <button type="button" class="dev-lyrics-btn" id="dev-lyrics-btn">
-                                    <span class="dev-icon">⚙️</span> For Dev
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                🎨 Lyrics Color
-                            </label>
-                            <div class="color-settings-container">
-                                <div class="color-picker-section">
-                                    <input type="color" class="color-picker" id="lyrics-color-picker" value="#ffb3d1">
-                                    <span class="color-preview" id="color-preview">Current Color</span>
-                                    <button type="button" class="copy-hex-btn" id="copy-hex-btn"
-                                        title="Copy hex code" aria-label="Copy hex code">
-                                        <span class="copy-icon" aria-hidden="true">📋</span>
-                                    </button>
-                                </div>
-                                <div class="color-history-section">
-                                    <div class="color-history-label">Recent Colors:</div>
-                                    <div class="color-history" id="color-history">
-                                        <!-- Color history items will be added here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <button type="button" class="export-btn" id="export-btn" disabled>
-                                <span class="export-icon">🎬</span> Export WebM Video
-                            </button>
-                            <button type="button" class="debug-btn" id="debug-btn"
-                                style="margin-top: 8px; display: none;">
-                                <span class="debug-icon">🔧</span> Check Browser Support
-                            </button>
-                            <div class="export-progress" id="export-progress" style="display: none;">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="progress-fill"></div>
-                                </div>
-                                <div class="progress-text" id="progress-text">Preparing export...</div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-dot" aria-hidden="true"></span>
+            <span class="brand-text">vinyl<span class="brand-accent">.player</span></span>
         </div>
+        <div class="topbar-actions">
+            <button type="button" class="btn btn-ghost btn-icon" id="debug-btn"
+                aria-label="Check browser support" title="Check browser support">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+            <button type="button" class="btn" id="open-settings-btn"
+                aria-label="Open settings" aria-controls="settings-drawer" aria-expanded="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span>Settings</span>
+            </button>
+        </div>
+    </header>
 
-        <div class="right-panel">
-            <div class="panel-content">
-                <div class="vinyl-player-container">
-                    <div class="music-player">
-                        <div class="vinyl-section">
-                            <div class="vinyl-container">
-                                <div class="vinyl-record" id="vinyl">
-                                    <div class="vinyl-grooves groove-1"></div>
-                                    <div class="vinyl-grooves groove-2"></div>
-                                    <div class="vinyl-grooves groove-3"></div>
-                                    <div class="vinyl-center">
-                                        <div class="vinyl-album-art"></div>
-                                    </div>
-                                </div>
-                                <div class="tonearm" id="tonearm"></div>
-                            </div>
-
-
-                            <div class="song-info">
-                                <div class="vinyl-song-title"></div>
-                                <div class="vinyl-artist-name"></div>
-                                <div class="vinyl-lyrics-text"></div>
-                            </div>
-                        </div>
-
-                        <div class="progress-container">
-                            <div class="vinyl-progress-bar">
-                                <div class="vinyl-progress"></div>
-                            </div>
-                            <div class="progress-time">
-                                <span class="vinyl-current-time">00:00</span>
-                                <span class="vinyl-total-time">00:00</span>
-                            </div>
-                        </div>
-
-                        <div class="controls">
-                            <button type="button" class="control-btn vinyl-mute-btn" disabled
-                                aria-label="Mute" style="opacity: 0.5; cursor: not-allowed;">🔊</button>
-                            <button type="button" class="control-btn" disabled
-                                aria-label="Previous track" style="opacity: 0.5; cursor: not-allowed;">⏮</button>
-                            <button type="button" class="control-btn vinyl-play-pause-btn" disabled
-                                aria-label="Play / pause" style="opacity: 0.5; cursor: not-allowed;">▶</button>
-                            <button type="button" class="control-btn" disabled
-                                aria-label="Next track" style="opacity: 0.5; cursor: not-allowed;">⏭</button>
-                            <button type="button" class="control-btn vinyl-repeat-btn" disabled
-                                aria-label="Repeat" style="opacity: 0.5; cursor: not-allowed;">↻</button>
-                        </div>
+    <main class="stage">
+        <section class="player" aria-label="Vinyl music player">
+            <div class="vinyl-wrap">
+                <div class="vinyl-record" id="vinyl">
+                    <div class="vinyl-grooves groove-1"></div>
+                    <div class="vinyl-grooves groove-2"></div>
+                    <div class="vinyl-grooves groove-3"></div>
+                    <div class="vinyl-center">
+                        <div class="vinyl-album-art"></div>
                     </div>
                 </div>
+                <div class="tonearm" id="tonearm" aria-hidden="true"></div>
             </div>
-        </div>
-    </div>
 
-    <div class="modal-overlay" id="dev-lyrics-modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>For Dev - Import JSON Lyrics</h3>
-                <button type="button" class="modal-close-btn" id="modal-close-btn"
-                    aria-label="Close dialog">×</button>
+            <div class="meta">
+                <h1 class="vinyl-song-title">Untitled</h1>
+                <p class="vinyl-artist-name"></p>
+                <p class="vinyl-lyrics-text"></p>
             </div>
+
+            <div class="progress-row">
+                <span class="vinyl-current-time mono">00:00</span>
+                <div class="vinyl-progress-bar" role="progressbar" aria-label="Playback progress"
+                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div class="vinyl-progress"></div>
+                </div>
+                <span class="vinyl-total-time mono">00:00</span>
+            </div>
+
+            <div class="controls">
+                <button type="button" class="control-btn vinyl-mute-btn" disabled aria-label="Mute">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                </button>
+                <button type="button" class="control-btn vinyl-play-pause-btn" disabled aria-label="Play / pause">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                    </svg>
+                </button>
+                <button type="button" class="control-btn vinyl-repeat-btn" disabled aria-label="Repeat">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="17 1 21 5 17 9"></polyline>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                        <polyline points="7 23 3 19 7 15"></polyline>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    </svg>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- ─── Settings drawer ─────────────────────────────────────── -->
+
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+
+    <aside class="drawer" id="settings-drawer" aria-label="Settings" aria-hidden="true">
+        <header class="drawer-head">
+            <h2>Settings</h2>
+            <button type="button" class="btn btn-ghost btn-icon" id="close-settings-btn"
+                aria-label="Close settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </header>
+
+        <form id="musicForm" class="drawer-body">
+            <div class="field">
+                <label class="field-label" for="audio-file">
+                    Audio file <span class="req">*</span>
+                </label>
+                <div class="drop-zone audio-upload" id="audio-upload-area">
+                    <input type="file" accept="audio/*" id="audio-file">
+                    <div class="dz-title">Drop or click</div>
+                    <div class="dz-hint">MP3, WAV, OGG, M4A, AAC</div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="song-title">
+                    Song title <span class="req">*</span>
+                </label>
+                <input type="text" class="text-input" id="song-title" placeholder="Untitled">
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="artist-name">Artist</label>
+                <input type="text" class="text-input" id="artist-name" placeholder="Optional">
+            </div>
+
+            <div class="field">
+                <label class="field-label">Album art</label>
+                <div class="drop-zone" id="upload-area">
+                    <input type="file" accept="image/*" id="album-art">
+                    <div class="dz-title">Drop image</div>
+                    <div class="dz-hint">Used as label + ambient bg · JPG · PNG · WebP</div>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="field-label-row">
+                    <span class="field-label">Lyrics</span>
+                    <div class="lyrics-toolbar">
+                        <button type="button" class="btn btn-ghost lyrics-tool" id="add-lyrics-btn"
+                            aria-label="Add lyrics line">+ line</button>
+                        <button type="button" class="btn btn-ghost lyrics-tool" id="dev-lyrics-btn"
+                            aria-label="Import lyrics from JSON">{ } import</button>
+                    </div>
+                </div>
+                <div class="lyrics-container" id="lyrics-container"></div>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="lyrics-color-picker">Lyrics color</label>
+                <div class="color-row">
+                    <input type="color" class="color-swatch" id="lyrics-color-picker" value="#ffb3d1"
+                        aria-label="Pick lyrics color">
+                    <span class="color-hex mono" id="color-preview">#FFB3D1</span>
+                    <button type="button" class="btn btn-ghost btn-icon" id="copy-hex-btn"
+                        title="Copy hex" aria-label="Copy hex">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="color-history-section">
+                    <div class="color-history" id="color-history"></div>
+                </div>
+            </div>
+
+            <div class="field export-field">
+                <button type="button" class="btn btn-primary export-btn" id="export-btn" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Export WebM
+                </button>
+                <div class="export-progress" id="export-progress" hidden>
+                    <div class="export-progress-bar">
+                        <div class="export-progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="export-progress-text mono" id="progress-text">Preparing…</div>
+                </div>
+            </div>
+        </form>
+    </aside>
+
+    <!-- ─── JSON import modal ───────────────────────────────────── -->
+
+    <div class="modal-overlay" id="dev-lyrics-modal" hidden>
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <header class="modal-header">
+                <h3 id="modal-title">Import lyrics from JSON</h3>
+                <button type="button" class="btn btn-ghost btn-icon" id="modal-close-btn"
+                    aria-label="Close dialog">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
             <div class="modal-body">
                 <p class="modal-description">
-                    Paste your JSON lyrics here. Format should be an array of objects with <code>start</code> (mm:ss),
-                    <code>end</code> (mm:ss), and <code>text</code> properties.
+                    Paste an array of <code>{ start, end, text }</code> objects. Times are <code>mm:ss</code>.
                 </p>
-                <strong>Example:</strong>
-                <div class="json-example">
-                    <pre>[
+                <pre class="json-example">[
   {"start": "00:18", "end": "00:21", "text": "I wake up in the familiar room"},
   {"start": "00:22", "end": "00:24", "text": "Where your hand once rested"}
 ]</pre>
-                </div>
-                <textarea class="json-textarea" id="json-lyrics-input" placeholder="Paste your JSON lyrics here..."
-                    rows="10"></textarea>
+                <textarea class="text-input json-textarea" id="json-lyrics-input"
+                    placeholder="Paste JSON here…" rows="10"></textarea>
                 <div class="modal-actions">
-                    <button type="button" class="modal-cancel-btn" id="modal-cancel-btn">Cancel</button>
-                    <button type="button" class="modal-import-btn" id="modal-import-btn">Import Lyrics</button>
+                    <button type="button" class="btn" id="modal-cancel-btn">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="modal-import-btn">Import</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- ─── Toast container ─────────────────────────────────────── -->
+
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
     <script type="module" src="js/main.js"></script>
 </body>

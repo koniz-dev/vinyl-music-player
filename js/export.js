@@ -3,6 +3,10 @@ import { state } from './lib/state.js';
 import { setPlayerPlaying } from './player.js';
 
 const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
+const CANVAS_W = 720;
+const CANVAS_H = 1280;
+const ACCENT_FALLBACK = '#818cf8';
+const ACCENT_HI_FALLBACK = '#a5b4fc';
 
 let canvas = null;
 let ctx = null;
@@ -16,44 +20,26 @@ let albumArtImage = null;
 let exportLyrics = [];
 let vinylRotation = 0;
 let wasMainAudioPlaying = false;
+let exportAccent = ACCENT_FALLBACK;
+let exportAccentHi = ACCENT_HI_FALLBACK;
+
+// ──────────────────────────────────────────────────────────────────
+// Setup
+// ──────────────────────────────────────────────────────────────────
 
 function createCanvas() {
     canvas = document.createElement('canvas');
-
-    let width = 720;
-    let height = 1280;
-
-    const probeRect = (el) => {
-        if (!el) return null;
-        const r = el.getBoundingClientRect();
-        return r.width > 0 && r.height > 0 ? { width: r.width, height: r.height } : null;
-    };
-
-    const fallbackFromWindow = () => {
-        const ww = window.innerWidth;
-        const wh = window.innerHeight;
-        if (!(ww > 0 && wh > 0)) return null;
-        const aspect = 9 / 16;
-        return ww / wh > aspect
-            ? { width: wh * aspect, height: wh }
-            : { width: ww, height: ww / aspect };
-    };
-
-    const dims = probeRect(document.querySelector('.vinyl-player'))
-        || probeRect(window.frameElement)
-        || fallbackFromWindow();
-
-    if (dims) {
-        width = dims.width;
-        height = dims.height;
-    }
-
-    canvas.width = Math.max(width, 400);
-    canvas.height = Math.max(height, 600);
-
+    canvas.width = CANVAS_W;
+    canvas.height = CANVAS_H;
     ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
+}
+
+function readAccentFromCss() {
+    const cs = getComputedStyle(document.documentElement);
+    exportAccent = cs.getPropertyValue('--accent').trim() || ACCENT_FALLBACK;
+    exportAccentHi = cs.getPropertyValue('--accent-hi').trim() || ACCENT_HI_FALLBACK;
 }
 
 function pickMimeType() {
@@ -70,8 +56,6 @@ function pickMimeType() {
 function disableControls(disabled) {
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.disabled = disabled;
-        btn.style.opacity = disabled ? '0.5' : '1';
-        btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
     });
 }
 
@@ -92,6 +76,10 @@ function resumeMainAudioIfPaused() {
         .catch(() => {});
 }
 
+// ──────────────────────────────────────────────────────────────────
+// Recording orchestrator (unchanged from prior version aside from canvas size)
+// ──────────────────────────────────────────────────────────────────
+
 async function startVideoRecording({ audioFile, songTitle, artistName, albumArtFile }) {
     if (state.isExporting) return;
     state.isExporting = true;
@@ -111,18 +99,19 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             emit(Events.EXPORT_ERROR, 'Export timeout. Please try again with a shorter audio file.');
         }, EXPORT_TIMEOUT_MS);
 
-        emit(Events.EXPORT_PROGRESS, { progress: 5, message: 'Initializing export...' });
+        emit(Events.EXPORT_PROGRESS, { progress: 5, message: 'Initializing export…' });
 
         createCanvas();
+        readAccentFromCss();
 
         if (albumArtFile) {
-            emit(Events.EXPORT_PROGRESS, { progress: 15, message: 'Loading album art...' });
+            emit(Events.EXPORT_PROGRESS, { progress: 15, message: 'Loading album art…' });
             albumArtImage = new Image();
             albumArtImage.src = URL.createObjectURL(albumArtFile);
             await new Promise((resolve) => { albumArtImage.onload = resolve; });
         }
 
-        emit(Events.EXPORT_PROGRESS, { progress: 15, message: 'Loading audio...' });
+        emit(Events.EXPORT_PROGRESS, { progress: 15, message: 'Loading audio…' });
 
         const audioUrl = URL.createObjectURL(audioFile);
         exportAudio = new Audio(audioUrl);
@@ -147,7 +136,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         ]);
 
         const mimeType = pickMimeType();
-        emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Setting up video recorder with audio...' });
+        emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Setting up recorder…' });
 
         recorder = new MediaRecorder(combined, { mimeType });
         recordedChunks = [];
@@ -162,7 +151,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             const videoBlob = new Blob(recordedChunks, { type: mimeType });
             const fileName = `${songTitle.replace(/[<>:"/\\|?*]/g, '')}.webm`;
 
-            emit(Events.EXPORT_PROGRESS, { progress: 100, message: 'WebM export complete!' });
+            emit(Events.EXPORT_PROGRESS, { progress: 100, message: 'Done.' });
             emit(Events.EXPORT_COMPLETE, { videoBlob, fileName });
 
             resumeMainAudioIfPaused();
@@ -170,7 +159,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             state.isExporting = false;
         };
 
-        emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Starting recording...' });
+        emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Recording…' });
         recorder.start();
         exportAudio.play();
 
@@ -185,7 +174,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         progressInterval = setInterval(() => {
             const elapsed = (performance.now() - startTime) / 1000;
             const progress = Math.min(20 + (elapsed / duration) * 60, 80);
-            emit(Events.EXPORT_PROGRESS, { progress, message: `Recording... ${Math.round(progress)}%` });
+            emit(Events.EXPORT_PROGRESS, { progress, message: `Recording… ${Math.round(progress)}%` });
             if (elapsed >= duration) {
                 clearInterval(progressInterval);
                 progressInterval = null;
@@ -232,9 +221,32 @@ function debugBrowserSupport() {
     ].join('\n'));
 }
 
-// ---------- Render pipeline (pixel-identical to previous version) ----------
+// ──────────────────────────────────────────────────────────────────
+// Render helpers
+// ──────────────────────────────────────────────────────────────────
 
-function drawRoundedRectPath(x, y, w, h, r) {
+function hexToRgb(hex) {
+    const h = hex.startsWith('#') ? hex.slice(1) : hex;
+    return [
+        parseInt(h.slice(0, 2), 16) || 0,
+        parseInt(h.slice(2, 4), 16) || 0,
+        parseInt(h.slice(4, 6), 16) || 0,
+    ];
+}
+
+function rgba(hex, alpha) {
+    const [r, g, b] = hexToRgb(hex);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function fmt(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+function roundedRect(x, y, w, h, r) {
+    ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
     ctx.quadraticCurveTo(x + w, y, x + w, y + r);
@@ -244,279 +256,340 @@ function drawRoundedRectPath(x, y, w, h, r) {
     ctx.quadraticCurveTo(x, y + h, x, y + h - r);
     ctx.lineTo(x, y + r);
     ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
 }
+
+/* SVG-path icons drawn via Path2D, scaled to fit a 24×24 box. */
+
+function drawSvgPath(pathStr, cx, cy, size, { fill, stroke, strokeWidth = 2 } = {}) {
+    const path = new Path2D(pathStr);
+    ctx.save();
+    ctx.translate(cx - size / 2, cy - size / 2);
+    ctx.scale(size / 24, size / 24);
+    if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill(path);
+    }
+    if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke(path);
+    }
+    ctx.restore();
+}
+
+function drawPlayIcon(cx, cy, size, color) {
+    drawSvgPath('M6 4 L20 12 L6 20 Z', cx, cy, size, { fill: color });
+}
+
+function drawPauseIcon(cx, cy, size, color) {
+    drawSvgPath('M6 4 H10 V20 H6 Z M14 4 H18 V20 H14 Z', cx, cy, size, { fill: color });
+}
+
+function drawVolumeIcon(cx, cy, size, color) {
+    drawSvgPath(
+        'M11 5 L6 9 H2 V15 H6 L11 19 Z M15.54 8.46 a5 5 0 0 1 0 7.07 M19.07 4.93 a10 10 0 0 1 0 14.14',
+        cx, cy, size, { stroke: color, strokeWidth: 2 }
+    );
+}
+
+function drawRepeatIcon(cx, cy, size, color) {
+    drawSvgPath(
+        'M17 1 L21 5 L17 9 M3 11 V9 a4 4 0 0 1 4-4 h14 M7 23 L3 19 L7 15 M21 13 V15 a4 4 0 0 1-4 4 H3',
+        cx, cy, size, { stroke: color, strokeWidth: 2 }
+    );
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Render loop — Studio Dark
+// ──────────────────────────────────────────────────────────────────
 
 function renderToCanvas() {
     if (!ctx) return;
 
-    vinylRotation += 0.3;
+    // 1.5°/frame at 30fps = 45°/s = 8s per full rotation (matches CSS `spin 8s linear`)
+    vinylRotation = (vinylRotation + 1.5) % 360;
 
-    const bodyGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    bodyGradient.addColorStop(0, '#667eea');
-    bodyGradient.addColorStop(0.25, '#764ba2');
-    bodyGradient.addColorStop(0.5, '#f093fb');
-    bodyGradient.addColorStop(0.75, '#f5576c');
-    bodyGradient.addColorStop(1, '#4facfe');
-    ctx.fillStyle = bodyGradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const W = CANVAS_W;
+    const H = CANVAS_H;
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    /* ── Background: zinc-950 + accent radial ambient ── */
 
-    const musicPlayerWidth = Math.min(canvas.width * 0.9, 350);
-    const musicPlayerHeight = Math.min(canvas.height * 0.9, 600);
-    const musicPlayerX = (canvas.width - musicPlayerWidth) / 2;
-    const musicPlayerY = (canvas.height - musicPlayerHeight) / 2;
+    ctx.fillStyle = '#09090b';
+    ctx.fillRect(0, 0, W, H);
 
-    ctx.save();
+    const topGlow = ctx.createRadialGradient(W / 2, -60, 0, W / 2, -60, W * 0.95);
+    topGlow.addColorStop(0, rgba(exportAccent, 0.22));
+    topGlow.addColorStop(0.65, rgba(exportAccent, 0.04));
+    topGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = topGlow;
+    ctx.fillRect(0, 0, W, H * 0.7);
+
+    const cornerGlow = ctx.createRadialGradient(W + 40, H + 40, 0, W + 40, H + 40, W * 0.8);
+    cornerGlow.addColorStop(0, rgba(exportAccent, 0.16));
+    cornerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = cornerGlow;
+    ctx.fillRect(0, H * 0.35, W, H * 0.65);
+
+    /* ── Brand mark ── */
+
+    ctx.fillStyle = '#fafafa';
+    ctx.font = '600 24px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    // accent dot
+    ctx.fillStyle = exportAccent;
     ctx.beginPath();
-    drawRoundedRectPath(musicPlayerX, musicPlayerY, musicPlayerWidth, musicPlayerHeight, 30);
-    ctx.clip();
-
-    if (albumArtImage) {
-        const imgAspect = albumArtImage.width / albumArtImage.height;
-        const playerAspect = musicPlayerWidth / musicPlayerHeight;
-        let drawWidth, drawHeight, offsetX, offsetY;
-        if (imgAspect > playerAspect) {
-            drawHeight = musicPlayerHeight;
-            drawWidth = drawHeight * imgAspect;
-            offsetX = musicPlayerX + (musicPlayerWidth - drawWidth) / 2;
-            offsetY = musicPlayerY;
-        } else {
-            drawWidth = musicPlayerWidth;
-            drawHeight = drawWidth / imgAspect;
-            offsetX = musicPlayerX;
-            offsetY = musicPlayerY + (musicPlayerHeight - drawHeight) / 2;
-        }
-        ctx.drawImage(albumArtImage, offsetX, offsetY, drawWidth, drawHeight);
-    }
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    ctx.fillRect(musicPlayerX, musicPlayerY, musicPlayerWidth, musicPlayerHeight);
-    ctx.restore();
-
-    const vinylSectionHeight = musicPlayerHeight * 0.7;
-    const vinylContainerWidth = 200;
-    const vinylContainerHeight = 200;
-    const vinylContainerX = musicPlayerX + (musicPlayerWidth - vinylContainerWidth) / 2;
-    const vinylContainerY = musicPlayerY + (vinylSectionHeight - vinylContainerHeight) / 2 - 20;
-    const centerX = vinylContainerX + vinylContainerWidth / 2;
-    const centerY = vinylContainerY + vinylContainerHeight / 2;
-    const vinylRadius = vinylContainerWidth / 2;
-
-    ctx.save();
-    ctx.translate(centerX, centerY);
-    ctx.rotate((vinylRotation * Math.PI) / 180);
-    ctx.translate(-centerX, -centerY);
-
-    const vinylGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, vinylRadius);
-    vinylGradient.addColorStop(0, '#2a2a2a');
-    vinylGradient.addColorStop(0.2, '#2a2a2a');
-    vinylGradient.addColorStop(0.4, '#1a1a1a');
-    vinylGradient.addColorStop(0.8, '#000000');
-    vinylGradient.addColorStop(1, '#000000');
-    ctx.fillStyle = vinylGradient;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, vinylRadius, 0, 2 * Math.PI);
+    ctx.arc(60, 70, 6, 0, Math.PI * 2);
     ctx.fill();
-    ctx.restore();
+    // wordmark
+    ctx.fillStyle = '#fafafa';
+    ctx.fillText('vinyl', 78, 70);
+    ctx.fillStyle = '#71717a';
+    const vinylWidth = ctx.measureText('vinyl').width;
+    ctx.fillText('.player', 78 + vinylWidth, 70);
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 1;
+    /* ── Vinyl record ── */
+
+    const vinylSize = 460;
+    const vx = W / 2;
+    const vy = 380;
+    const vr = vinylSize / 2;
+
+    // Outer soft shadow (not rotated)
+    const shadow = ctx.createRadialGradient(vx, vy + 14, vr * 0.9, vx, vy + 14, vr * 1.18);
+    shadow.addColorStop(0, 'rgba(0,0,0,0.45)');
+    shadow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = shadow;
+    ctx.beginPath();
+    ctx.arc(vx, vy + 14, vr * 1.18, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.save();
-    ctx.translate(centerX, centerY);
+    ctx.translate(vx, vy);
     ctx.rotate((vinylRotation * Math.PI) / 180);
-    ctx.translate(-centerX, -centerY);
-    for (const factor of [0.8, 0.68, 0.56]) {
+
+    // Body
+    const body = ctx.createRadialGradient(0, 0, 0, 0, 0, vr);
+    body.addColorStop(0, '#1a1a1d');
+    body.addColorStop(0.55, '#0c0c0e');
+    body.addColorStop(1, '#050506');
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(0, 0, vr, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 1px highlight ring at edge
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(0, 0, vr - 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Grooves
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1.5;
+    for (const factor of [0.84, 0.70, 0.58]) {
         ctx.beginPath();
-        ctx.arc(centerX, centerY, vinylRadius * factor, 0, 2 * Math.PI);
+        ctx.arc(0, 0, vr * factor, 0, Math.PI * 2);
         ctx.stroke();
     }
-    ctx.restore();
 
-    const centerRadius = vinylRadius * 0.48;
-    const centerGradient = ctx.createLinearGradient(
-        centerX - centerRadius, centerY - centerRadius,
-        centerX + centerRadius, centerY + centerRadius
-    );
-    centerGradient.addColorStop(0, '#667eea');
-    centerGradient.addColorStop(1, '#764ba2');
-    ctx.fillStyle = centerGradient;
+    // Center disc (accent gradient)
+    const centerR = vr * 0.44;
+    const centerGrad = ctx.createLinearGradient(-centerR, -centerR, centerR, centerR);
+    centerGrad.addColorStop(0, exportAccent);
+    centerGrad.addColorStop(1, exportAccentHi);
+    ctx.fillStyle = centerGrad;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, centerRadius, 0, 2 * Math.PI);
+    ctx.arc(0, 0, centerR, 0, Math.PI * 2);
     ctx.fill();
 
-    const highlight = ctx.createRadialGradient(
-        centerX - centerRadius * 0.3, centerY - centerRadius * 0.3, 0,
-        centerX - centerRadius * 0.3, centerY - centerRadius * 0.3, centerRadius * 0.8
-    );
-    highlight.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-    highlight.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
-    highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = highlight;
+    // Inner dark vignette inside center
+    const inner = ctx.createRadialGradient(0, 0, centerR * 0.55, 0, 0, centerR);
+    inner.addColorStop(0, 'rgba(0,0,0,0)');
+    inner.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = inner;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, centerRadius, 0, 2 * Math.PI);
+    ctx.arc(0, 0, centerR, 0, Math.PI * 2);
     ctx.fill();
 
-    const albumArtRadius = centerRadius * 0.83;
+    // Album art on center
+    const artR = centerR * 0.78;
     if (albumArtImage) {
         ctx.save();
         ctx.beginPath();
-        ctx.arc(centerX, centerY, albumArtRadius, 0, 2 * Math.PI);
+        ctx.arc(0, 0, artR, 0, Math.PI * 2);
         ctx.clip();
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate((vinylRotation * Math.PI) / 180);
-        ctx.translate(-centerX, -centerY);
-        ctx.drawImage(albumArtImage, centerX - albumArtRadius, centerY - albumArtRadius,
-                      albumArtRadius * 2, albumArtRadius * 2);
+        ctx.drawImage(albumArtImage, -artR, -artR, artR * 2, artR * 2);
         ctx.restore();
-        ctx.restore();
-    } else {
-        const fallback = new Image();
-        fallback.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b6b"/><stop offset="100%" style="stop-color:%234ecdc4"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23g)"/><path d="M30 40 Q35 35 40 40 L45 50 Q50 45 55 50 L60 60 Q55 65 50 60 L45 50 Q40 55 35 50 Z" fill="white" opacity="0.8"/></svg>';
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate((vinylRotation * Math.PI) / 180);
-        ctx.translate(-centerX, -centerY);
-        ctx.drawImage(fallback, centerX - albumArtRadius, centerY - albumArtRadius,
-                      albumArtRadius * 2, albumArtRadius * 2);
-        ctx.restore();
+        // soft inner ring
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, artR, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
-    const tonearmX = vinylContainerX + vinylContainerWidth - 16;
-    const tonearmY = vinylContainerY + 16;
-    const tonearmLength = 96;
-    ctx.save();
-    ctx.translate(tonearmX, tonearmY);
-    ctx.rotate(25 * Math.PI / 180);
-    const tonearmGradient = ctx.createLinearGradient(0, 0, 0, tonearmLength);
-    tonearmGradient.addColorStop(0, '#fff');
-    tonearmGradient.addColorStop(1, '#ccc');
-    ctx.fillStyle = tonearmGradient;
-    ctx.fillRect(-1.5, 0, 3, tonearmLength);
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(-1.5, 0, 5, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillStyle = '#666';
-    ctx.fillRect(-2, tonearmLength - 5, 6, 10);
     ctx.restore();
 
-    const songInfoX = musicPlayerX;
-    const songInfoY = vinylContainerY + vinylContainerHeight + 40;
-    const songInfoWidth = musicPlayerWidth;
+    /* ── Tonearm (not rotated) ── */
 
-    const songTitleText = document.querySelector('.vinyl-song-title').textContent;
-    const artistText = document.querySelector('.vinyl-artist-name').textContent;
-    const liveLyricsText = document.querySelector('.vinyl-lyrics-text').textContent;
+    const armStartX = vx + vr * 0.96;
+    const armStartY = vy - vr * 0.96;
+    const armLen = vr * 0.78;
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `bold 28px 'Patrick Hand', Arial, sans-serif`;
+    ctx.save();
+    ctx.translate(armStartX, armStartY);
+    ctx.rotate(28 * Math.PI / 180);
+
+    // Arm body
+    const armGrad = ctx.createLinearGradient(0, 0, 0, armLen);
+    armGrad.addColorStop(0, '#f4f4f5');
+    armGrad.addColorStop(1, '#a1a1aa');
+    ctx.fillStyle = armGrad;
+    ctx.fillRect(-3, 0, 6, armLen);
+
+    // Pivot
+    const pivot = ctx.createRadialGradient(-5, -5, 0, 0, 0, 14);
+    pivot.addColorStop(0, '#fafafa');
+    pivot.addColorStop(1, '#71717a');
+    ctx.fillStyle = pivot;
+    ctx.beginPath();
+    ctx.arc(0, 0, 14, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Needle
+    ctx.fillStyle = '#27272a';
+    ctx.fillRect(-4, armLen - 4, 8, 14);
+
+    ctx.restore();
+
+    /* ── Song title + artist ── */
+
+    const songTitleText = document.querySelector('.vinyl-song-title')?.textContent || 'Untitled';
+    const artistText = document.querySelector('.vinyl-artist-name')?.textContent || '';
+    const liveLyricsText = document.querySelector('.vinyl-lyrics-text')?.textContent || '';
+
     ctx.textAlign = 'center';
-    ctx.fillText(songTitleText, songInfoX + songInfoWidth / 2, songInfoY);
+    ctx.textBaseline = 'alphabetic';
+
+    ctx.fillStyle = '#fafafa';
+    ctx.font = '700 48px Inter, system-ui, sans-serif';
+    ctx.fillText(songTitleText, W / 2, 728);
 
     if (artistText) {
-        ctx.font = `16px 'Patrick Hand', Arial, sans-serif`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.fillText(artistText, songInfoX + songInfoWidth / 2, songInfoY + 25);
+        ctx.fillStyle = '#a1a1aa';
+        ctx.font = '500 22px Inter, system-ui, sans-serif';
+        ctx.fillText(artistText, W / 2, 768);
     }
 
+    /* ── Lyrics ── */
+
+    let lyricToShow = '';
     if (exportAudio && exportLyrics.length > 0) {
         const t = exportAudio.currentTime;
         const lyric = exportLyrics.find(l => t >= l.start && t <= l.end);
-        if (lyric) {
-            ctx.font = `20px 'Patrick Hand', Arial, sans-serif`;
-            ctx.fillStyle = state.lyricsColor;
-            ctx.fillText(lyric.text, songInfoX + songInfoWidth / 2, songInfoY + 60);
-        }
+        if (lyric) lyricToShow = lyric.text;
     } else if (liveLyricsText) {
-        ctx.font = `20px 'Patrick Hand', Arial, sans-serif`;
-        ctx.fillStyle = state.lyricsColor;
-        ctx.fillText(liveLyricsText, songInfoX + songInfoWidth / 2, songInfoY + 60);
+        lyricToShow = liveLyricsText;
     }
 
-    const progressContainerY = songInfoY + 80;
-    const progressBarWidth = musicPlayerWidth - 60;
-    const progressBarHeight = 4;
-    const progressBarX = musicPlayerX + 30;
-    const progressBarY = progressContainerY + 10;
-    const barRadius = 2;
+    if (lyricToShow) {
+        ctx.fillStyle = state.lyricsColor || exportAccent;
+        ctx.font = '600 30px Inter, system-ui, sans-serif';
+        ctx.fillText(lyricToShow, W / 2, 836);
+    }
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.save();
-    ctx.beginPath();
-    drawRoundedRectPath(progressBarX, progressBarY, progressBarWidth, progressBarHeight, barRadius);
+    /* ── Progress bar ── */
+
+    const pw = W - 120;
+    const px = 60;
+    const py = 950;
+    const ph = 6;
+    const pr = ph / 2;
+
+    ctx.fillStyle = '#27272a';
+    roundedRect(px, py, pw, ph, pr);
     ctx.fill();
-    ctx.restore();
 
-    let progressPercent = 0;
+    let pct = 0;
     if (exportAudio && exportAudio.readyState >= 2 &&
         !isNaN(exportAudio.currentTime) && !isNaN(exportAudio.duration) &&
         exportAudio.duration > 0) {
-        progressPercent = Math.min(exportAudio.currentTime / exportAudio.duration, 1);
+        pct = Math.min(exportAudio.currentTime / exportAudio.duration, 1);
     }
-    const progressWidth = progressBarWidth * progressPercent;
-    const progressGradient = ctx.createLinearGradient(progressBarX, progressBarY, progressBarX + progressWidth, progressBarY);
-    progressGradient.addColorStop(0, '#667eea');
-    progressGradient.addColorStop(1, '#764ba2');
-    ctx.fillStyle = progressGradient;
-    ctx.save();
-    ctx.beginPath();
-    drawRoundedRectPath(progressBarX, progressBarY, progressWidth, progressBarHeight, barRadius);
-    ctx.fill();
-    ctx.restore();
+    const fillW = pw * pct;
+    if (fillW > 1) {
+        const fillGrad = ctx.createLinearGradient(px, 0, px + fillW, 0);
+        fillGrad.addColorStop(0, exportAccent);
+        fillGrad.addColorStop(1, exportAccentHi);
+        ctx.fillStyle = fillGrad;
+        roundedRect(px, py, fillW, ph, pr);
+        ctx.fill();
+    }
 
-    const thumbX = progressBarX + progressWidth;
-    const thumbY = progressBarY + progressBarHeight / 2;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.beginPath();
-    ctx.arc(thumbX, thumbY, 4, 0, 2 * Math.PI);
-    ctx.fill();
+    /* ── Time labels ── */
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.font = `12px 'Patrick Hand', Arial, sans-serif`;
-
-    const fmt = (s) => {
-        const m = Math.floor(s / 60);
-        const sec = Math.floor(s % 60);
-        return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-    };
+    ctx.fillStyle = '#71717a';
+    ctx.font = '500 18px "JetBrains Mono", ui-monospace, monospace';
+    ctx.textAlign = 'left';
     const cur = exportAudio && !isNaN(exportAudio.currentTime) ? exportAudio.currentTime : 0;
     const tot = exportAudio && !isNaN(exportAudio.duration) ? exportAudio.duration : 0;
-    ctx.textAlign = 'left';
-    ctx.fillText(fmt(cur), progressBarX, progressBarY + 20);
+    ctx.fillText(fmt(cur), px, py + 36);
     ctx.textAlign = 'right';
-    ctx.fillText(fmt(tot), progressBarX + progressBarWidth, progressBarY + 20);
+    ctx.fillText(fmt(tot), px + pw, py + 36);
 
-    const controlsHeight = 80;
-    const controlsY = progressContainerY + 50 - 20;
-    const buttonSize = 45;
-    const playButtonSize = 70;
-    const availableWidth = musicPlayerWidth - 60;
-    const totalButtonWidth = 4 * buttonSize + playButtonSize;
-    const buttonSpacing = (availableWidth - totalButtonWidth) / 4;
-    const startButtonX = musicPlayerX + 30;
-    const buttonY = controlsY + (controlsHeight - playButtonSize) / 2;
-    const playIcon = (exportAudio && !exportAudio.paused) ? '⏸' : '▶';
-    const buttonIcons = ['🔊', '⏮', playIcon, '⏭', '↻'];
+    /* ── Controls: 3 circles centered ── */
 
-    let cursorX = startButtonX;
-    for (let i = 0; i < 5; i++) {
-        const isPlay = i === 2;
-        const size = isPlay ? playButtonSize : buttonSize;
-        const cx = cursorX + size / 2;
-        const cy = buttonY + playButtonSize / 2;
-        ctx.fillStyle = isPlay ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)';
+    const btnY = 1110;
+    const playSize = 96;
+    const sideSize = 68;
+    const gap = 28;
+    const totalW = sideSize + gap + playSize + gap + sideSize;
+    const startX = (W - totalW) / 2;
+
+    // Mute (left)
+    const muteCX = startX + sideSize / 2;
+    drawCircleBtn(muteCX, btnY, sideSize, '#18181b', 'rgba(255,255,255,0.06)');
+    drawVolumeIcon(muteCX, btnY, 26, '#e4e4e7');
+
+    // Play (center, accent + glow)
+    const playCX = startX + sideSize + gap + playSize / 2;
+    ctx.save();
+    ctx.shadowColor = rgba(exportAccent, 0.55);
+    ctx.shadowBlur = 36;
+    ctx.fillStyle = exportAccent;
+    ctx.beginPath();
+    ctx.arc(playCX, btnY, playSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    if (exportAudio && !exportAudio.paused) {
+        drawPauseIcon(playCX, btnY, 36, '#09090b');
+    } else {
+        drawPlayIcon(playCX, btnY, 36, '#09090b');
+    }
+
+    // Repeat (right)
+    const repCX = startX + sideSize + gap + playSize + gap + sideSize / 2;
+    drawCircleBtn(repCX, btnY, sideSize, '#18181b', 'rgba(255,255,255,0.06)');
+    drawRepeatIcon(repCX, btnY, 24, '#e4e4e7');
+}
+
+function drawCircleBtn(cx, cy, size, fillColor, borderColor) {
+    const r = size / 2;
+    ctx.fillStyle = fillColor;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    if (borderColor) {
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(cx, cy, size / 2, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = isPlay ? `28px Arial` : `${size * 0.4}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(buttonIcons[i], cx, cy);
-        cursorX += size + buttonSpacing;
+        ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
+        ctx.stroke();
     }
 }
 
