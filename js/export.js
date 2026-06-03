@@ -213,18 +213,19 @@ async function renderFrame() {
     if (liveDomBindings) syncLiveDomToExportAudio(liveDomBindings);
 
     try {
-        const captured = await toCanvas(frameEl, {
-            // pixelRatio 1 = capture at the frame's natural CSS size; drawImage
-            // then scales up to 720×1280. Halves the DOM-cloning work vs 2x.
-            pixelRatio: 1,
-            cacheBust: false,
-            // Skip @font-face embedding — Google Fonts cssRules are still flaky
-            // even with `crossorigin`, and embedding inflates the per-frame SVG
-            // significantly. Captured frames fall back to the next available
-            // family (Inter is already in the page, so visually this is fine).
-            skipFonts: true,
-            skipAutoScale: true,
-        });
+        // Cap each capture at 1.5s — if html-to-image hangs (rare), we'd rather
+        // drop a frame than freeze the whole pipeline (audio decoder, watchdogs).
+        const captured = await Promise.race([
+            toCanvas(frameEl, {
+                pixelRatio: 1,
+                cacheBust: false,
+                skipFonts: true,
+                skipAutoScale: true,
+            }),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('capture-timeout')), 1500)
+            ),
+        ]);
         ctx.clearRect(0, 0, canvasW, canvasH);
         ctx.drawImage(captured, 0, 0, canvasW, canvasH);
     } catch {
@@ -297,9 +298,20 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         const canvasStream = canvas.captureStream(CAPTURE_FPS);
         const AudioCtxCtor = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioCtxCtor();
+
+        // Some browsers create the context in 'suspended' state pending a user
+        // gesture. The export button click qualifies — resume() unblocks audio.
+        if (audioCtx.state === 'suspended') {
+            await audioCtx.resume();
+        }
+
         const source = audioCtx.createMediaElementSource(exportAudio);
         const destination = audioCtx.createMediaStreamDestination();
         source.connect(destination);
+
+        if (!isFinite(exportAudio.duration) || exportAudio.duration <= 0) {
+            throw new Error('Audio has no valid duration. Try re-encoding the file.');
+        }
 
         const combined = new MediaStream([
             ...canvasStream.getVideoTracks(),
@@ -337,7 +349,12 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 
         emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Recording…' });
         recorder.start();
-        exportAudio.play();
+
+        try {
+            await exportAudio.play();
+        } catch (err) {
+            throw new Error(`Could not start audio playback: ${err.message || err.name}`);
+        }
 
         // Pause render + recorder if the user switches tabs; resume when they return.
         setupVisibilityHandler();
@@ -346,11 +363,33 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         animationId = requestAnimationFrame(renderLoop);
 
         // Drive progress off exportAudio.currentTime so it auto-pauses
-        // when the user backgrounds the tab.
+        // when the user backgrounds the tab. A stall watchdog also catches
+        // the case where playback silently dies — we fail fast instead of
+        // waiting for the 5-minute global timeout.
         const duration = exportAudio.duration;
+        let lastSeenTime = 0;
+        let stallTicks = 0;
         progressInterval = setInterval(() => {
             if (!exportAudio || exportAudio.paused) return;
             const elapsed = exportAudio.currentTime;
+
+            // Stall detection: if currentTime hasn't moved for ~4s while playing
+            if (Math.abs(elapsed - lastSeenTime) < 0.01) {
+                stallTicks += 1;
+                if (stallTicks >= 20) {       // 20 × 200ms = 4s of no progress
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+                    cleanup();
+                    resumeMainAudioIfPaused();
+                    emit(Events.EXPORT_ERROR,
+                        'Audio playback stalled. Try a different audio file or browser.');
+                    return;
+                }
+            } else {
+                stallTicks = 0;
+                lastSeenTime = elapsed;
+            }
+
             const progress = Math.min(20 + (elapsed / duration) * 60, 80);
             emit(Events.EXPORT_PROGRESS, { progress, message: `Recording… ${Math.round(progress)}%` });
             if (elapsed >= duration - 0.05) {
