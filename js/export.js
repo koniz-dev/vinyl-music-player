@@ -2,11 +2,13 @@ import { emit, on, Events } from './lib/events.js';
 import { state, RATIOS } from './lib/state.js';
 import { setPlayerPlaying } from './player.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
-import { toCanvas } from './vendor/html-to-image.js';
+import { toCanvas, getFontEmbedCSS } from './vendor/html-to-image.js';
+import { icon } from './icons.js';
 
 const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
-const CAPTURE_FPS = 24;                            // film-standard, less main-thread blocking
+const CAPTURE_FPS = 20;                            // less main-thread blocking
 const CAPTURE_INTERVAL_MS = 1000 / CAPTURE_FPS;
+const PAUSE_ICON_HTML = icon('pause', { size: 24 });
 
 let canvas = null;
 let ctx = null;
@@ -27,6 +29,7 @@ let liveDomBindings = null;     // {ref to update progress/lyrics in editor}
 let visibilityHandler = null;
 let backgroundToastDismiss = null;
 let lastCaptureTime = 0;
+let embeddedFontCss = '';                          // computed once per export, reused per frame
 
 // ──────────────────────────────────────────────────────────────────
 // Setup helpers
@@ -82,14 +85,17 @@ function fmt(s) {
 function snapshotLiveDom() {
     const vinyl = document.getElementById('vinyl');
     const tonearm = document.getElementById('tonearm');
+    const frame = document.querySelector('.frame');
+    const playBtn = document.querySelector('.vinyl-play-pause-btn');
     const lyricsEl = document.querySelector('.vinyl-lyrics-text');
     const progressEl = document.querySelector('.vinyl-progress');
     const curEl = document.querySelector('.vinyl-current-time');
     const totEl = document.querySelector('.vinyl-total-time');
     return {
-        vinyl, tonearm, lyricsEl, progressEl, curEl, totEl,
+        vinyl, tonearm, frame, playBtn, lyricsEl, progressEl, curEl, totEl,
         prevAnimationPlayState: vinyl.style.animationPlayState,
         prevTonearmPlaying: tonearm.classList.contains('playing'),
+        prevPlayBtnHtml: playBtn.innerHTML,
         prevLyrics: lyricsEl.textContent,
         prevProgressWidth: progressEl.style.width,
         prevCur: curEl.textContent,
@@ -100,12 +106,19 @@ function snapshotLiveDom() {
 function applyLiveExportState(b) {
     b.vinyl.style.animationPlayState = 'running';
     b.tonearm.classList.add('playing');
+    // Force the play/pause button into "playing" pose so the captured frame
+    // shows a ⏸ (pause) icon — what a viewer expects to see in a running player.
+    b.playBtn.innerHTML = PAUSE_ICON_HTML;
+    // CSS hook to make all (still-disabled) controls *look* enabled in the capture.
+    b.frame.dataset.exporting = 'true';
 }
 
 function restoreLiveDom(b) {
     if (!b) return;
     b.vinyl.style.animationPlayState = b.prevAnimationPlayState || (state.isPlaying ? 'running' : 'paused');
     b.tonearm.classList.toggle('playing', b.prevTonearmPlaying);
+    b.playBtn.innerHTML = b.prevPlayBtnHtml;
+    b.frame.dataset.exporting = 'false';
     b.lyricsEl.textContent = b.prevLyrics;
     b.progressEl.style.width = b.prevProgressWidth;
     b.curEl.textContent = b.prevCur;
@@ -144,6 +157,7 @@ function cleanup() {
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
     if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
+    embeddedFontCss = '';
     disableControls(false);
     state.isExporting = false;
     rendering = false;
@@ -206,7 +220,9 @@ async function renderFrame() {
             // then scales up to 720×1280. Halves the DOM-cloning work vs 2x.
             pixelRatio: 1,
             cacheBust: false,
-            skipFonts: true,
+            // Pre-computed once at export start — avoids re-fetching @font-face every frame.
+            fontEmbedCSS: embeddedFontCss,
+            skipAutoScale: true,
         });
         ctx.clearRect(0, 0, canvasW, canvasH);
         ctx.drawImage(captured, 0, 0, canvasW, canvasH);
@@ -261,6 +277,14 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         // Bind to live DOM elements so renderFrame can drive them from exportAudio
         liveDomBindings = snapshotLiveDom();
         applyLiveExportState(liveDomBindings);
+
+        // Pre-fetch + inline @font-face CSS once — heavy work that we DON'T want
+        // happening inside every render frame.
+        try {
+            embeddedFontCss = await getFontEmbedCSS(frameEl);
+        } catch {
+            embeddedFontCss = '';
+        }
 
         // Album art: nothing to do — html-to-image will capture the live element which
         // already shows the user-uploaded art via theme.js / album-art.js.

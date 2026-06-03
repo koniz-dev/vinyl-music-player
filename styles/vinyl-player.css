@@ -283,6 +283,20 @@
     opacity: 0.4;
 }
 
+/* During WebM export, controls are functionally disabled but the captured
+   frame should LOOK alive (accent play button, full-opacity sides). */
+.frame[data-exporting="true"] .control-btn:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
+.frame[data-exporting="true"] .vinyl-play-pause-btn:disabled {
+    background: var(--accent);
+    color: var(--bg-0);
+    border-color: transparent;
+    box-shadow: 0 8px 24px var(--accent-glow);
+}
+
 .vinyl-play-pause-btn {
     width: clamp(40px, 11cqmin, 50px);
     height: clamp(40px, 11cqmin, 50px);
