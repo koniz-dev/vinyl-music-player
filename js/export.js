@@ -6,8 +6,12 @@ import { toCanvas } from './vendor/html-to-image.js';
 import { icon } from './icons.js';
 
 const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
-const CAPTURE_FPS = 20;                            // less main-thread blocking
-const CAPTURE_INTERVAL_MS = 1000 / CAPTURE_FPS;
+// Video at 30fps. Canvas updates at rAF (~60fps) so the video stream always
+// has a fresh frame to sample. Vinyl rotation is computed every frame; the
+// expensive html-to-image work only fires at setup + every BASE_REFRESH_MS.
+const OUTPUT_FPS = 30;
+const BASE_REFRESH_MS = 1000;
+const VINYL_SPIN_PERIOD_S = 8;       // matches CSS `spin 8s linear infinite`
 const PAUSE_ICON_HTML = icon('pause', { size: 24 });
 
 let canvas = null;
@@ -29,6 +33,16 @@ let liveDomBindings = null;     // {ref to update progress/lyrics in editor}
 let visibilityHandler = null;
 let backgroundToastDismiss = null;
 let lastCaptureTime = 0;
+let cachedBase = null;            // html-to-image: frame minus vinyl/tonearm/sheen
+let cachedVinyl = null;           // html-to-image: vinyl-record at angle 0
+let cachedSheen = null;           // html-to-image: vinyl-sheen overlay
+let cachedTonearm = null;         // html-to-image: tonearm SVG, playing pose
+let vinylRect = null;             // bounding box on the export canvas (px)
+let sheenRect = null;
+let tonearmRect = null;
+let canvasScale = 1;              // canvas-px per CSS-px (for shadow blur scaling)
+let baseCapturePending = false;
+let lastBaseCapturedAt = 0;
 
 // ──────────────────────────────────────────────────────────────────
 // Setup helpers
@@ -92,7 +106,10 @@ function snapshotLiveDom() {
     const totEl = document.querySelector('.vinyl-total-time');
     return {
         vinyl, tonearm, frame, playBtn, lyricsEl, progressEl, curEl, totEl,
+        prevAnimation: vinyl.style.animation,
         prevAnimationPlayState: vinyl.style.animationPlayState,
+        prevTransform: vinyl.style.transform,
+        prevTonearmTransform: tonearm.style.transform,
         prevTonearmPlaying: tonearm.classList.contains('playing'),
         prevPlayBtnHtml: playBtn.innerHTML,
         prevLyrics: lyricsEl.textContent,
@@ -103,18 +120,26 @@ function snapshotLiveDom() {
 }
 
 function applyLiveExportState(b) {
+    // Restart vinyl spin from angle 0 — the export video begins at audio t=0,
+    // so the editor should visually mirror that. Toggle animation-name off/on
+    // (with a reflow in between) to reset the CSS animation timeline.
+    b.vinyl.style.animationName = 'none';
+    void b.vinyl.offsetHeight;     // force reflow so the browser commits 'none'
+    b.vinyl.style.animationName = '';   // CSS rule's `spin` re-applies from t=0
     b.vinyl.style.animationPlayState = 'running';
+
     b.tonearm.classList.add('playing');
-    // Force the play/pause button into "playing" pose so the captured frame
-    // shows a ⏸ (pause) icon — what a viewer expects to see in a running player.
     b.playBtn.innerHTML = PAUSE_ICON_HTML;
-    // CSS hook to make all (still-disabled) controls *look* enabled in the capture.
     b.frame.dataset.exporting = 'true';
 }
 
 function restoreLiveDom(b) {
     if (!b) return;
-    b.vinyl.style.animationPlayState = b.prevAnimationPlayState || (state.isPlaying ? 'running' : 'paused');
+    b.vinyl.style.animation = b.prevAnimation;
+    b.vinyl.style.animationPlayState = b.prevAnimationPlayState
+        || (state.isPlaying ? 'running' : 'paused');
+    b.vinyl.style.transform = b.prevTransform;
+    b.tonearm.style.transform = b.prevTonearmTransform;
     b.tonearm.classList.toggle('playing', b.prevTonearmPlaying);
     b.playBtn.innerHTML = b.prevPlayBtnHtml;
     b.frame.dataset.exporting = 'false';
@@ -156,6 +181,16 @@ function cleanup() {
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
     if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
+    cachedBase = null;
+    cachedVinyl = null;
+    cachedSheen = null;
+    cachedTonearm = null;
+    vinylRect = null;
+    sheenRect = null;
+    tonearmRect = null;
+    canvasScale = 1;
+    baseCapturePending = false;
+    lastBaseCapturedAt = 0;
     disableControls(false);
     state.isExporting = false;
     rendering = false;
@@ -208,40 +243,226 @@ function resumeMainAudioIfPaused() {
 // Per-frame DOM capture
 // ──────────────────────────────────────────────────────────────────
 
-async function renderFrame() {
-    if (!frameEl || !ctx) return;
-    if (liveDomBindings) syncLiveDomToExportAudio(liveDomBindings);
+async function captureViaH2I(node, extra = {}) {
+    return Promise.race([
+        toCanvas(node, {
+            pixelRatio: 1,
+            cacheBust: false,
+            skipFonts: true,
+            skipAutoScale: true,
+            ...extra,
+        }),
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('capture-timeout')), 2000)
+        ),
+    ]);
+}
 
+// html-to-image can't render an SVG element (nested SVG inside foreignObject
+// produces blank pixels in Chrome). Render the SVG directly via XMLSerializer
+// + Image instead, which the browser parses as a real SVG document.
+async function captureSvgElement(svgEl, scale = 2) {
+    const clone = svgEl.cloneNode(true);
+    clone.style.transform = 'none';
+    clone.style.transition = 'none';
+
+    // Preserve the CSS drop-shadow filter that lives outside the SVG.
+    const cs = getComputedStyle(svgEl);
+    if (cs.filter && cs.filter !== 'none') {
+        clone.style.filter = cs.filter;
+    }
+
+    // Use the live element's layout-box size — clone may be detached.
+    const rect = svgEl.getBoundingClientRect();
+    const w = Math.max(1, rect.width);
+    const h = Math.max(1, rect.height);
+    clone.setAttribute('width', w);
+    clone.setAttribute('height', h);
+    if (!clone.getAttribute('xmlns')) {
+        clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    }
+
+    const svgString = new XMLSerializer().serializeToString(clone);
+    const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = w * scale;
+            canvas.height = h * scale;
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas);
+        };
+        img.onerror = () => reject(new Error('svg-image-load-failed'));
+        img.src = url;
+    });
+}
+
+function maskToCircle(srcCanvas) {
+    const c = document.createElement('canvas');
+    c.width = srcCanvas.width;
+    c.height = srcCanvas.height;
+    const cctx = c.getContext('2d');
+    cctx.beginPath();
+    cctx.arc(c.width / 2, c.height / 2, Math.min(c.width, c.height) / 2, 0, 2 * Math.PI);
+    cctx.clip();
+    cctx.drawImage(srcCanvas, 0, 0);
+    return c;
+}
+
+async function setupExportLayers() {
+    const vinylEl = document.getElementById('vinyl');
+    const tonearmEl = document.getElementById('tonearm');
+    const sheenEl = document.querySelector('.vinyl-sheen');
+    const wrapEl = document.querySelector('.vinyl-wrap');
+
+    // Compute LAYOUT positions from vinyl-wrap, which has no transform of its
+    // own, so its bounding rect is always the true untransformed box. We DON'T
+    // touch the live elements (no animation pause / visible freeze).
+    const fRect = frameEl.getBoundingClientRect();
+    const wrapRect = wrapEl.getBoundingClientRect();
+    canvasScale = canvasW / fRect.width;
+
+    const wrapX = (wrapRect.left - fRect.left) * canvasScale;
+    const wrapY = (wrapRect.top - fRect.top) * canvasScale;
+    const wrapW = wrapRect.width * canvasScale;
+    const wrapH = wrapRect.height * canvasScale;
+
+    // Vinyl & sheen are 100% of vinyl-wrap (vinyl-record width:100%/height:100%;
+    // sheen inset:0).
+    vinylRect = { x: wrapX, y: wrapY, width: wrapW, height: wrapH };
+    sheenRect = { x: wrapX, y: wrapY, width: wrapW, height: wrapH };
+
+    // Tonearm: CSS positions it at top:-10%, right:-8%, width:22%, height:75%.
+    // right:-8% means tonearm.right = wrap.right + 0.08 * wrap.width →
+    // tonearm.left = wrap.right + 0.08*W - 0.22*W = wrap.right - 0.14*W.
+    tonearmRect = {
+        x: wrapX + wrapW * (1 - 0.14),
+        y: wrapY - wrapH * 0.10,
+        width: wrapW * 0.22,
+        height: wrapH * 0.75,
+    };
+
+    // Capture clones with style overrides — html-to-image applies these to the
+    // cloned root before rendering, leaving the live DOM untouched.
+    cachedVinyl = await captureViaH2I(vinylEl, {
+        pixelRatio: 2,
+        style: { animation: 'none', transform: 'rotate(0deg)' },
+    });
+    cachedVinyl = maskToCircle(cachedVinyl);
+
+    cachedSheen = await captureViaH2I(sheenEl, { pixelRatio: 2 });
+    cachedSheen = maskToCircle(cachedSheen);
+
+    cachedTonearm = await captureSvgElement(tonearmEl, 2);
+
+    await refreshBase();
+}
+
+// Capture the frame WITHOUT vinyl-record, sheen, or tonearm. The vinyl-wrap
+// container stays so the layout (player-mid + player-bottom positions) is
+// preserved exactly. We composite the dynamic layers on top per frame.
+async function refreshBase() {
+    if (baseCapturePending) return;
+    baseCapturePending = true;
     try {
-        // Cap each capture at 1.5s — if html-to-image hangs (rare), we'd rather
-        // drop a frame than freeze the whole pipeline (audio decoder, watchdogs).
-        const captured = await Promise.race([
-            toCanvas(frameEl, {
-                pixelRatio: 1,
-                cacheBust: false,
-                skipFonts: true,
-                skipAutoScale: true,
-            }),
-            new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('capture-timeout')), 1500)
-            ),
-        ]);
-        ctx.clearRect(0, 0, canvasW, canvasH);
-        ctx.drawImage(captured, 0, 0, canvasW, canvasH);
-    } catch {
-        // Best-effort: drop this frame, keep recording rolling.
+        cachedBase = await captureViaH2I(frameEl, {
+            filter: (node) => {
+                if (!node) return true;
+                if (node.id === 'vinyl' || node.id === 'tonearm') return false;
+                if (node.classList && node.classList.contains('vinyl-sheen')) return false;
+                return true;
+            },
+        });
+        lastBaseCapturedAt = performance.now();
+    } catch {}
+    baseCapturePending = false;
+}
+
+// Cheap per-frame composite. ~5 drawImages → trivial cost at 60fps.
+function drawFrame() {
+    if (!ctx || !cachedBase) return;
+    ctx.clearRect(0, 0, canvasW, canvasH);
+
+    // 1) Base: frame bg, header, meta, lyrics, progress, controls.
+    ctx.drawImage(cachedBase, 0, 0, canvasW, canvasH);
+
+    // 2) Vinyl drop shadow. CSS `box-shadow: 0 24px 80px rgba(0,0,0,0.6)` —
+    // gets cropped when we capture vinyl alone, so re-create it here.
+    if (vinylRect) {
+        const cx = vinylRect.x + vinylRect.width / 2;
+        const cy = vinylRect.y + vinylRect.height / 2;
+        const r = vinylRect.width / 2;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 80 * canvasScale;
+        ctx.shadowOffsetY = 24 * canvasScale;
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.96, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // 3) Vinyl, rotated. Angle driven by audio time → smooth & deterministic.
+    if (cachedVinyl && vinylRect && exportAudio) {
+        const audioT = exportAudio.currentTime;
+        const angleRad = (audioT / VINYL_SPIN_PERIOD_S) * 2 * Math.PI;
+        const cx = vinylRect.x + vinylRect.width / 2;
+        const cy = vinylRect.y + vinylRect.height / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angleRad);
+        ctx.drawImage(
+            cachedVinyl,
+            -vinylRect.width / 2,
+            -vinylRect.height / 2,
+            vinylRect.width,
+            vinylRect.height
+        );
+        ctx.restore();
+    }
+
+    // 4) Sheen — soft highlight, sits above vinyl in DOM z-order.
+    if (cachedSheen && sheenRect) {
+        ctx.drawImage(
+            cachedSheen,
+            sheenRect.x, sheenRect.y,
+            sheenRect.width, sheenRect.height
+        );
+    }
+
+    // 5) Tonearm — captured at angle 0; rotate 16° around its CSS pivot
+    //    (transform-origin: 50% 10%) so the geometry matches the editor.
+    if (cachedTonearm && tonearmRect) {
+        const pivotX = tonearmRect.x + tonearmRect.width * 0.5;
+        const pivotY = tonearmRect.y + tonearmRect.height * 0.10;
+        const angleRad = 16 * Math.PI / 180;
+        ctx.save();
+        ctx.translate(pivotX, pivotY);
+        ctx.rotate(angleRad);
+        ctx.translate(-pivotX, -pivotY);
+        ctx.drawImage(
+            cachedTonearm,
+            tonearmRect.x, tonearmRect.y,
+            tonearmRect.width, tonearmRect.height
+        );
+        ctx.restore();
     }
 }
 
-function renderLoop(now) {
+function renderLoop() {
     if (!state.isExporting) return;
-    // Throttle to CAPTURE_FPS so html-to-image doesn't hog the main thread —
-    // CSS animations stay smooth in the editor while we record.
-    if (!rendering && (now - lastCaptureTime >= CAPTURE_INTERVAL_MS)) {
-        lastCaptureTime = now;
-        rendering = true;
-        renderFrame().finally(() => { rendering = false; });
+    if (liveDomBindings) syncLiveDomToExportAudio(liveDomBindings);
+    drawFrame();
+
+    // Refresh base in the background so text / progress / lyrics stay current.
+    if (!baseCapturePending && performance.now() - lastBaseCapturedAt >= BASE_REFRESH_MS) {
+        refreshBase();
     }
+
     animationId = requestAnimationFrame(renderLoop);
 }
 
@@ -295,7 +516,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             setTimeout(() => reject(new Error('Audio loading timeout')), 10000);
         });
 
-        const canvasStream = canvas.captureStream(CAPTURE_FPS);
+        const canvasStream = canvas.captureStream(OUTPUT_FPS);
         const AudioCtxCtor = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioCtxCtor();
 
@@ -325,12 +546,14 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         recordedChunks = [];
 
         recorder.ondataavailable = (event) => {
-            if (event.data.size > 0) recordedChunks.push(event.data);
+            if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+        };
+
+        recorder.onerror = (e) => {
+            console.error('[export] recorder error:', e.error?.name, e.error?.message);
         };
 
         recorder.onstop = () => {
-            console.log('[export] recorder.onstop fired. chunks:', recordedChunks.length,
-                        'total bytes:', recordedChunks.reduce((s, c) => s + c.size, 0));
             if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
 
             const videoBlob = new Blob(recordedChunks, { type: mimeType });
@@ -350,12 +573,13 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         };
 
         emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Recording…' });
-        recorder.start();
+        // timeslice=1000 → ondataavailable fires every 1s; otherwise chunks
+        // only arrive at stop, hiding mid-recording problems.
+        recorder.start(1000);
 
         // Authoritative end-of-audio signal — more reliable than polling
         // currentTime, which may not hit duration exactly.
         exportAudio.addEventListener('ended', () => {
-            console.log('[export] exportAudio "ended" event fired');
             if (!state.isExporting) return;
             if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
             stopRecording();
@@ -369,6 +593,11 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 
         // Pause render + recorder if the user switches tabs; resume when they return.
         setupVisibilityHandler();
+
+        // Capture the 3 static layers BEFORE the render loop spins up, otherwise
+        // the first few hundred ms of video would be blank.
+        emit(Events.EXPORT_PROGRESS, { progress: 22, message: 'Preparing visuals…' });
+        await setupExportLayers();
 
         lastCaptureTime = 0;
         animationId = requestAnimationFrame(renderLoop);
@@ -403,6 +632,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 
             const progress = Math.min(20 + (elapsed / duration) * 60, 80);
             emit(Events.EXPORT_PROGRESS, { progress, message: `Recording… ${Math.round(progress)}%` });
+
             if (elapsed >= duration - 0.05) {
                 clearInterval(progressInterval);
                 progressInterval = null;
@@ -418,24 +648,18 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 }
 
 function stopRecording() {
-    console.log('[export] stopRecording called. recorder.state:', recorder?.state,
-                'currentTime:', exportAudio?.currentTime, 'duration:', exportAudio?.duration);
-
     // Stop in BOTH 'recording' and 'paused' states — spec allows it, and our
     // visibility handler can leave the recorder paused.
     if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
         try {
             recorder.stop();
-        } catch (e) {
-            console.error('[export] recorder.stop() threw:', e);
-        }
+        } catch {}
     }
 
     // Fallback: if onstop hasn't fired in 2s, finalize manually.
     if (recorder && recorder.state !== 'inactive') {
         setTimeout(() => {
             if (state.isExporting && recorder && recorder.state !== 'inactive') {
-                console.warn('[export] onstop never fired — forcing finalization');
                 const cb = recorder.onstop;
                 recorder.onstop = null;
                 if (typeof cb === 'function') cb();
