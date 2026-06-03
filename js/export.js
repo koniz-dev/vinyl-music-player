@@ -329,6 +329,8 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         };
 
         recorder.onstop = () => {
+            console.log('[export] recorder.onstop fired. chunks:', recordedChunks.length,
+                        'total bytes:', recordedChunks.reduce((s, c) => s + c.size, 0));
             if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
 
             const videoBlob = new Blob(recordedChunks, { type: mimeType });
@@ -349,6 +351,15 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 
         emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Recording…' });
         recorder.start();
+
+        // Authoritative end-of-audio signal — more reliable than polling
+        // currentTime, which may not hit duration exactly.
+        exportAudio.addEventListener('ended', () => {
+            console.log('[export] exportAudio "ended" event fired');
+            if (!state.isExporting) return;
+            if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+            stopRecording();
+        }, { once: true });
 
         try {
             await exportAudio.play();
@@ -407,11 +418,34 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 }
 
 function stopRecording() {
-    if (recorder && recorder.state === 'recording') recorder.stop();
+    console.log('[export] stopRecording called. recorder.state:', recorder?.state,
+                'currentTime:', exportAudio?.currentTime, 'duration:', exportAudio?.duration);
+
+    // Stop in BOTH 'recording' and 'paused' states — spec allows it, and our
+    // visibility handler can leave the recorder paused.
+    if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
+        try {
+            recorder.stop();
+        } catch (e) {
+            console.error('[export] recorder.stop() threw:', e);
+        }
+    }
+
+    // Fallback: if onstop hasn't fired in 2s, finalize manually.
+    if (recorder && recorder.state !== 'inactive') {
+        setTimeout(() => {
+            if (state.isExporting && recorder && recorder.state !== 'inactive') {
+                console.warn('[export] onstop never fired — forcing finalization');
+                const cb = recorder.onstop;
+                recorder.onstop = null;
+                if (typeof cb === 'function') cb();
+            }
+        }, 2000);
+    }
+
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
-    state.isExporting = false;
     rendering = false;
 }
 
