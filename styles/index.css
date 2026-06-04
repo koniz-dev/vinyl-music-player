@@ -69,12 +69,24 @@
     container-type: size;
 }
 
-/* Cinematic accent radials — match the WebM export render exactly */
+/* Tonal composition (light→dark, top layer first):
+   1. vignette   — corners and bottom sink into darkness
+   2. spotlight  — warm pool of light around the vinyl (~upper third), so the
+                   black disc reads against a lighter ground
+   3+4. accent radials — colour mood, tinted by the album-art accent
+   The whole stack lives here so the export's base capture matches exactly. */
 .frame-bg {
     position: absolute;
     inset: 0;
     pointer-events: none;
     background:
+        radial-gradient(130% 100% at 50% 35%, transparent 50%, rgba(0, 0, 0, 0.45) 100%),
+        radial-gradient(
+            75% 42% at 50% 30%,
+            rgba(255, 241, 224, 0.11) 0%,
+            rgba(255, 241, 224, 0.04) 50%,
+            transparent 75%
+        ),
         radial-gradient(80% 60% at 50% -5%, var(--accent-soft), transparent 70%),
         radial-gradient(60% 50% at 110% 110%, var(--accent-soft), transparent 70%);
     transition: background var(--dur-slow) var(--ease-out);
