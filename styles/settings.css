@@ -1,3 +1,26 @@
+/* ─── Settings sections ─────────────────────────────────────────── */
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+}
+
+/* Divider between groups — the drawer-body gap provides the breathing room. */
+.settings-section + .settings-section {
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--border-1);
+}
+
+.section-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fg-3);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
 /* ─── Lyrics editor ─────────────────────────────────────────────── */
 
 .field-label-row {
@@ -274,53 +297,103 @@
 }
 
 .export-btn {
+    position: relative;
+    overflow: hidden;          /* keep the fill inside the rounded corners */
     width: 100%;
     padding: 14px;
     font-size: 14px;
 }
 
-.export-progress {
-    margin-top: var(--s-3);
-    display: flex;
-    flex-direction: column;
+/* Horizontal "water fill" — width driven by EXPORT_PROGRESS in settings.js.
+   Hidden when idle so the wave pseudo-elements don't peek out at width 0. */
+.export-btn-fill {
+    position: absolute;
+    inset: 0;
+    width: 0%;
+    display: none;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hi), var(--accent));
+    background-size: 200% 100%;
+    /* Progress ticks every 200ms; a slightly longer linear transition strings
+       the steps into one continuous pour. */
+    transition: width 0.35s linear;
+    pointer-events: none;
+}
+
+/* The waterline IS the fill's own right edge: a mask carves it into a sine
+   wave (layer 2) unioned with the rectangular body (layer 1), and the wave
+   tile scrolls vertically — one coherent surface, no overlay on top. */
+.export-btn.exporting .export-btn-fill {
+    display: block;
+    mask-image:
+        linear-gradient(#000, #000),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='48'%3E%3Cpath d='M0 0 H6 C11 8 1 16 6 24 C11 32 1 40 6 48 H0 Z'/%3E%3C/svg%3E");
+    mask-size: calc(100% - 11px) 100%, 12px 48px;   /* 1px overlap — no hairline seam */
+    mask-position: 0 0, 100% 0;
+    mask-repeat: no-repeat, repeat-y;
+    animation:
+        export-flow 2.5s linear infinite,   /* water "flows" inside the fill */
+        export-lap 1.4s linear infinite;    /* waves lap along the waterline */
+}
+
+@keyframes export-flow {
+    to { background-position: -200% 0; }
+}
+
+/* Shift the wave tile by exactly one period (48px) for a seamless loop. */
+@keyframes export-lap {
+    from { mask-position: 0 0, 100% 0; }
+    to   { mask-position: 0 0, 100% 48px; }
+}
+
+/* Label/icon sit above the fill layer. */
+.export-btn-content,
+.export-btn-cancel {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
     gap: var(--s-2);
 }
 
-.export-progress-bar {
-    height: 6px;
+.export-btn-cancel {
+    display: none;
+}
+
+/* Exporting: the button becomes the progress track — accent fill pours over
+   a neutral base. Stays enabled so a click cancels. */
+.export-btn.exporting {
     background: var(--bg-3);
-    border-radius: var(--r-pill);
-    overflow: hidden;
+    color: var(--fg-0);
+    cursor: pointer;
 }
 
-.export-progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hi));
-    transition: width var(--dur) var(--ease-out);
+.export-btn.exporting:hover:not(:disabled) {
+    background: var(--bg-3);
+    box-shadow: none;
 }
 
-.export-progress-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--s-3);
-}
-
-.export-progress-text {
-    font-size: 11px;
-    color: var(--fg-3);
-}
-
-.export-cancel-btn {
-    padding: 4px 10px;
+/* Same metrics for the progress label and the Cancel swap — hovering must
+   not change the text size or the button's height. */
+.export-btn.exporting #export-btn-label,
+.export-btn.exporting .export-btn-cancel {
+    font-family: var(--font-mono);
     font-size: 12px;
-    color: var(--fg-3);
+    font-weight: 500;
+    line-height: 21px;
 }
 
-.export-cancel-btn:hover {
+.export-btn.exporting .export-icon {
+    display: none;
+}
+
+/* Hover while exporting reveals the cancel affordance. */
+.export-btn.exporting:hover .export-btn-content {
+    display: none;
+}
+
+.export-btn.exporting:hover .export-btn-cancel {
+    display: inline-flex;
     color: var(--danger);
-    background: var(--bg-2);
 }
 
 /* ─── Modal (JSON import) ───────────────────────────────────────── */
@@ -468,6 +541,16 @@
 .ratio-btn.active {
     background: var(--bg-3);
     color: var(--fg-0);
+}
+
+/* Video format reuses the ratio-toggle styling, with two columns. */
+.format-toggle {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.ratio-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .field-help {

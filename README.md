@@ -11,11 +11,11 @@
 
 ---
 
-Drop in an MP3, type the song title, add timed lyrics, click export. You get a **1080×1920 vertical WebM** ready for TikTok, Reels, or YouTube Shorts. Audio never leaves your device — the whole pipeline (decode, render, encode) runs in the browser.
+Drop in an MP3, type the song title, add timed lyrics, click export. You get a **1080×1920 vertical MP4 (or WebM)** ready for TikTok, Reels, or YouTube Shorts — other aspect ratios available too. Audio never leaves your device — the whole pipeline (decode, render, encode) runs in the browser.
 
 ## Why use this
 
-- 🎬 **Real video export** — Canvas + `MediaRecorder`, not a screen recording
+- 🎬 **Real video export** — Canvas + `MediaRecorder` to MP4 or WebM, not a screen recording
 - 📝 **Synced lyrics** — type per-line or bulk-paste JSON; live preview as audio plays
 - 🎨 **Live vinyl preview** — record spins, tonearm tracks, lyrics fade in/out
 - 🔒 **100% local** — no servers, no uploads, no account

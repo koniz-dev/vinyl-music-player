@@ -7,15 +7,15 @@
     <title>Vinyl Music Player — Turn audio into vinyl-style music videos</title>
 
     <meta name="description"
-        content="Turn any audio file into a vinyl-spin music video with synced lyrics — right in your browser. Export 1080×1920 WebM for TikTok, Reels, and Shorts. No upload, no install.">
+        content="Turn any audio file into a vinyl-spin music video with synced lyrics — right in your browser. Export 1080×1920 MP4 or WebM for TikTok, Reels, and Shorts. No upload, no install.">
     <meta name="keywords"
-        content="music player, vinyl, lyrics video, WebM export, music video maker, synced lyrics, MediaRecorder, browser tool">
+        content="music player, vinyl, lyrics video, MP4 export, WebM export, music video maker, synced lyrics, MediaRecorder, browser tool">
     <meta name="author" content="koniz-dev">
     <meta name="robots" content="index, follow">
 
     <meta property="og:title" content="Vinyl Music Player — Turn audio into vinyl-style music videos">
     <meta property="og:description"
-        content="Browser-based vinyl music video maker with synced lyrics and WebM export. No upload required.">
+        content="Browser-based vinyl music video maker with synced lyrics and MP4/WebM export. No upload required.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://koniz-dev.github.io/vinyl-music-player/">
     <meta property="og:image" content="https://koniz-dev.github.io/vinyl-music-player/favicon/android-chrome-512x512.png">
@@ -24,7 +24,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Vinyl Music Player">
     <meta name="twitter:description"
-        content="Browser-based vinyl music video maker with synced lyrics and WebM export.">
+        content="Browser-based vinyl music video maker with synced lyrics and MP4/WebM export.">
     <meta name="twitter:image" content="https://koniz-dev.github.io/vinyl-music-player/favicon/android-chrome-512x512.png">
 
     <meta name="theme-color" content="#09090b">
@@ -183,60 +183,57 @@
         </header>
 
         <form id="musicForm" class="drawer-body">
-            <div class="field">
-                <label class="field-label">Aspect ratio</label>
-                <div class="ratio-toggle" role="radiogroup" aria-label="Aspect ratio">
-                    <button type="button" class="ratio-btn" data-ratio="9:16" aria-pressed="true">9:16</button>
-                    <button type="button" class="ratio-btn" data-ratio="4:5"  aria-pressed="false">4:5</button>
-                    <button type="button" class="ratio-btn" data-ratio="1:1"  aria-pressed="false">1:1</button>
-                    <button type="button" class="ratio-btn" data-ratio="16:9" aria-pressed="false">16:9</button>
+            <!-- ── Song: what's being played ── -->
+            <section class="settings-section" aria-labelledby="section-song">
+                <h3 class="section-title" id="section-song">Song</h3>
+
+                <div class="field">
+                    <label class="field-label" for="audio-file">
+                        Audio file <span class="req">*</span>
+                    </label>
+                    <div class="drop-zone audio-upload" id="audio-upload-area">
+                        <input type="file" accept="audio/*" id="audio-file">
+                        <button type="button" class="drop-zone-clear" id="audio-clear-btn"
+                            aria-label="Remove audio file">
+                            <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
+                        </button>
+                        <div class="dz-title">Drop or click</div>
+                        <div class="dz-hint">MP3, WAV, OGG, M4A, AAC</div>
+                    </div>
                 </div>
-                <p class="field-help" id="ratio-help">1080×1920 · Vertical · TikTok / Reels / Shorts</p>
-            </div>
 
-            <div class="field">
-                <label class="field-label" for="audio-file">
-                    Audio file <span class="req">*</span>
-                </label>
-                <div class="drop-zone audio-upload" id="audio-upload-area">
-                    <input type="file" accept="audio/*" id="audio-file">
-                    <button type="button" class="drop-zone-clear" id="audio-clear-btn"
-                        aria-label="Remove audio file">
-                        <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
-                    </button>
-                    <div class="dz-title">Drop or click</div>
-                    <div class="dz-hint">MP3, WAV, OGG, M4A, AAC</div>
+                <div class="field">
+                    <label class="field-label" for="song-title">
+                        Song title <span class="field-hint">(optional)</span>
+                    </label>
+                    <input type="text" class="text-input" id="song-title" placeholder="Leave blank for untitled">
                 </div>
-            </div>
 
-            <div class="field">
-                <label class="field-label" for="song-title">
-                    Song title <span class="field-hint">(optional)</span>
-                </label>
-                <input type="text" class="text-input" id="song-title" placeholder="Leave blank for untitled">
-            </div>
-
-            <div class="field">
-                <label class="field-label" for="artist-name">Artist</label>
-                <input type="text" class="text-input" id="artist-name" placeholder="Optional">
-            </div>
-
-            <div class="field">
-                <label class="field-label">Album art</label>
-                <div class="drop-zone" id="upload-area">
-                    <input type="file" accept="image/*" id="album-art">
-                    <button type="button" class="drop-zone-clear" id="album-art-clear-btn"
-                        aria-label="Remove album art">
-                        <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
-                    </button>
-                    <div class="dz-title">Drop image</div>
-                    <div class="dz-hint">Used as label + ambient bg · JPG · PNG · WebP</div>
+                <div class="field">
+                    <label class="field-label" for="artist-name">Artist</label>
+                    <input type="text" class="text-input" id="artist-name" placeholder="Optional">
                 </div>
-            </div>
 
-            <div class="field">
+                <div class="field">
+                    <label class="field-label">Album art</label>
+                    <div class="drop-zone" id="upload-area">
+                        <input type="file" accept="image/*" id="album-art">
+                        <button type="button" class="drop-zone-clear" id="album-art-clear-btn"
+                            aria-label="Remove album art">
+                            <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
+                        </button>
+                        <div class="dz-title">Drop image</div>
+                        <div class="dz-hint">Used as label + ambient bg · JPG · PNG · WebP</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Lyrics: synced subtitle lines ── -->
+            <section class="settings-section" aria-labelledby="section-lyrics">
                 <div class="field-label-row">
-                    <span class="field-label">Lyrics <span class="field-hint">(optional)</span></span>
+                    <h3 class="section-title" id="section-lyrics">
+                        Lyrics <span class="field-hint">(optional)</span>
+                    </h3>
                     <div class="lyrics-toolbar">
                         <button type="button" class="btn btn-ghost lyrics-tool" id="add-lyrics-btn"
                             aria-label="Add lyrics line">
@@ -260,33 +257,60 @@
                         Skip this to export audio + vinyl only. Add lines or paste JSON if you want synced subtitles.
                     </p>
                 </div>
-            </div>
+            </section>
 
-            <div class="field">
-                <label class="field-label">Colors</label>
-                <div class="color-list" id="color-list">
-                    <!-- Populated by color-manager.js. Each row:
-                         <swatch picker> · label + hex/status · reset button -->
-                </div>
-            </div>
+            <!-- ── Appearance: how it looks ── -->
+            <section class="settings-section" aria-labelledby="section-appearance">
+                <h3 class="section-title" id="section-appearance">Appearance</h3>
 
-            <div class="field export-field">
-                <button type="button" class="btn btn-primary export-btn" id="export-btn" disabled>
-                    <span data-icon="download" data-icon-size="18" aria-hidden="true"></span>
-                    Export WebM
-                </button>
-                <div class="export-progress" id="export-progress" hidden>
-                    <div class="export-progress-bar">
-                        <div class="export-progress-fill" id="progress-fill"></div>
-                    </div>
-                    <div class="export-progress-footer">
-                        <span class="export-progress-text mono" id="progress-text">Preparing…</span>
-                        <button type="button" class="btn btn-ghost export-cancel-btn" id="export-cancel-btn">
-                            Cancel
-                        </button>
+                <div class="field">
+                    <label class="field-label">Colors</label>
+                    <div class="color-list" id="color-list">
+                        <!-- Populated by color-manager.js. Each row:
+                             <swatch picker> · label + hex/status · reset button -->
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- ── Export: output settings + action ── -->
+            <section class="settings-section" aria-labelledby="section-export">
+                <h3 class="section-title" id="section-export">Export</h3>
+
+                <div class="field">
+                    <label class="field-label">Aspect ratio</label>
+                    <div class="ratio-toggle" role="radiogroup" aria-label="Aspect ratio">
+                        <button type="button" class="ratio-btn" data-ratio="9:16" aria-pressed="true">9:16</button>
+                        <button type="button" class="ratio-btn" data-ratio="4:5"  aria-pressed="false">4:5</button>
+                        <button type="button" class="ratio-btn" data-ratio="1:1"  aria-pressed="false">1:1</button>
+                        <button type="button" class="ratio-btn" data-ratio="16:9" aria-pressed="false">16:9</button>
+                    </div>
+                    <p class="field-help" id="ratio-help">1080×1920 · Vertical · TikTok / Reels / Shorts</p>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Video format</label>
+                    <div class="ratio-toggle format-toggle" role="radiogroup" aria-label="Video format">
+                        <button type="button" class="ratio-btn format-btn" data-format="mp4"  aria-pressed="false">MP4</button>
+                        <button type="button" class="ratio-btn format-btn" data-format="webm" aria-pressed="true">WebM</button>
+                    </div>
+                    <p class="field-help" id="format-help">WEBM · Smaller files · all desktop browsers</p>
+                </div>
+
+                <div class="field export-field">
+                    <!-- During export the button doubles as the progress bar: the
+                         fill layer pours left→right behind the label, the label
+                         shows live progress, and hovering reveals Cancel. -->
+                    <button type="button" class="btn btn-primary export-btn" id="export-btn"
+                        aria-live="polite" disabled>
+                        <span class="export-btn-fill" id="export-btn-fill" aria-hidden="true"></span>
+                        <span class="export-btn-content">
+                            <span class="export-icon" data-icon="download" data-icon-size="18" aria-hidden="true"></span>
+                            <span id="export-btn-label">Export WebM</span>
+                        </span>
+                        <span class="export-btn-cancel" aria-hidden="true">Cancel</span>
+                    </button>
+                </div>
+            </section>
         </form>
     </aside>
 

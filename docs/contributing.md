@@ -28,7 +28,7 @@ gh pr create  # or use the GitHub UI
 - **ES modules everywhere.** No globals, no `<script>` tags outside `js/main.js`.
 - **No build step.** Vanilla JS that runs in the browser as-is. If you reach for a transpiler, reconsider the feature first.
 - **Event bus over direct imports** for cross-module communication. State changes that other modules care about should go through `Events`.
-- **Two-space indentation, single quotes, semicolons.** Match existing files.
+- **Four-space indentation, single quotes, semicolons.** Match existing files.
 - **Comment only the "why".** Skip restating what the code does.
 
 ## DOM access

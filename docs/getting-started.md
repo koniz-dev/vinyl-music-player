@@ -31,13 +31,13 @@ npm run dev
 
 ## First export — 60 seconds
 
-1. Drop or pick an MP3 in the **Audio File** upload area (left panel).
-2. Type a **Song Title** (required for export).
-3. Optionally upload an album cover and type the artist name.
-4. Add lyrics (see [Usage](usage.md#lyrics)) or skip.
-5. Click **Export WebM Video**. Wait for the progress bar to reach 100%. The download starts automatically.
+1. Drop or pick an MP3 in the **Audio file** upload area in the Song section.
+2. Optionally type a song title / artist name and upload an album cover.
+3. Add lyrics (see [Usage](usage.md#lyrics)) or skip.
+4. In the Export section, pick an aspect ratio and a video format (MP4 or WebM).
+5. Click **Export MP4** / **Export WebM**. The button fills up as progress runs; the download starts automatically at 100%.
 
-The output is a 1080×1920 vertical WebM (native TikTok / Reels / Shorts size), ready to upload.
+The default output is a 1080×1920 vertical video (native TikTok / Reels / Shorts size), ready to upload. Other ratios use their platform-native resolutions too.
 
 ## Try the live demo
 

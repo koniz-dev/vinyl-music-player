@@ -3,7 +3,7 @@ import { timeToSeconds, formatTime } from './lib/format.js';
 import { initColorManager } from './color-manager.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { icon } from './icons.js';
-import { state, RATIOS, DEFAULT_ASPECT_RATIO } from './lib/state.js';
+import { state, RATIOS, DEFAULT_ASPECT_RATIO, FORMATS, DEFAULT_VIDEO_FORMAT } from './lib/state.js';
 
 const TIME_PATTERN = /^[0-9]{1,2}:[0-9]{2}$/;
 
@@ -37,10 +37,8 @@ const audioClearBtn = document.getElementById('audio-clear-btn');
 const albumArtClearBtn = document.getElementById('album-art-clear-btn');
 const exportBtn = document.getElementById('export-btn');
 const debugBtn = document.getElementById('debug-btn');
-const exportProgress = document.getElementById('export-progress');
-const progressFill = document.getElementById('progress-fill');
-const progressText = document.getElementById('progress-text');
-const exportCancelBtn = document.getElementById('export-cancel-btn');
+const exportBtnFill = document.getElementById('export-btn-fill');
+const exportBtnLabel = document.getElementById('export-btn-label');
 
 // ---------- Lyrics editor ----------
 
@@ -468,11 +466,16 @@ function refreshExportButton() {
     exportBtn.disabled = !audioFileInput.files[0];
 }
 
+function refreshExportButtonLabel() {
+    const { ext } = FORMATS[state.videoFormat] || FORMATS.webm;
+    exportBtnLabel.textContent = `Export ${ext.slice(1).toUpperCase()}`;
+}
+
 function resetExportProgress() {
-    exportProgress.hidden = true;
-    exportBtn.disabled = false;
-    progressFill.style.width = '0%';
-    progressText.textContent = 'Preparing…';
+    exportBtn.classList.remove('exporting');
+    exportBtnFill.style.width = '0%';
+    refreshExportButtonLabel();
+    refreshExportButton();
 }
 
 function handleExportComplete({ videoBlob, fileName }) {
@@ -486,11 +489,21 @@ function handleExportComplete({ videoBlob, fileName }) {
     URL.revokeObjectURL(url);
 
     resetExportProgress();
-    toastSuccess('WebM saved.');
+    toastSuccess(`${fileName.endsWith('.mp4') ? 'MP4' : 'WebM'} saved.`);
 }
 
 function bindExport() {
+    let exportStartedAt = 0;
+
     exportBtn.addEventListener('click', () => {
+        // Mid-export the button is the cancel control. A short grace period
+        // keeps an accidental double-click on "Export" from instantly
+        // cancelling the run it just started.
+        if (state.isExporting) {
+            if (performance.now() - exportStartedAt > 500) emit(Events.EXPORT_CANCEL);
+            return;
+        }
+
         const audioFile = audioFileInput.files[0];
         const songTitle = songTitleInput.value.trim();
         const artistName = artistNameInput.value.trim();
@@ -501,19 +514,18 @@ function bindExport() {
             return;
         }
 
-        exportProgress.hidden = false;
-        exportBtn.disabled = true;
+        exportStartedAt = performance.now();
+        exportBtn.classList.add('exporting');
+        exportBtnLabel.textContent = 'Preparing…';
 
         emit(Events.EXPORT_REQUESTED, { audioFile, songTitle, artistName, albumArtFile });
     });
 
     debugBtn.addEventListener('click', () => emit(Events.DEBUG_BROWSER_SUPPORT));
 
-    exportCancelBtn.addEventListener('click', () => emit(Events.EXPORT_CANCEL));
-
     on(Events.EXPORT_PROGRESS, ({ progress, message }) => {
-        progressFill.style.width = `${progress}%`;
-        progressText.textContent = message;
+        exportBtnFill.style.width = `${progress}%`;
+        exportBtnLabel.textContent = message;
     });
     on(Events.EXPORT_COMPLETE, handleExportComplete);
     on(Events.EXPORT_ERROR, (error) => {
@@ -591,8 +603,66 @@ function loadPersistedRatio() {
 }
 
 function bindRatioToggle() {
-    document.querySelectorAll('.ratio-btn').forEach(btn => {
+    document.querySelectorAll('.ratio-btn[data-ratio]').forEach(btn => {
         btn.addEventListener('click', () => setAspectRatio(btn.dataset.ratio));
+    });
+}
+
+// ---------- Video format ----------
+
+function formatSupported(fmt) {
+    return !!window.MediaRecorder &&
+        FORMATS[fmt].candidates.some(t => MediaRecorder.isTypeSupported(t));
+}
+
+function setVideoFormat(fmt, { persist = true } = {}) {
+    if (!FORMATS[fmt]) return;
+    // The recorder picked its mime type at start — switching now would lie
+    // about what's being recorded.
+    if (state.isExporting) {
+        toastInfo('Video format is locked while exporting.');
+        return;
+    }
+    state.videoFormat = fmt;
+
+    document.querySelectorAll('.format-btn').forEach(btn => {
+        const active = btn.dataset.format === fmt;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active);
+    });
+
+    const { ext, label } = FORMATS[fmt];
+
+    const help = document.getElementById('format-help');
+    if (help) help.textContent = `${ext.slice(1).toUpperCase()} · ${label}`;
+
+    // Keep the export button's label in sync with the chosen container.
+    refreshExportButtonLabel();
+
+    if (persist) {
+        try { localStorage.setItem('videoFormat', fmt); } catch {}
+    }
+}
+
+function loadPersistedFormat() {
+    try {
+        const saved = localStorage.getItem('videoFormat');
+        // Re-check support — the saved choice may come from another browser
+        // profile or a since-downgraded one.
+        if (saved && FORMATS[saved] && formatSupported(saved)) return saved;
+    } catch {}
+    return formatSupported('mp4') ? 'mp4' : DEFAULT_VIDEO_FORMAT;
+}
+
+function bindFormatToggle() {
+    document.querySelectorAll('.format-btn').forEach(btn => {
+        const fmt = btn.dataset.format;
+        if (!formatSupported(fmt)) {
+            btn.disabled = true;
+            btn.title = 'Not supported by this browser';
+            return;
+        }
+        btn.addEventListener('click', () => setVideoFormat(fmt));
     });
 }
 
@@ -624,6 +694,8 @@ export function initSettings() {
     bindExport();
     bindRatioToggle();
     setAspectRatio(loadPersistedRatio(), { persist: false });
+    bindFormatToggle();
+    setVideoFormat(loadPersistedFormat(), { persist: false });
 
     audioFileInput.addEventListener('change', refreshExportButton);
     songTitleInput.addEventListener('input', refreshExportButton);

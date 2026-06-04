@@ -2,12 +2,12 @@
 
 ## Browser support matrix
 
-| Browser | Audio playback | Lyrics | WebM export |
-|---|:-:|:-:|:-:|
-| Chrome 60+ | ✅ | ✅ | ✅ |
-| Edge 79+ | ✅ | ✅ | ✅ |
-| Firefox 55+ | ✅ | ✅ | ✅ |
-| Safari 14+ | ✅ | ✅ | ⚠️ partial — `MediaRecorder` lacks WebM support on some versions |
+| Browser | Audio playback | Lyrics | WebM export | MP4 export |
+|---|:-:|:-:|:-:|:-:|
+| Chrome 60+ | ✅ | ✅ | ✅ | ✅ Chrome 126+ |
+| Edge 79+ | ✅ | ✅ | ✅ | ✅ Edge 126+ |
+| Firefox 55+ | ✅ | ✅ | ✅ | ❌ — the MP4 toggle is disabled automatically |
+| Safari 14+ | ✅ | ✅ | ⚠️ partial — `MediaRecorder` lacks WebM support on some versions | ✅ |
 
 Use the **Check Browser Support** button in the settings panel to see which codecs your browser exposes.
 
@@ -36,7 +36,7 @@ The vinyl animation only runs while `isPlaying` is true. If audio is paused or h
 
 ### Export button stays disabled
 
-The button enables only when **both** an audio file and a song title are present. Add a title.
+The button enables once an audio file is loaded. If you removed the audio (✕ on the upload area), re-add it. The MP4/WebM format buttons can also be individually disabled when the browser can't record that container — that's per-format, not the export button itself.
 
 ### Export fails or hangs
 
@@ -53,9 +53,9 @@ Browser quirk — `createMediaElementSource` is sometimes blocked if the audio f
 ffmpeg -i input.m4a -codec:a libmp3lame -b:a 192k output.mp3
 ```
 
-### Recent colors don't persist
+### Color / ratio / format choices don't persist
 
-The color history uses `localStorage`. If your browser is in private/incognito mode (or you've disabled storage for the origin), the history resets every load. This is expected.
+Color overrides, aspect ratio, and video format are saved in `localStorage`. If your browser is in private/incognito mode (or you've disabled storage for the origin), they reset every load. This is expected.
 
 ### Service worker keeps serving old code
 

@@ -1,5 +1,5 @@
 import { emit, on, Events } from './lib/events.js';
-import { state, RATIOS } from './lib/state.js';
+import { state, RATIOS, FORMATS } from './lib/state.js';
 import { setPlayerPlaying } from './player.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { toCanvas } from './vendor/html-to-image.js';
@@ -74,13 +74,10 @@ function createCanvas() {
 }
 
 function pickMimeType() {
-    const candidates = [
-        'video/webm;codecs=vp9,opus',
-        'video/webm;codecs=vp8,opus',
-        'video/webm;codecs=vp9',
-        'video/webm;codecs=vp8',
-        'video/webm',
-    ];
+    const fmt = FORMATS[state.videoFormat] || FORMATS.webm;
+    // Try the chosen format first, then fall through to WebM so a stale or
+    // unsupported choice still records with whatever the browser can mux.
+    const candidates = [...fmt.candidates, ...FORMATS.webm.candidates];
     return candidates.find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
 }
 
@@ -95,9 +92,9 @@ function disableControls(disabled) {
 //
 // We capture the live `.frame` element each frame. To keep it visually
 // "playing" we override a few things directly on the DOM:
-//   • force the vinyl spin + tonearm "playing" pose
+//   • freeze the CSS spin and drive the vinyl angle from exportAudio time
+//     (same formula as drawFrame) + force the tonearm "playing" pose
 //   • drive lyrics text, progress bar fill and time labels from exportAudio
-//   • mute (not pause) the main audio so the editor's spin state stays running
 // All changes are reversed in restoreLiveDom().
 // ──────────────────────────────────────────────────────────────────
 
@@ -126,13 +123,14 @@ function snapshotLiveDom() {
 }
 
 function applyLiveExportState(b) {
-    // Restart vinyl spin from angle 0 — the export video begins at audio t=0,
-    // so the editor should visually mirror that. Toggle animation-name off/on
-    // (with a reflow in between) to reset the CSS animation timeline.
+    // Freeze the CSS spin and drive the angle from exportAudio.currentTime
+    // instead (see syncLiveDomToExportAudio) — same formula as drawFrame, so
+    // the editor preview mirrors the exported video exactly: 0° at 0:00.
+    // Restarting the CSS animation here isn't enough — it begins spinning
+    // during the ~1s of setup (audio load + layer capture) before recording
+    // starts, leaving the preview ahead of the video by that latency.
     b.vinyl.style.animationName = 'none';
-    void b.vinyl.offsetHeight;     // force reflow so the browser commits 'none'
-    b.vinyl.style.animationName = '';   // CSS rule's `spin` re-applies from t=0
-    b.vinyl.style.animationPlayState = 'running';
+    b.vinyl.style.transform = 'rotate(0deg)';
 
     b.tonearm.classList.add('playing');
     b.playBtn.innerHTML = PAUSE_ICON_HTML;
@@ -159,6 +157,9 @@ function syncLiveDomToExportAudio(b) {
     if (!exportAudio) return;
     const t = exportAudio.currentTime;
     const dur = exportAudio.duration;
+
+    // Vinyl angle — identical formula to drawFrame, so preview === video.
+    b.vinyl.style.transform = `rotate(${(t / VINYL_SPIN_PERIOD_S) * 360}deg)`;
 
     // Lyrics — boundary matches player.js getCurrentLyric (>= start, < end)
     // so the editor preview and the exported video stay frame-consistent.
@@ -554,7 +555,7 @@ async function startVideoRecording({ audioFile, songTitle }) {
             abortExport('Export setup timed out. Please try again.');
         }, INIT_TIMEOUT_MS);
 
-        emit(Events.EXPORT_PROGRESS, { progress: 5, message: 'Initializing export…' });
+        emit(Events.EXPORT_PROGRESS, { progress: 1, message: 'Initializing export…' });
 
         createCanvas();
 
@@ -565,7 +566,7 @@ async function startVideoRecording({ audioFile, songTitle }) {
         // Album art: nothing to do — html-to-image will capture the live element which
         // already shows the user-uploaded art via theme.js / album-art.js.
 
-        emit(Events.EXPORT_PROGRESS, { progress: 15, message: 'Loading audio…' });
+        emit(Events.EXPORT_PROGRESS, { progress: 2, message: 'Loading audio…' });
 
         audioObjectUrl = URL.createObjectURL(audioFile);
         exportAudio = new Audio(audioObjectUrl);
@@ -605,7 +606,7 @@ async function startVideoRecording({ audioFile, songTitle }) {
         ]);
 
         const mimeType = pickMimeType();
-        emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Setting up recorder…' });
+        emit(Events.EXPORT_PROGRESS, { progress: 3, message: 'Setting up recorder…' });
 
         const videoBitsPerSecond = Math.round(canvasW * canvasH * OUTPUT_FPS * VIDEO_BITS_PER_PIXEL);
         recorder = new MediaRecorder(combined, {
@@ -632,7 +633,10 @@ async function startVideoRecording({ audioFile, songTitle }) {
 
             const videoBlob = new Blob(recordedChunks, { type: mimeType });
             const safeName = (songTitle || '').replace(/[<>:"/\\|?*]/g, '').trim();
-            const fileName = (safeName || 'untitled') + '.webm';
+            // Extension must match the container the recorder actually used —
+            // pickMimeType may have fallen back to WebM despite an MP4 choice.
+            const ext = mimeType.startsWith('video/mp4') ? '.mp4' : '.webm';
+            const fileName = (safeName || 'untitled') + ext;
 
             emit(Events.EXPORT_PROGRESS, { progress: 100, message: 'Done.' });
             emit(Events.EXPORT_COMPLETE, { videoBlob, fileName });
@@ -642,16 +646,23 @@ async function startVideoRecording({ audioFile, songTitle }) {
             resumeMainAudioIfPaused();
         };
 
+        // Reset the visible progress / lyric / time labels to exportAudio's
+        // t=0 BEFORE the first base capture. Without this, exporting mid-song
+        // bakes the editor's stale state (progress at 0:30, current lyric)
+        // into the base layer, and the video opens with that frozen frame
+        // until the first BASE_REFRESH_MS re-capture snaps it back to 0:00.
+        syncLiveDomToExportAudio(liveDomBindings);
+
         // Capture the static layers and paint the first frame BEFORE the recorder
         // and audio start. Otherwise the canvas stream records blank frames (and
         // the audio runs ahead of the visuals) for the few hundred ms that the
         // html-to-image capture takes.
-        emit(Events.EXPORT_PROGRESS, { progress: 22, message: 'Preparing visuals…' });
+        emit(Events.EXPORT_PROGRESS, { progress: 4, message: 'Preparing visuals…' });
         await setupExportLayers();
         drawFrame();
         animationId = requestAnimationFrame(renderLoop);
 
-        emit(Events.EXPORT_PROGRESS, { progress: 25, message: 'Recording…' });
+        emit(Events.EXPORT_PROGRESS, { progress: 5, message: 'Recording…' });
         // timeslice=1000 → ondataavailable fires every 1s; otherwise chunks
         // only arrive at stop, hiding mid-recording problems.
         recorder.start(1000);
@@ -697,7 +708,9 @@ async function startVideoRecording({ audioFile, songTitle }) {
                 lastSeenTime = elapsed;
             }
 
-            const progress = Math.min(20 + (elapsed / duration) * 60, 80);
+            // Setup owns 0–5%; recording sweeps the remaining 5→99 linearly with
+            // the audio, so the fill never jumps — 100 lands on finalize ('Done.').
+            const progress = Math.min(5 + (elapsed / duration) * 94, 99);
             emit(Events.EXPORT_PROGRESS, { progress, message: `Recording… ${Math.round(progress)}%` });
 
             if (elapsed >= duration - 0.05) {
@@ -758,13 +771,18 @@ function debugBrowserSupport() {
         ['WebM',             hasMR && MediaRecorder.isTypeSupported('video/webm')],
         ['WebM + VP8',       hasMR && MediaRecorder.isTypeSupported('video/webm;codecs=vp8')],
         ['WebM + VP9',       hasMR && MediaRecorder.isTypeSupported('video/webm;codecs=vp9')],
+        ['MP4 (H.264)',      hasMR && FORMATS.mp4.candidates.some(t => MediaRecorder.isTypeSupported(t))],
     ];
 
-    const allOk = checks.every(([, ok]) => ok);
+    // MP4 is a nice-to-have (Firefox can't mux it) — don't fail the check on it.
+    const mp4Ok = checks.find(([k]) => k === 'MP4 (H.264)')[1];
+    const allOk = checks.every(([k, ok]) => ok || k === 'MP4 (H.264)');
     const webmOk = checks.find(([k]) => k === 'WebM')[1];
 
     if (allOk) {
-        toastSuccess('Your browser supports WebM export.');
+        toastSuccess(mp4Ok
+            ? 'Your browser supports MP4 and WebM export.'
+            : 'Your browser supports WebM export (MP4 not available).');
         return;
     }
 

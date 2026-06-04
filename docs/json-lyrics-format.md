@@ -1,6 +1,6 @@
 # JSON Lyrics Format
 
-Bulk-import lyrics by pasting a JSON array into the **For Dev → Import JSON Lyrics** modal.
+Bulk-import lyrics by pasting a JSON array into the **Import** modal (the `{}` button in the Lyrics section header).
 
 ## Schema
 
@@ -45,7 +45,7 @@ The whole file must validate — no partial imports.
 - Items don't need to be sorted by `start`. The player matches the first line whose range contains the current time.
 - Overlapping ranges are allowed but only the first match (in array order) is shown.
 - Empty `text` lines are silently dropped at render time.
-- The import **replaces** all existing lyrics. Save your work elsewhere first if you're mixing manual entries.
+- The modal offers **Replace** (overwrite all existing lyrics — a warning shows how many lines you're about to lose) or **Append** (add after the current lines).
 
 ## Converting from LRC
 
