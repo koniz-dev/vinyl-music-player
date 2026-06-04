@@ -451,11 +451,7 @@ function resetExportProgress() {
     progressText.textContent = 'Preparing…';
 }
 
-let isExportCompleted = false;
 function handleExportComplete({ videoBlob, fileName }) {
-    if (isExportCompleted) return;
-    isExportCompleted = true;
-
     const url = URL.createObjectURL(videoBlob);
     const a = document.createElement('a');
     a.href = url;
@@ -467,8 +463,6 @@ function handleExportComplete({ videoBlob, fileName }) {
 
     resetExportProgress();
     toastSuccess('WebM saved.');
-
-    setTimeout(() => { isExportCompleted = false; }, 2000);
 }
 
 function bindExport() {

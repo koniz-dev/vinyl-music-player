@@ -4,8 +4,13 @@ import { setPlayerPlaying } from './player.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { toCanvas } from './vendor/html-to-image.js';
 import { icon } from './icons.js';
+import { formatTime } from './lib/format.js';
 
-const EXPORT_TIMEOUT_MS = 5 * 60 * 1000;
+// Safety net while loading metadata, before the real duration is known. Once we
+// have the audio duration we replace this with `duration + buffer` so long
+// songs aren't cut off by a fixed cap (see startVideoRecording).
+const INIT_TIMEOUT_MS = 60 * 1000;
+const EXPORT_TIMEOUT_BUFFER_MS = 60 * 1000;
 // Video at 30fps. Canvas updates at rAF (~60fps) so the video stream always
 // has a fresh frame to sample. Vinyl rotation is computed every frame; the
 // expensive html-to-image work only fires at setup + every BASE_REFRESH_MS.
@@ -26,13 +31,13 @@ let audioCtx = null;
 let canvasW = 720;
 let canvasH = 1280;
 let wasMainAudioPlaying = false;
-let rendering = false;
 let frameEl = null;
+let audioObjectUrl = null;       // revoked in cleanup() — was leaking before
+let finalized = false;           // guards against double-finalize (onstop + fallback)
 let exportLyrics = [];
 let liveDomBindings = null;     // {ref to update progress/lyrics in editor}
 let visibilityHandler = null;
 let backgroundToastDismiss = null;
-let lastCaptureTime = 0;
 let cachedBase = null;            // html-to-image: frame minus vinyl/tonearm/sheen
 let cachedVinyl = null;           // html-to-image: vinyl-record at angle 0
 let cachedSheen = null;           // html-to-image: vinyl-sheen overlay
@@ -76,12 +81,6 @@ function disableControls(disabled) {
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.disabled = disabled;
     });
-}
-
-function fmt(s) {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -154,8 +153,9 @@ function syncLiveDomToExportAudio(b) {
     const t = exportAudio.currentTime;
     const dur = exportAudio.duration;
 
-    // Lyrics
-    const current = exportLyrics.find(l => t >= l.start && t <= l.end);
+    // Lyrics — boundary matches player.js getCurrentLyric (>= start, < end)
+    // so the editor preview and the exported video stay frame-consistent.
+    const current = exportLyrics.find(l => t >= l.start && t < l.end);
     const nextLyric = current ? current.text : '';
     if (nextLyric !== b.lyricsEl.textContent) {
         b.lyricsEl.textContent = nextLyric;
@@ -165,8 +165,8 @@ function syncLiveDomToExportAudio(b) {
     if (dur > 0) {
         b.progressEl.style.width = `${Math.min(t / dur * 100, 100)}%`;
     }
-    b.curEl.textContent = fmt(t);
-    b.totEl.textContent = fmt(dur);
+    b.curEl.textContent = formatTime(t);
+    b.totEl.textContent = formatTime(dur);
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -180,6 +180,7 @@ function cleanup() {
     teardownVisibilityHandler();
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
+    if (audioObjectUrl) { URL.revokeObjectURL(audioObjectUrl); audioObjectUrl = null; }
     if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
     cachedBase = null;
     cachedVinyl = null;
@@ -193,7 +194,6 @@ function cleanup() {
     lastBaseCapturedAt = 0;
     disableControls(false);
     state.isExporting = false;
-    rendering = false;
 }
 
 function setupVisibilityHandler() {
@@ -470,9 +470,10 @@ function renderLoop() {
 // Recording orchestrator
 // ──────────────────────────────────────────────────────────────────
 
-async function startVideoRecording({ audioFile, songTitle, artistName, albumArtFile }) {
+async function startVideoRecording({ audioFile, songTitle }) {
     if (state.isExporting) return;
     state.isExporting = true;
+    finalized = false;
 
     wasMainAudioPlaying = !!(state.audioElement && !state.audioElement.paused);
 
@@ -491,7 +492,7 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             cleanup();
             resumeMainAudioIfPaused();
             emit(Events.EXPORT_ERROR, 'Export timeout. Please try again with a shorter audio file.');
-        }, EXPORT_TIMEOUT_MS);
+        }, INIT_TIMEOUT_MS);
 
         emit(Events.EXPORT_PROGRESS, { progress: 5, message: 'Initializing export…' });
 
@@ -506,8 +507,8 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 
         emit(Events.EXPORT_PROGRESS, { progress: 15, message: 'Loading audio…' });
 
-        const audioUrl = URL.createObjectURL(audioFile);
-        exportAudio = new Audio(audioUrl);
+        audioObjectUrl = URL.createObjectURL(audioFile);
+        exportAudio = new Audio(audioObjectUrl);
         exportLyrics = [...state.lyrics];
 
         await new Promise((resolve, reject) => {
@@ -534,6 +535,15 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             throw new Error('Audio has no valid duration. Try re-encoding the file.');
         }
 
+        // Now that we know the real length, replace the init safety net with a
+        // duration-based cap so long songs aren't cut off by a fixed timeout.
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            cleanup();
+            resumeMainAudioIfPaused();
+            emit(Events.EXPORT_ERROR, 'Export timed out. Please try again.');
+        }, exportAudio.duration * 1000 + EXPORT_TIMEOUT_BUFFER_MS);
+
         const combined = new MediaStream([
             ...canvasStream.getVideoTracks(),
             ...destination.stream.getAudioTracks(),
@@ -553,8 +563,12 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             console.error('[export] recorder error:', e.error?.name, e.error?.message);
         };
 
+        // Idempotent — may be invoked by the native 'stop' event OR the manual
+        // fallback in stopRecording(). The `finalized` guard ensures the blob is
+        // emitted exactly once.
         recorder.onstop = () => {
-            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+            if (finalized) return;
+            finalized = true;
 
             const videoBlob = new Blob(recordedChunks, { type: mimeType });
             const safeName = (songTitle || '').replace(/[<>:"/\\|?*]/g, '').trim();
@@ -563,16 +577,21 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
             emit(Events.EXPORT_PROGRESS, { progress: 100, message: 'Done.' });
             emit(Events.EXPORT_COMPLETE, { videoBlob, fileName });
 
-            teardownVisibilityHandler();
-            if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
-            if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
+            // Full teardown (timers, audio, caches, object URL, DOM restore).
+            cleanup();
             resumeMainAudioIfPaused();
-            disableControls(false);
-            state.isExporting = false;
-            rendering = false;
         };
 
-        emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Recording…' });
+        // Capture the static layers and paint the first frame BEFORE the recorder
+        // and audio start. Otherwise the canvas stream records blank frames (and
+        // the audio runs ahead of the visuals) for the few hundred ms that the
+        // html-to-image capture takes.
+        emit(Events.EXPORT_PROGRESS, { progress: 22, message: 'Preparing visuals…' });
+        await setupExportLayers();
+        drawFrame();
+        animationId = requestAnimationFrame(renderLoop);
+
+        emit(Events.EXPORT_PROGRESS, { progress: 25, message: 'Recording…' });
         // timeslice=1000 → ondataavailable fires every 1s; otherwise chunks
         // only arrive at stop, hiding mid-recording problems.
         recorder.start(1000);
@@ -594,18 +613,10 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         // Pause render + recorder if the user switches tabs; resume when they return.
         setupVisibilityHandler();
 
-        // Capture the 3 static layers BEFORE the render loop spins up, otherwise
-        // the first few hundred ms of video would be blank.
-        emit(Events.EXPORT_PROGRESS, { progress: 22, message: 'Preparing visuals…' });
-        await setupExportLayers();
-
-        lastCaptureTime = 0;
-        animationId = requestAnimationFrame(renderLoop);
-
         // Drive progress off exportAudio.currentTime so it auto-pauses
         // when the user backgrounds the tab. A stall watchdog also catches
         // the case where playback silently dies — we fail fast instead of
-        // waiting for the 5-minute global timeout.
+        // waiting for the duration-based global timeout.
         const duration = exportAudio.duration;
         let lastSeenTime = 0;
         let stallTicks = 0;
@@ -641,6 +652,13 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
         }, 200);
 
     } catch (error) {
+        // An error after recorder.start() (e.g. play() rejected) would otherwise
+        // leave the recorder running and able to fire a stray onstop → COMPLETE.
+        finalized = true;
+        if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
+            recorder.onstop = null;
+            try { recorder.stop(); } catch {}
+        }
         cleanup();
         resumeMainAudioIfPaused();
         emit(Events.EXPORT_ERROR, error.message || 'Unknown error occurred');
@@ -649,46 +667,32 @@ async function startVideoRecording({ audioFile, songTitle, artistName, albumArtF
 
 function stopRecording() {
     // Stop in BOTH 'recording' and 'paused' states — spec allows it, and our
-    // visibility handler can leave the recorder paused.
+    // visibility handler can leave the recorder paused. The 'stop' event then
+    // fires recorder.onstop, which finalizes the blob and runs cleanup().
     if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
         try {
             recorder.stop();
         } catch {}
     }
 
-    // Fallback: if onstop hasn't fired in 2s, finalize manually.
-    if (recorder && recorder.state !== 'inactive') {
-        setTimeout(() => {
-            if (state.isExporting && recorder && recorder.state !== 'inactive') {
-                const cb = recorder.onstop;
-                recorder.onstop = null;
-                if (typeof cb === 'function') cb();
-            }
-        }, 2000);
-    }
-
-    if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
-    if (exportAudio) { exportAudio.pause(); exportAudio = null; }
-    if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
-    rendering = false;
+    // Fallback: guarantee finalization even if the native 'stop' event never
+    // fires (observed on some browsers). onstop is idempotent — guarded by
+    // `finalized` — so it's safe if the native event also fires.
+    setTimeout(() => {
+        if (!finalized && typeof recorder?.onstop === 'function') recorder.onstop();
+    }, 2000);
 }
 
 function cancelExport() {
     if (!state.isExporting) return;
-    if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
-    if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
-    if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
-    teardownVisibilityHandler();
+    // Block both the native 'stop' event and the stopRecording fallback from
+    // emitting a (now unwanted) EXPORT_COMPLETE.
+    finalized = true;
     if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
         recorder.onstop = null;
-        recorder.stop();
+        try { recorder.stop(); } catch {}
     }
-    if (exportAudio) { exportAudio.pause(); exportAudio = null; }
-    if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
-    if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
-    disableControls(false);
-    state.isExporting = false;
-    rendering = false;
+    cleanup();
     resumeMainAudioIfPaused();
     emit(Events.EXPORT_CANCELLED);
 }
@@ -774,17 +778,19 @@ function bindBrowserSupportModal() {
 export function initExport() {
     bindBrowserSupportModal();
 
-    on(Events.EXPORT_REQUESTED, ({ audioFile, songTitle, artistName, albumArtFile }) => {
+    on(Events.EXPORT_REQUESTED, ({ audioFile, songTitle, artistName }) => {
         if (state.isExporting) return;
         if (!window.MediaRecorder) {
             emit(Events.EXPORT_ERROR,
                 'MediaRecorder API is not supported in this browser. Please use Chrome, Firefox, or Edge.');
             return;
         }
+        // Reflect the latest title/artist into the live frame so the capture
+        // picks them up; the rest of the export reads from the DOM + state.
         if (songTitle) document.querySelector('.vinyl-song-title').textContent = songTitle;
         if (artistName) document.querySelector('.vinyl-artist-name').textContent = artistName;
 
-        startVideoRecording({ audioFile, songTitle, artistName, albumArtFile });
+        startVideoRecording({ audioFile, songTitle });
     });
 
     on(Events.DEBUG_BROWSER_SUPPORT, debugBrowserSupport);
