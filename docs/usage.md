@@ -69,7 +69,7 @@ Click **Export WebM Video**. Requirements:
 
 The exporter:
 
-1. Renders the player to a 720×1280 canvas at 30 fps
+1. Renders the player to a canvas at the selected ratio's native resolution (e.g. 1080×1920 for 9:16) at 30 fps
 2. Streams that canvas + the audio track into a `MediaRecorder`
 3. Saves a `.webm` file named after the song title (illegal filename characters are stripped)
 
@@ -81,6 +81,6 @@ Click **Check Browser Support** (the debug button) to see which codecs your brow
 
 ## Tips
 
-- For social platforms (TikTok / Reels / Shorts), the 720×1280 9:16 ratio is already correct — no cropping needed.
+- For social platforms (TikTok / Reels / Shorts), the 1080×1920 9:16 ratio is the native upload size — no cropping or upscaling needed.
 - The exported file is `.webm`. If your target platform needs `.mp4`, use a one-shot converter like `ffmpeg -i out.webm out.mp4`.
-- Long tracks (>5 minutes) hit the export timeout at 5 minutes. Either trim the audio or open `js/export.js` and bump `EXPORT_TIMEOUT_MS`.
+- The export timeout scales with the audio length (track duration + 60s), so long tracks won't be cut off. To trade file size for sharpness, tweak `VIDEO_BITS_PER_PIXEL` in `js/export.js`.

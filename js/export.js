@@ -15,10 +15,11 @@ const EXPORT_TIMEOUT_BUFFER_MS = 60 * 1000;
 // has a fresh frame to sample. Vinyl rotation is computed every frame; the
 // expensive html-to-image work only fires at setup + every BASE_REFRESH_MS.
 const OUTPUT_FPS = 30;
-// Target video bitrate ≈ bits-per-pixel-per-frame × pixels × fps. ~0.12 keeps
-// text and the record sharp on social platforms without bloating the file; the
-// default MediaRecorder bitrate over-compressed and looked blurry.
-const VIDEO_BITS_PER_PIXEL = 0.12;
+// Target video bitrate ≈ bits-per-pixel-per-frame × pixels × fps. At native
+// 1080-class resolutions ~0.09 stays sharp while keeping files reasonable
+// (≈5 Mbps @1080p); platforms re-encode on upload anyway. Raise toward 0.14
+// for maximum quality, lower toward 0.07 for smaller files.
+const VIDEO_BITS_PER_PIXEL = 0.09;
 const AUDIO_BITS_PER_SECOND = 128_000;
 const BASE_REFRESH_MS = 1000;
 const VINYL_SPIN_PERIOD_S = 8;       // matches CSS `spin 8s linear infinite`

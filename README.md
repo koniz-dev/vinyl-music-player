@@ -11,7 +11,7 @@
 
 ---
 
-Drop in an MP3, type the song title, add timed lyrics, click export. You get a **720×1280 vertical WebM** ready for TikTok, Reels, or YouTube Shorts. Audio never leaves your device — the whole pipeline (decode, render, encode) runs in the browser.
+Drop in an MP3, type the song title, add timed lyrics, click export. You get a **1080×1920 vertical WebM** ready for TikTok, Reels, or YouTube Shorts. Audio never leaves your device — the whole pipeline (decode, render, encode) runs in the browser.
 
 ## Why use this
 

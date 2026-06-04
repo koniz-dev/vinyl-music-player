@@ -37,7 +37,7 @@ npm run dev
 4. Add lyrics (see [Usage](usage.md#lyrics)) or skip.
 5. Click **Export WebM Video**. Wait for the progress bar to reach 100%. The download starts automatically.
 
-The output is a 720×1280 vertical WebM, ready for TikTok / Reels / Shorts.
+The output is a 1080×1920 vertical WebM (native TikTok / Reels / Shorts size), ready to upload.
 
 ## Try the live demo
 

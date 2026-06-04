@@ -80,7 +80,7 @@ Modules import it directly. There's no reactivity layer — consumers re-read on
 
 `js/export.js` is the most complex module. It:
 
-1. Creates an off-screen 720×1280 canvas
+1. Creates an off-screen canvas at the selected ratio's native resolution (e.g. 1080×1920 for 9:16; see `RATIOS` in `js/lib/state.js`)
 2. Loads the album art into an `Image`
 3. Loads the audio into a hidden `Audio` element
 4. Wires the canvas's `captureStream()` + the audio's `MediaStreamDestination` into a `MediaStream`

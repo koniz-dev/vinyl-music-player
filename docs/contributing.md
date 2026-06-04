@@ -48,7 +48,7 @@ DOM elements are cached at module top with `document.getElementById` / `querySel
 When changing the render pipeline:
 
 - Export a known reference song before and after, compare frames in a video tool.
-- Keep the canvas dimensions at 720×1280 unless you're explicitly changing the output format.
+- Canvas dimensions come from `RATIOS` in `js/lib/state.js` (native platform resolutions, e.g. 1080×1920 for 9:16) — change them there, not inline.
 - Watch the FPS — the recorder is locked at 30 fps; long-running per-frame work will drop frames.
 
 ## Testing

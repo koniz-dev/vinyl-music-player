@@ -41,7 +41,7 @@ The button enables only when **both** an audio file and a song title are present
 ### Export fails or hangs
 
 - Watch the browser console — `EXPORT_ERROR` events log the reason.
-- The exporter times out after 5 minutes. For longer tracks, edit `EXPORT_TIMEOUT_MS` in `js/export.js`.
+- The export timeout scales with the audio length (track duration + 60s), so long tracks complete normally. A stall watchdog aborts if playback silently freezes.
 - If `MediaRecorder.isTypeSupported('video/webm')` returns `false`, your browser can't export. Switch to Chrome / Firefox / Edge.
 - Disabling browser extensions (especially ad blockers and privacy ones that touch `MediaStream`) sometimes fixes weird stream errors.
 
