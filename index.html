@@ -4,6 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Defense-in-depth: GitHub Pages can't send CSP headers, so it ships as
+         a meta tag. Notes on the non-obvious entries:
+         · script-src stays 'self' — the page imports only local modules; the
+           Whisper worker loads its CDN library under its OWN CSP, injected by
+           the service worker (workers don't inherit this meta CSP).
+         · connect-src needs the font hosts + blob:/data: because html-to-image
+           fetches stylesheet/font/album-art resources on the main thread
+           while capturing export layers.
+         · img-src/media-src blob:/data: cover album art, export layer
+           captures, and the audio element. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data: https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
     <title>Vinyl Music Player — Turn audio into vinyl-style music videos</title>
 
     <meta name="description"
@@ -254,7 +266,36 @@
                 </div>
                 <div class="lyrics-container" id="lyrics-container">
                     <p class="lyrics-empty" id="lyrics-empty">
-                        Skip this to export audio + vinyl only. Add lines or paste JSON if you want synced subtitles.
+                        Skip this to export audio + vinyl only. Add lines manually — or let the AI below time them for you.
+                    </p>
+                </div>
+
+                <!-- AI auto-sync: separate from the manual tools above — paste
+                     plain lyrics, the on-device Whisper model times each line. -->
+                <div class="autosync-panel">
+                    <div class="autosync-panel-head">
+                        <span class="autosync-panel-icon" data-icon="sparkles" data-icon-size="14" aria-hidden="true"></span>
+                        <span>Auto-sync with AI</span>
+                    </div>
+                    <p class="autosync-panel-desc">
+                        Paste the lyrics — one line per row — and the AI listens to your audio
+                        and fills in each line's timing. Replaces the lines above. Leave the box
+                        empty to time the existing lines instead, or to transcribe from scratch
+                        when there are none.
+                    </p>
+                    <textarea class="text-input autosync-textarea" id="autosync-lyrics-input" rows="5" maxlength="20000"
+                        placeholder="Paste plain lyrics here, one line per row…"></textarea>
+                    <div class="autosync-actions">
+                        <button type="button" class="btn autosync-btn" id="auto-sync-btn" disabled
+                            aria-label="Auto-sync lyrics from audio">
+                            <span data-icon="sparkles" data-icon-size="15" aria-hidden="true"></span>
+                            <span id="auto-sync-label">Auto-sync</span>
+                        </button>
+                        <p class="autosync-status" id="autosync-status" role="status" hidden></p>
+                    </div>
+                    <p class="autosync-panel-note">
+                        Runs 100% in your browser — nothing is uploaded. First use downloads
+                        a ~40 MB model (cached afterwards). Needs an audio file.
                     </p>
                 </div>
             </section>

@@ -4,6 +4,7 @@ import { initColorManager } from './color-manager.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { icon } from './icons.js';
 import { state, RATIOS, DEFAULT_ASPECT_RATIO, FORMATS, DEFAULT_VIDEO_FORMAT } from './lib/state.js';
+import { runAutoSync, cancelAutoSync, isAutoSyncRunning } from './autosync.js';
 
 const TIME_PATTERN = /^[0-9]{1,2}:[0-9]{2}$/;
 
@@ -15,6 +16,10 @@ const lyricsContainer = document.getElementById('lyrics-container');
 const lyricsEmpty = document.getElementById('lyrics-empty');
 const addLyricsBtn = document.getElementById('add-lyrics-btn');
 const clearLyricsBtn = document.getElementById('clear-lyrics-btn');
+const autoSyncBtn = document.getElementById('auto-sync-btn');
+const autoSyncLabel = document.getElementById('auto-sync-label');
+const autoSyncStatus = document.getElementById('autosync-status');
+const autoSyncInput = document.getElementById('autosync-lyrics-input');
 const importOverwriteWarning = document.getElementById('import-overwrite-warning');
 const importOverwriteCount = document.getElementById('import-overwrite-count');
 const importModeReplaceBtn = document.getElementById('import-mode-replace');
@@ -277,6 +282,119 @@ function publishLyrics() {
     emit(Events.UPDATE_LYRICS, data);
 }
 
+// ---------- Auto-sync (Whisper) ----------
+
+let autoSyncStartedAt = 0;
+
+function setAutoSyncUI(running) {
+    autoSyncBtn.classList.toggle('running', running);
+    autoSyncLabel.textContent = running ? 'Cancel' : 'Auto-sync';
+    autoSyncStatus.hidden = !running;
+    if (!running) autoSyncStatus.textContent = '';
+}
+
+function showAutoSyncProgress({ stage, percent }) {
+    const messages = {
+        decode: 'Decoding audio…',
+        download: `Downloading AI model… ${percent || 0}% (first run only)`,
+        init: 'Starting AI model…',
+        transcribe: 'Transcribing… long songs can take a few minutes.',
+        align: 'Aligning lyrics…',
+    };
+    autoSyncStatus.textContent = messages[stage] || '';
+}
+
+async function handleAutoSync() {
+    // Mid-run the button is the cancel control. Same grace period as the
+    // export button — an accidental double-click must not cancel the run
+    // it just started.
+    if (isAutoSyncRunning()) {
+        if (performance.now() - autoSyncStartedAt > 500) cancelAutoSync();
+        return;
+    }
+    const audioFile = audioFileInput.files[0];
+    if (!audioFile) {
+        toastError('Upload an audio file first.');
+        return;
+    }
+    if (state.isExporting) {
+        toastInfo('Wait for the export to finish — both need the CPU.');
+        return;
+    }
+
+    // Pasted lyrics take over: one item per pasted row, times left blank
+    // for the alignment to fill. Otherwise sync the lines already in the
+    // editor. Snapshot the items either way so edits made while Whisper
+    // runs can't shift which line each result lands on; isConnected guards
+    // removed lines.
+    const pasted = autoSyncInput.value
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+    if (pasted.length > 0) {
+        lyricsContainer.querySelectorAll('.lyrics-item').forEach(el => el.remove());
+        lyricsCount = 0;
+        pasted.forEach(text => lyricsContainer.appendChild(buildLyricsItem({ text })));
+        refreshLyricsEmptyState();
+        // The text now lives in the line items — a retry after an error
+        // goes through the "sync existing lines" path.
+        autoSyncInput.value = '';
+    }
+    const items = [...lyricsContainer.querySelectorAll('.lyrics-item')];
+    const lineTexts = items.map(item =>
+        item.querySelector('.lyrics-text-input')?.value.trim() || ''
+    );
+
+    autoSyncStartedAt = performance.now();
+    setAutoSyncUI(true);
+    try {
+        const result = await runAutoSync({
+            file: audioFile,
+            lineTexts,
+            // Title/artist help guess the song's language when no lyrics exist.
+            hintText: `${songTitleInput.value} ${artistNameInput.value}`,
+            onProgress: showAutoSyncProgress,
+        });
+
+        if (result.mode === 'align') {
+            let synced = 0;
+            result.lines.forEach((time, i) => {
+                const item = items[i];
+                if (!time || !item || !item.isConnected) return;
+                const timeInputs = item.querySelectorAll('.time-input');
+                if (timeInputs[0]) timeInputs[0].value = time.start;
+                if (timeInputs[1]) timeInputs[1].value = time.end;
+                synced++;
+            });
+            publishLyrics();
+            if (synced > 0) {
+                toastSuccess(`Synced ${synced} line${synced === 1 ? '' : 's'} — fine-tune any times that feel off.`);
+            } else {
+                toastInfo("Couldn't match the lyrics to the audio — check the text matches what's sung.");
+            }
+        } else {
+            result.lines.forEach(row => lyricsContainer.appendChild(buildLyricsItem(row)));
+            refreshLyricsEmptyState();
+            publishLyrics();
+            if (result.lines.length > 0) {
+                toastSuccess(`Transcribed ${result.lines.length} lines — fix any words the AI misheard.`);
+            } else {
+                toastInfo('No vocals detected — add lines manually instead.');
+            }
+        }
+    } catch (error) {
+        if (error?.name === 'AbortError') {
+            toastInfo('Auto-sync cancelled.');
+        } else {
+            toastError(`Auto-sync failed: ${error?.message || error}`);
+        }
+    } finally {
+        // A cancelled run's cleanup must not clobber the UI of a newer run
+        // started after the cancel.
+        if (!isAutoSyncRunning()) setAutoSyncUI(false);
+    }
+}
+
 // ---------- JSON import ----------
 
 function validateImportedLyrics(rows) {
@@ -419,10 +537,12 @@ function handleAudioFile(file) {
         artistName: artistNameInput.value,
         albumArtUrl,
     });
-    refreshExportButton();
+    refreshAudioDependentButtons();
 }
 
 function clearAudio() {
+    // A running transcription targets the file being removed — kill it.
+    if (isAutoSyncRunning()) cancelAutoSync();
     resetDropZone(audioUploadArea, audioFileInput, {
         title: 'Drop or click',
         hint: 'MP3, WAV, OGG, M4A, AAC',
@@ -432,7 +552,7 @@ function clearAudio() {
         lastAudioObjectUrl = null;
     }
     emit(Events.STOP_PLAYBACK);
-    refreshExportButton();
+    refreshAudioDependentButtons();
 }
 
 function clearAlbumArt() {
@@ -453,7 +573,7 @@ function clearAlbumArt() {
 function bindInputs() {
     songTitleInput.addEventListener('input', () => {
         emit(Events.UPDATE_SONG_TITLE, songTitleInput.value);
-        refreshExportButton();
+        refreshAudioDependentButtons();
     });
     artistNameInput.addEventListener('input', () => {
         emit(Events.UPDATE_ARTIST_NAME, artistNameInput.value);
@@ -462,11 +582,14 @@ function bindInputs() {
 
 // ---------- Export UI ----------
 
-function refreshExportButton() {
-    exportBtn.disabled = !audioFileInput.files[0];
+function refreshAudioDependentButtons() {
+    const hasAudio = !!audioFileInput.files[0];
+    exportBtn.disabled = !hasAudio;
+    // Auto-sync transcribes the same upload — no audio, nothing to sync.
+    autoSyncBtn.disabled = !hasAudio;
 }
 
-function refreshExportButtonLabel() {
+function refreshAudioDependentButtonsLabel() {
     const { ext } = FORMATS[state.videoFormat] || FORMATS.webm;
     exportBtnLabel.textContent = `Export ${ext.slice(1).toUpperCase()}`;
 }
@@ -474,8 +597,8 @@ function refreshExportButtonLabel() {
 function resetExportProgress() {
     exportBtn.classList.remove('exporting');
     exportBtnFill.style.width = '0%';
-    refreshExportButtonLabel();
-    refreshExportButton();
+    refreshAudioDependentButtonsLabel();
+    refreshAudioDependentButtons();
 }
 
 function handleExportComplete({ videoBlob, fileName }) {
@@ -513,6 +636,10 @@ function bindExport() {
             toastError('Upload an audio file first.');
             return;
         }
+
+        // Whisper and the 30fps recorder would fight over the CPU and the
+        // export would drop frames — the export wins, the sync dies.
+        if (isAutoSyncRunning()) cancelAutoSync();
 
         exportStartedAt = performance.now();
         exportBtn.classList.add('exporting');
@@ -637,7 +764,7 @@ function setVideoFormat(fmt, { persist = true } = {}) {
     if (help) help.textContent = `${ext.slice(1).toUpperCase()} · ${label}`;
 
     // Keep the export button's label in sync with the chosen container.
-    refreshExportButtonLabel();
+    refreshAudioDependentButtonsLabel();
 
     if (persist) {
         try { localStorage.setItem('videoFormat', fmt); } catch {}
@@ -682,6 +809,7 @@ export function initSettings() {
         item.querySelector('.lyrics-text-input')?.focus();
     });
     clearLyricsBtn.addEventListener('click', clearAllLyrics);
+    autoSyncBtn.addEventListener('click', handleAutoSync);
 
     wireUpload(uploadArea, albumArtInput, handleAlbumArt);
     wireUpload(audioUploadArea, audioFileInput, handleAudioFile);
@@ -697,8 +825,8 @@ export function initSettings() {
     bindFormatToggle();
     setVideoFormat(loadPersistedFormat(), { persist: false });
 
-    audioFileInput.addEventListener('change', refreshExportButton);
-    songTitleInput.addEventListener('input', refreshExportButton);
+    audioFileInput.addEventListener('change', refreshAudioDependentButtons);
+    songTitleInput.addEventListener('input', refreshAudioDependentButtons);
 
     initColorManager();
 }

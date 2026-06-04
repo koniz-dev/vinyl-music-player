@@ -42,6 +42,24 @@ Click the red `×` to remove a row.
 
 Click **Import** in the Lyrics section header, paste an array, choose **Replace** or **Append**, hit Import. Full spec: [JSON Lyrics Format](json-lyrics-format.md).
 
+### Auto-sync with AI (✦ panel below the lines)
+
+The **Auto-sync with AI** panel sits under the lyric lines. It transcribes your audio with Whisper — running entirely in your browser, nothing is uploaded — and times your lyrics automatically. The button enables once an audio file is loaded.
+
+The typical flow: **paste the full lyrics as plain text** into the panel's box (one line per row), click **Auto-sync**, and the AI creates the lines and fills in every Start/End time. Pasting replaces any lines already in the editor.
+
+With the box left empty it works on what's already there:
+
+- **Lines with text exist**: their times get filled by matching each line against what's sung. Lines the AI can't confidently match get interpolated times — review and nudge them.
+- **No lines at all**: the AI transcribes from scratch and creates lines from what it hears. Expect to fix some misheard words — it's a starting point, not a final draft.
+
+Notes:
+
+- The first run downloads a ~40 MB AI model (progress is shown). It's cached afterwards, so later runs start immediately and work offline.
+- Transcription speed depends on your hardware — seconds with a GPU (WebGPU), possibly a few minutes for a long song on CPU.
+- Music is harder than speech for ASR: heavy beats, ad-libs, and dense mixes lower accuracy. Pasting the real lyrics and letting the AI do only the timing gives much better results than transcribing from scratch.
+- Click the button again (it reads **Cancel** while running) to abort. Starting a video export also cancels a running sync — they'd fight over the CPU.
+
 ## Colors
 
 The **Appearance → Colors** list lets you override six element colors: Accent, Title, Artist, Lyrics, Background, and Vinyl tint. Pick with the swatch; the reset button restores the default. The Accent auto-derives from the album art until you override it manually. Overrides persist across sessions via `localStorage`.

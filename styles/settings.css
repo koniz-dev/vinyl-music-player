@@ -48,6 +48,76 @@
     background: var(--bg-2);
 }
 
+/* ── AI auto-sync panel ── */
+
+.autosync-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-3);
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-md);
+}
+
+.autosync-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg-1);
+}
+
+.autosync-panel-icon {
+    display: inline-flex;
+    color: var(--accent);
+}
+
+.autosync-panel-desc,
+.autosync-panel-note {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--fg-3);
+}
+
+.autosync-textarea {
+    resize: vertical;
+    min-height: 64px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.autosync-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+}
+
+.autosync-btn {
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+.autosync-btn.running {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Live status line while Whisper downloads / transcribes */
+.autosync-status {
+    flex: 1;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--fg-3);
+    animation: autosync-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes autosync-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
 .lyrics-container {
     display: flex;
     flex-direction: column;

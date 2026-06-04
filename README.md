@@ -17,6 +17,7 @@ Drop in an MP3, type the song title, add timed lyrics, click export. You get a *
 
 - 🎬 **Real video export** — Canvas + `MediaRecorder` to MP4 or WebM, not a screen recording
 - 📝 **Synced lyrics** — type per-line or bulk-paste JSON; live preview as audio plays
+- ✨ **AI auto-sync** — Whisper runs *in your browser* to time your lyrics (or transcribe from scratch); nothing is uploaded
 - 🎨 **Live vinyl preview** — record spins, tonearm tracks, lyrics fade in/out
 - 🔒 **100% local** — no servers, no uploads, no account
 - 📦 **Offline-ready PWA** — works on the train after the first load
@@ -48,7 +49,7 @@ Open <http://localhost:3000>. Need more detail? See [Getting Started](docs/getti
 
 ## Tech
 
-Vanilla HTML / CSS / JavaScript. ES modules, no build step, no backend. Uses `MediaRecorder`, Web Audio, Canvas, and a service worker for offline support. Full breakdown in [docs/architecture.md](docs/architecture.md).
+Vanilla HTML / CSS / JavaScript. ES modules, no build step, no backend. Uses `MediaRecorder`, Web Audio, Canvas, a service worker for offline support, and on-device Whisper (transformers.js + ONNX Runtime, WebGPU/WASM) for lyric auto-sync. Full breakdown in [docs/architecture.md](docs/architecture.md).
 
 ## License
 

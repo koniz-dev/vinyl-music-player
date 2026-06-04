@@ -53,6 +53,20 @@ Browser quirk — `createMediaElementSource` is sometimes blocked if the audio f
 ffmpeg -i input.m4a -codec:a libmp3lame -b:a 192k output.mp3
 ```
 
+### Auto-sync (AI panel) fails or never finishes
+
+- The first run needs internet — the AI library loads from jsDelivr and the ~40 MB Whisper model from the Hugging Face Hub. Ad blockers / strict privacy extensions sometimes block those CDNs; whitelist them or try another browser profile. After the first successful run everything is cached and works offline.
+- Privacy note: your audio and lyrics never leave the device, but those first-run CDN requests do reveal your IP and basic request metadata to jsDelivr / Hugging Face — the same as loading any website asset.
+- Auto-sync caps audio at 30 minutes (it's built for songs); longer files are rejected with an error before any heavy work starts.
+- "Transcribing…" can legitimately take a few minutes on long songs without WebGPU (Whisper runs on CPU via WASM then). Chrome/Edge on a machine with a GPU is the fast path.
+- Sync needs a decodable audio file — the same DRM/codec limits as playback apply.
+
+### Auto-sync timings are off / lines didn't match
+
+- Whisper hears the *vocals* — intros, instrumentals, and ad-libs aren't in the transcript, so lines that aren't actually sung get interpolated guesses.
+- Make sure the typed lyrics match what's sung (same language, same words, no section headers like `[Chorus]`).
+- Dense mixes and heavy effects lower transcription accuracy; treat the result as a first pass and fine-tune by ear.
+
 ### Color / ratio / format choices don't persist
 
 Color overrides, aspect ratio, and video format are saved in `localStorage`. If your browser is in private/incognito mode (or you've disabled storage for the origin), they reset every load. This is expected.

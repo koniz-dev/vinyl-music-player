@@ -18,6 +18,9 @@ vinyl-music-player/
 │   ├── player.js           # Audio playback + vinyl UI + lyrics display
 │   ├── album-art.js        # Album art DOM updates (used by player.js)
 │   ├── settings.js         # Form, uploads, lyrics CRUD, ratio/format toggles, export UI
+│   ├── autosync.js         # AI lyric timing — audio decode + Whisper worker + alignment
+│   ├── workers/
+│   │   └── whisper-worker.js # Whisper (transformers.js) transcription, off-main-thread
 │   ├── color-manager.js    # Color overrides + accent sync + history
 │   ├── export.js           # Canvas + MediaRecorder MP4/WebM exporter
 │   ├── theme.js            # Derives the accent color from the album art
@@ -109,6 +112,28 @@ formats with their `MediaRecorder` codec candidate lists), plus their defaults.
 The hybrid approach (cheap per-frame canvas composite + occasional DOM capture) keeps the recording at a steady 30 fps: the expensive html-to-image work never runs on the per-frame path.
 
 While exporting, the editor preview is driven from the same `exportAudio` clock (vinyl angle, lyrics, progress bar, time labels — see `syncLiveDomToExportAudio`), so what you watch is exactly what's being recorded, starting from 0° / 0:00. In the settings panel the export button itself doubles as the progress bar (fill width + label driven by `EXPORT_PROGRESS`; clicking it mid-export cancels).
+
+## Auto-sync (AI lyric timing)
+
+`js/autosync.js` + `js/workers/whisper-worker.js` implement the **Auto-sync with AI** panel in the Lyrics section (paste plain lyrics → timed lines). Everything runs on-device — consistent with the "no uploads" promise:
+
+1. The audio file is decoded and resampled to 16 kHz mono via `OfflineAudioContext` (Web Audio is main-thread only).
+2. The PCM is transferred to a module worker that lazy-loads transformers.js (pinned, from jsDelivr) and runs **Whisper tiny** through ONNX Runtime — WebGPU when available, WASM otherwise. The ~40 MB quantized weights stream from the Hugging Face Hub on first use; transformers.js caches them in the browser's Cache API, so later runs work offline.
+3. Two modes, picked automatically:
+   - **align** — lyric lines already exist: Whisper runs with word-level timestamps and each line is matched to the transcript via global alignment (Needleman-Wunsch over diacritic-normalized tokens). Unmatched lines get times interpolated between matched neighbours.
+   - **fill** — no lines yet: Whisper's segment timestamps become new editable lines.
+4. Results land back in the existing time/text inputs and `publishLyrics()` re-emits `UPDATE_LYRICS` as if the user had typed them.
+
+`autosync.js` is a lyrics-editor helper called directly by `settings.js` (like `color-manager.js`) — it's not a cross-module state change, so it adds no bus events. Deliberately **not** in the service worker's model path: the worker script is pre-cached, but the CDN library and model weights are cross-origin and the SW's fetch handler already ignores those — transformers.js manages its own cache.
+
+## Security (CSP)
+
+Two layers, both needed because GitHub Pages can't send response headers:
+
+- **Document**: a `<meta http-equiv="Content-Security-Policy">` in `index.html`. `script-src 'self'` (the page imports only local modules), font hosts for Google Fonts, and `blob:`/`data:` in `img/media/connect-src` because album art, the audio element, and html-to-image's export captures all run through object/data URLs. Adding any new external resource means updating this tag — violations fail silently in the console.
+- **Whisper worker**: workers take their CSP from the script *response* headers, not the document meta tag — so `service-worker.js` injects a `Content-Security-Policy` header when serving `js/workers/whisper-worker.js`. It restricts the worker to the pinned jsDelivr CDN + Hugging Face hosts (`'wasm-unsafe-eval'` for ONNX Runtime), so even a compromised library build couldn't exfiltrate the user's audio to an arbitrary host. The very first visit (before any SW controls the page) runs un-wrapped; every later load is locked down.
+
+The remaining accepted risk: dynamic `import()` has no Subresource Integrity, so the pinned jsDelivr URL itself is trusted. Vendoring transformers.js + the ONNX wasm files would close that at the cost of ~15-20 MB in the repo.
 
 ## PWA / offline
 

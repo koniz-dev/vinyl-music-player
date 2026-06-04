@@ -27,10 +27,13 @@ Single-page app with two panels (settings + vinyl player) that communicate throu
 - **`js/lib/state.js`** — single shared mutable state object (playback flags, lyrics, colors, aspect ratio, video format) plus the constants `RATIOS` (export resolutions) and `FORMATS` (MP4/WebM codec candidate lists for MediaRecorder). No reactivity layer; consumers re-read on each event.
 - **`js/settings.js`** — form, file uploads, lyrics CRUD, export UI (producer side of most events).
 - **`js/player.js`** — audio playback, vinyl UI, lyrics display (consumer side).
+- **`js/autosync.js`** + **`js/workers/whisper-worker.js`** — AI lyric timing (the "Auto-sync with AI" panel: paste plain lyrics → timed lines). Decodes the upload to 16 kHz mono, runs Whisper tiny in a module worker (transformers.js pinned from jsDelivr, weights from the HF Hub — both cross-origin, cached by transformers.js itself, never by our SW), then aligns transcript words to the user's lines (Needleman-Wunsch). Helper of settings.js like color-manager — no bus events. Keep the transformers.js version pinned; verify a v3.x API before bumping.
 - **`js/export.js`** — the most complex and fragile module. Hybrid render pipeline: captures the live `.frame` DOM into static layers via `js/vendor/html-to-image.js` (base layer refreshed ~1×/s; vinyl/sheen/tonearm as separate bitmaps), then composites them onto an off-screen canvas per frame with `requestAnimationFrame`. Vinyl rotation is derived from audio `currentTime` (deterministic). Recorder is locked at 30 fps — keep per-frame work cheap; the expensive html-to-image capture must never run on the per-frame path. Many canvas drawing calls mirror CSS rules, so visual regressions are easy — compare an exported reference video before/after when touching it.
 - **`service-worker.js`** — offline PWA cache (stale-while-revalidate).
 
 ## Conventions that bite if missed
+
+- **CSP**: `index.html` ships a meta CSP and `service-worker.js` injects a separate CSP header onto the Whisper worker script. Loading any new external script/font/connect target requires updating one of these allowlists — violations only show in the console.
 
 - **Bump `CACHE_VERSION` in `service-worker.js`** on every user-facing change — otherwise clients keep serving the stale cached app. Recent commit history shows this is done on essentially every release commit.
 - **New JS/CSS files must be added to `PRECACHE`** in `service-worker.js` or they won't work offline.
