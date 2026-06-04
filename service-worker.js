@@ -1,5 +1,5 @@
 // Versioned cache — bump the suffix on every release to invalidate clients.
-const CACHE_VERSION = 'v62';
+const CACHE_VERSION = 'v63';
 const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
 
 const PRECACHE = [
@@ -76,7 +76,9 @@ self.addEventListener('fetch', (event) => {
                     if (response.ok) cache.put(request, response.clone());
                     return response;
                 })
-                .catch(() => cached);
+                // Offline + not cached: return a proper network-error Response
+                // instead of resolving to undefined (which throws in respondWith).
+                .catch(() => cached || Response.error());
             return cached || networkPromise;
         })
     );

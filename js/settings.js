@@ -547,6 +547,12 @@ function bindImportModal() {
 
 function setAspectRatio(ratio, { persist = true } = {}) {
     if (!RATIOS[ratio]) return;
+    // Mid-export the frame geometry is locked — the export computed its layer
+    // rects at start; resizing the frame now would corrupt the video.
+    if (state.isExporting) {
+        toastInfo('Aspect ratio is locked while exporting.');
+        return;
+    }
     state.aspectRatio = ratio;
     const { w, h, label } = RATIOS[ratio];
     const [rw, rh] = ratio.split(':');
@@ -593,6 +599,10 @@ function bindRatioToggle() {
 // ---------- Init ----------
 
 export function initSettings() {
+    // No submit button exists, but block implicit submission anyway — a stray
+    // Enter must never reload the page and wipe the user's session.
+    document.getElementById('musicForm')?.addEventListener('submit', (e) => e.preventDefault());
+
     refreshLyricsEmptyState();
     bindReorderContainer();
 

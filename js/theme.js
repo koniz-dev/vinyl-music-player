@@ -109,8 +109,12 @@ async function deriveAndApply(imageUrl) {
     if (!imageUrl) { resetAccent(); return; }
     try {
         const hex = await extractAccent(imageUrl);
+        // A newer album art may have been set while we were sampling —
+        // latest request wins, stale results are dropped.
+        if (imageUrl !== lastImageUrl) return;
         applyAccent(hex);
     } catch {
+        if (imageUrl !== lastImageUrl) return;
         resetAccent();
     }
 }

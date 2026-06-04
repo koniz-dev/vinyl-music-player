@@ -40,6 +40,7 @@ let wasMainAudioPlaying = false;
 let frameEl = null;
 let audioObjectUrl = null;       // revoked in cleanup() — was leaking before
 let finalized = false;           // guards against double-finalize (onstop + fallback)
+let resizeHandler = null;        // recomputes layer rects if the frame resizes mid-export
 let exportLyrics = [];
 let liveDomBindings = null;     // {ref to update progress/lyrics in editor}
 let visibilityHandler = null;
@@ -198,8 +199,39 @@ function cleanup() {
     canvasScale = 1;
     baseCapturePending = false;
     lastBaseCapturedAt = 0;
+    if (resizeHandler) {
+        window.removeEventListener('resize', resizeHandler);
+        resizeHandler = null;
+    }
     disableControls(false);
     state.isExporting = false;
+}
+
+// Abort an in-flight export from an error path. Stops the recorder with its
+// onstop detached and `finalized` set, so neither the native 'stop' event nor
+// the stopRecording fallback can emit a stray EXPORT_COMPLETE afterwards —
+// and the recorder can't keep accumulating chunks forever.
+function abortExport(message) {
+    finalized = true;
+    if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
+        recorder.onstop = null;
+        try { recorder.stop(); } catch {}
+    }
+    cleanup();
+    resumeMainAudioIfPaused();
+    emit(Events.EXPORT_ERROR, message);
+}
+
+// (Re)arm the global export timeout from the audio position: remaining audio
+// + a fixed buffer. Called once recording starts and again on tab-visible,
+// so time spent paused in a background tab doesn't count against the export.
+function armExportTimeout() {
+    if (timeoutId) clearTimeout(timeoutId);
+    if (!exportAudio) return;
+    const remainingS = Math.max(0, (exportAudio.duration || 0) - exportAudio.currentTime);
+    timeoutId = setTimeout(() => {
+        abortExport('Export timed out. Please try again.');
+    }, remainingS * 1000 + EXPORT_TIMEOUT_BUFFER_MS);
 }
 
 function setupVisibilityHandler() {
@@ -208,9 +240,11 @@ function setupVisibilityHandler() {
 
         if (document.hidden) {
             // Tab backgrounded — rAF will throttle to ~1Hz. Pause everything so
-            // audio + video stay in sync; resume when the user returns.
+            // audio + video stay in sync; resume when the user returns. The
+            // global timeout is suspended too — paused time shouldn't count.
             try { exportAudio.pause(); } catch {}
             try { if (recorder.state === 'recording') recorder.pause(); } catch {}
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
             backgroundToastDismiss = toastInfo(
                 'Export paused — return to this tab to continue.',
                 { duration: 0 }
@@ -218,6 +252,7 @@ function setupVisibilityHandler() {
         } else {
             try { if (recorder.state === 'paused') recorder.resume(); } catch {}
             try { exportAudio.play(); } catch {}
+            armExportTimeout();
             if (backgroundToastDismiss) {
                 backgroundToastDismiss();
                 backgroundToastDismiss = null;
@@ -318,17 +353,18 @@ function maskToCircle(srcCanvas) {
     return c;
 }
 
-async function setupExportLayers() {
-    const vinylEl = document.getElementById('vinyl');
-    const tonearmEl = document.getElementById('tonearm');
-    const sheenEl = document.querySelector('.vinyl-sheen');
+// Compute LAYOUT positions from vinyl-wrap, which has no transform of its
+// own, so its bounding rect is always the true untransformed box. We DON'T
+// touch the live elements (no animation pause / visible freeze). Re-run on
+// window resize during export — the frame is responsive, and stale rects
+// would draw the disc/tonearm at the wrong place on the canvas.
+function computeLayerRects() {
     const wrapEl = document.querySelector('.vinyl-wrap');
+    if (!frameEl || !wrapEl) return;
 
-    // Compute LAYOUT positions from vinyl-wrap, which has no transform of its
-    // own, so its bounding rect is always the true untransformed box. We DON'T
-    // touch the live elements (no animation pause / visible freeze).
     const fRect = frameEl.getBoundingClientRect();
     const wrapRect = wrapEl.getBoundingClientRect();
+    if (fRect.width <= 0) return;
     canvasScale = canvasW / fRect.width;
 
     const wrapX = (wrapRect.left - fRect.left) * canvasScale;
@@ -350,6 +386,16 @@ async function setupExportLayers() {
         width: wrapW * 0.22,
         height: wrapH * 0.75,
     };
+}
+
+async function setupExportLayers() {
+    const vinylEl = document.getElementById('vinyl');
+    const tonearmEl = document.getElementById('tonearm');
+    const sheenEl = document.querySelector('.vinyl-sheen');
+
+    computeLayerRects();
+    resizeHandler = () => computeLayerRects();
+    window.addEventListener('resize', resizeHandler);
 
     // Sample every layer at the canvas's true pixel density (canvas-px per
     // on-screen CSS-px). At pixelRatio 1 the captures came out at the small
@@ -505,9 +551,7 @@ async function startVideoRecording({ audioFile, songTitle }) {
 
     try {
         timeoutId = setTimeout(() => {
-            cleanup();
-            resumeMainAudioIfPaused();
-            emit(Events.EXPORT_ERROR, 'Export timeout. Please try again with a shorter audio file.');
+            abortExport('Export setup timed out. Please try again.');
         }, INIT_TIMEOUT_MS);
 
         emit(Events.EXPORT_PROGRESS, { progress: 5, message: 'Initializing export…' });
@@ -553,12 +597,7 @@ async function startVideoRecording({ audioFile, songTitle }) {
 
         // Now that we know the real length, replace the init safety net with a
         // duration-based cap so long songs aren't cut off by a fixed timeout.
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-            cleanup();
-            resumeMainAudioIfPaused();
-            emit(Events.EXPORT_ERROR, 'Export timed out. Please try again.');
-        }, exportAudio.duration * 1000 + EXPORT_TIMEOUT_BUFFER_MS);
+        armExportTimeout();
 
         const combined = new MediaStream([
             ...canvasStream.getVideoTracks(),
@@ -649,12 +688,8 @@ async function startVideoRecording({ audioFile, songTitle }) {
             if (Math.abs(elapsed - lastSeenTime) < 0.01) {
                 stallTicks += 1;
                 if (stallTicks >= 20) {       // 20 × 200ms = 4s of no progress
-                    clearInterval(progressInterval);
-                    progressInterval = null;
-                    cleanup();
-                    resumeMainAudioIfPaused();
-                    emit(Events.EXPORT_ERROR,
-                        'Audio playback stalled. Try a different audio file or browser.');
+                    // abortExport → cleanup clears this interval too.
+                    abortExport('Audio playback stalled. Try a different audio file or browser.');
                     return;
                 }
             } else {
@@ -673,16 +708,7 @@ async function startVideoRecording({ audioFile, songTitle }) {
         }, 200);
 
     } catch (error) {
-        // An error after recorder.start() (e.g. play() rejected) would otherwise
-        // leave the recorder running and able to fire a stray onstop → COMPLETE.
-        finalized = true;
-        if (recorder && (recorder.state === 'recording' || recorder.state === 'paused')) {
-            recorder.onstop = null;
-            try { recorder.stop(); } catch {}
-        }
-        cleanup();
-        resumeMainAudioIfPaused();
-        emit(Events.EXPORT_ERROR, error.message || 'Unknown error occurred');
+        abortExport(error.message || 'Unknown error occurred');
     }
 }
 

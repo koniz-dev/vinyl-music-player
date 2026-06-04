@@ -69,7 +69,17 @@ function loadOverrides() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         const parsed = raw ? JSON.parse(raw) : {};
-        return (parsed && typeof parsed === 'object') ? parsed : {};
+        if (!parsed || typeof parsed !== 'object') return {};
+        // Keep only known keys with valid #rrggbb values. A corrupted entry
+        // would otherwise throw inside init (hexToRgb / .toUpperCase) and take
+        // the whole app boot sequence down with it.
+        const clean = {};
+        for (const [key, value] of Object.entries(parsed)) {
+            if (COLOR_DEFS.some(d => d.key === key) && isHex(value)) {
+                clean[key] = value;
+            }
+        }
+        return clean;
     } catch {
         return {};
     }
@@ -112,7 +122,6 @@ function applyAccentOverride(hex) {
     document.documentElement.style.setProperty('--accent-hi', hi);
     document.documentElement.style.setProperty('--accent-glow', hexToRgba(hex, 0.35));
     document.documentElement.style.setProperty('--accent-soft', hexToRgba(hex, 0.12));
-    state.lyricsColor = state.lyricsColor; // unchanged; keeps existing emit contract
 }
 
 function applyAccentReset() {

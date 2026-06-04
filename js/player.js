@@ -288,9 +288,10 @@ function bindProgressScrub() {
 
 function bindShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Don't intercept when typing in form fields
+        // Don't intercept while typing in form fields, and let a focused
+        // button keep its native Space activation (keyboard a11y).
         const target = e.target;
-        if (target.matches('input, textarea, [contenteditable="true"]')) return;
+        if (target.matches('input, textarea, button, [contenteditable="true"]')) return;
         if (e.key === ' ' && state.audioElement) {
             e.preventDefault();
             togglePlayPause();

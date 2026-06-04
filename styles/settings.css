@@ -90,9 +90,6 @@
 
 .lyrics-item-title {
     flex: 1;
-}
-
-.lyrics-item-title {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.06em;

@@ -81,14 +81,14 @@ Modules import it directly. There's no reactivity layer — consumers re-read on
 `js/export.js` is the most complex module. It:
 
 1. Creates an off-screen canvas at the selected ratio's native resolution (e.g. 1080×1920 for 9:16; see `RATIOS` in `js/lib/state.js`)
-2. Loads the album art into an `Image`
-3. Loads the audio into a hidden `Audio` element
+2. Loads the audio into a hidden `Audio` element
+3. Captures the live `.frame` DOM into static layers via html-to-image: the base (everything except vinyl/sheen/tonearm, refreshed ~1×/s for lyrics/progress) plus the vinyl, sheen, and tonearm as separate bitmaps
 4. Wires the canvas's `captureStream()` + the audio's `MediaStreamDestination` into a `MediaStream`
 5. Starts a `MediaRecorder` against that stream (picks the best WebM codec available)
-6. Drives the canvas with `requestAnimationFrame` until the audio's `duration` is reached
+6. Composites the layers onto the canvas with `requestAnimationFrame` — the vinyl's rotation angle is derived from the audio's `currentTime`, so it's smooth and deterministic — until the audio ends
 7. Emits `EXPORT_COMPLETE` with the resulting Blob
 
-The render function draws everything pixel-by-pixel rather than reusing the live DOM — this lets it run at fixed 30 fps regardless of the player UI's repaint rhythm.
+The hybrid approach (cheap per-frame canvas composite + occasional DOM capture) keeps the recording at a steady 30 fps: the expensive html-to-image work never runs on the per-frame path.
 
 ## PWA / offline
 
