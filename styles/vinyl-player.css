@@ -190,6 +190,7 @@
 /* ─── First-time hint (hidden once audio loaded) ────────────────── */
 
 .stage-hint {
+    font-family: inherit;
     font-size: clamp(10px, 2.5cqmin, 13px);
     color: var(--fg-3);
     text-align: center;
@@ -197,7 +198,14 @@
     background: var(--bg-2);
     border: 1px solid var(--border-1);
     border-radius: var(--r-pill);
+    cursor: pointer;
+    transition: border-color var(--dur), color var(--dur);
     animation: hintPulse 2.4s var(--ease-in-out) infinite;
+}
+
+.stage-hint:hover {
+    border-color: var(--accent);
+    color: var(--fg-1);
 }
 
 .stage-hint strong {

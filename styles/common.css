@@ -220,6 +220,11 @@ input:focus, textarea:focus, button:focus-visible {
     font-weight: 500;
     color: var(--fg-1);
     margin-bottom: 2px;
+    /* Truncate long file names to a single line; full name shown via title= */
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .drop-zone .dz-hint {

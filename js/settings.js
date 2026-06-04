@@ -340,13 +340,18 @@ function importLyricsFromJson() {
 // ---------- File uploads ----------
 
 function describeFile(area, file) {
-    area.querySelector('.dz-title').textContent = file.name;
+    const titleEl = area.querySelector('.dz-title');
+    titleEl.textContent = file.name;
+    // Long names are truncated with CSS ellipsis — expose the full name on hover.
+    titleEl.title = file.name;
     area.querySelector('.dz-hint').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
     area.dataset.loaded = 'true';
 }
 
 function resetDropZone(area, input, defaults) {
-    area.querySelector('.dz-title').textContent = defaults.title;
+    const titleEl = area.querySelector('.dz-title');
+    titleEl.textContent = defaults.title;
+    titleEl.removeAttribute('title');
     area.querySelector('.dz-hint').textContent = defaults.hint;
     delete area.dataset.loaded;
     input.value = '';
@@ -534,11 +539,9 @@ function setAspectRatio(ratio, { persist = true } = {}) {
         btn.setAttribute('aria-pressed', active);
     });
 
-    // Update help text + frame badge + frame aspect-ratio
+    // Update help text + frame aspect-ratio
     const help = document.getElementById('ratio-help');
     if (help) help.textContent = `${w}×${h} · ${label}`;
-    const badge = document.getElementById('frame-ratio');
-    if (badge) badge.textContent = ratio;
 
     const frame = document.querySelector('.frame');
     if (frame) {

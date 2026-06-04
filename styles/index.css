@@ -26,35 +26,6 @@
     padding: var(--s-4) var(--s-6);
 }
 
-.brand {
-    display: flex;
-    align-items: center;
-    gap: var(--s-2);
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: -0.01em;
-    color: var(--fg-1);
-}
-
-.brand-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent-glow);
-    animation: pulse 2.4s var(--ease-in-out) infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50%      { transform: scale(0.85); opacity: 0.75; }
-}
-
-.brand-accent {
-    color: var(--fg-3);
-    font-weight: 400;
-}
-
 .topbar-actions {
     display: flex;
     gap: var(--s-2);
@@ -112,22 +83,6 @@
 .frame > *:not(.frame-bg) {
     position: relative;
     z-index: 1;
-}
-
-.frame-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 var(--s-2) var(--s-3);
-}
-
-.frame-ratio {
-    font-size: 10px;
-    color: var(--fg-4);
-    padding: 2px 8px;
-    border: 1px solid var(--border-1);
-    border-radius: var(--r-pill);
-    letter-spacing: 0.04em;
 }
 
 .player {
@@ -274,6 +229,12 @@
     .drawer-backdrop,
     #open-settings-btn,
     #close-settings-btn {
+        display: none !important;
+    }
+
+    /* Settings panel is always visible on desktop, so the "open Settings to
+       upload" hint is redundant here. */
+    .stage-hint {
         display: none !important;
     }
 }

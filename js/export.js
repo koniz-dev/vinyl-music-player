@@ -15,6 +15,11 @@ const EXPORT_TIMEOUT_BUFFER_MS = 60 * 1000;
 // has a fresh frame to sample. Vinyl rotation is computed every frame; the
 // expensive html-to-image work only fires at setup + every BASE_REFRESH_MS.
 const OUTPUT_FPS = 30;
+// Target video bitrate ≈ bits-per-pixel-per-frame × pixels × fps. ~0.12 keeps
+// text and the record sharp on social platforms without bloating the file; the
+// default MediaRecorder bitrate over-compressed and looked blurry.
+const VIDEO_BITS_PER_PIXEL = 0.12;
+const AUDIO_BITS_PER_SECOND = 128_000;
 const BASE_REFRESH_MS = 1000;
 const VINYL_SPIN_PERIOD_S = 8;       // matches CSS `spin 8s linear infinite`
 const PAUSE_ICON_HTML = icon('pause', { size: 24 });
@@ -345,18 +350,25 @@ async function setupExportLayers() {
         height: wrapH * 0.75,
     };
 
+    // Sample every layer at the canvas's true pixel density (canvas-px per
+    // on-screen CSS-px). At pixelRatio 1 the captures came out at the small
+    // on-screen size and were then upscaled into the larger export canvas —
+    // that upscale was the source of the blurry text/vinyl. Floor at 2 so the
+    // record grooves stay crisp even when the preview frame is small.
+    const sampleRatio = Math.max(2, canvasScale);
+
     // Capture clones with style overrides — html-to-image applies these to the
     // cloned root before rendering, leaving the live DOM untouched.
     cachedVinyl = await captureViaH2I(vinylEl, {
-        pixelRatio: 2,
+        pixelRatio: sampleRatio,
         style: { animation: 'none', transform: 'rotate(0deg)' },
     });
     cachedVinyl = maskToCircle(cachedVinyl);
 
-    cachedSheen = await captureViaH2I(sheenEl, { pixelRatio: 2 });
+    cachedSheen = await captureViaH2I(sheenEl, { pixelRatio: sampleRatio });
     cachedSheen = maskToCircle(cachedSheen);
 
-    cachedTonearm = await captureSvgElement(tonearmEl, 2);
+    cachedTonearm = await captureSvgElement(tonearmEl, sampleRatio);
 
     await refreshBase();
 }
@@ -369,6 +381,9 @@ async function refreshBase() {
     baseCapturePending = true;
     try {
         cachedBase = await captureViaH2I(frameEl, {
+            // Render at the export canvas resolution (not the small on-screen
+            // size) so text, lyrics, progress bar and controls stay sharp.
+            pixelRatio: Math.max(1, canvasScale),
             filter: (node) => {
                 if (!node) return true;
                 if (node.id === 'vinyl' || node.id === 'tonearm') return false;
@@ -552,7 +567,12 @@ async function startVideoRecording({ audioFile, songTitle }) {
         const mimeType = pickMimeType();
         emit(Events.EXPORT_PROGRESS, { progress: 20, message: 'Setting up recorder…' });
 
-        recorder = new MediaRecorder(combined, { mimeType });
+        const videoBitsPerSecond = Math.round(canvasW * canvasH * OUTPUT_FPS * VIDEO_BITS_PER_PIXEL);
+        recorder = new MediaRecorder(combined, {
+            mimeType,
+            videoBitsPerSecond,
+            audioBitsPerSecond: AUDIO_BITS_PER_SECOND,
+        });
         recordedChunks = [];
 
         recorder.ondataavailable = (event) => {

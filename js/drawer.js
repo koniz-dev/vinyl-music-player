@@ -49,6 +49,12 @@ export function initDrawer() {
     closeBtn.addEventListener('click', () => setOpen(false));
     backdrop.addEventListener('click', () => setOpen(false));
 
+    // The "Open Settings to upload audio" hint in the preview is a button —
+    // tapping it opens the drawer (it's hidden on desktop, where the panel is
+    // always visible).
+    const stageHint = document.getElementById('stage-hint');
+    if (stageHint) stageHint.addEventListener('click', () => setOpen(true));
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !isDesktop() && drawer.dataset.open === 'true') {
             setOpen(false);
