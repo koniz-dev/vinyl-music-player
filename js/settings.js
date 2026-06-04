@@ -1,5 +1,5 @@
 import { emit, on, Events } from './lib/events.js';
-import { timeToSeconds } from './lib/format.js';
+import { timeToSeconds, formatTime } from './lib/format.js';
 import { initColorManager } from './color-manager.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { icon } from './icons.js';
@@ -239,9 +239,28 @@ function clearAllLyrics() {
     publishLyrics();
 }
 
+// Pre-fill times for a manually added line so the user only tweaks them:
+// first line starts at 00:00; every next line starts 1s after the previous
+// line's end (or its start+5s when the end was left blank — matches the
+// publishLyrics default). End is always seeded to start+5s.
+function nextLineSeed() {
+    const items = lyricsContainer.querySelectorAll('.lyrics-item');
+    if (items.length === 0) return { start: '00:00', end: '00:05' };
+
+    const timeInputs = items[items.length - 1].querySelectorAll('.time-input');
+    const lastStart = timeToSeconds(timeInputs[0]?.value || '');
+    const lastEndRaw = timeInputs[1]?.value || '';
+    const lastEnd = lastEndRaw === '' ? lastStart + 5 : timeToSeconds(lastEndRaw);
+
+    const start = lastEnd + 1;
+    return { start: formatTime(start), end: formatTime(start + 5) };
+}
+
 function addLyricsLine(seed) {
-    lyricsContainer.appendChild(buildLyricsItem(seed));
+    const item = buildLyricsItem(seed);
+    lyricsContainer.appendChild(item);
     refreshLyricsEmptyState();
+    return item;
 }
 
 function publishLyrics() {
@@ -577,7 +596,11 @@ export function initSettings() {
     refreshLyricsEmptyState();
     bindReorderContainer();
 
-    addLyricsBtn.addEventListener('click', () => addLyricsLine());
+    addLyricsBtn.addEventListener('click', () => {
+        const item = addLyricsLine(nextLineSeed());
+        // Times are pre-filled — jump straight to typing the lyric.
+        item.querySelector('.lyrics-text-input')?.focus();
+    });
     clearLyricsBtn.addEventListener('click', clearAllLyrics);
 
     wireUpload(uploadArea, albumArtInput, handleAlbumArt);
