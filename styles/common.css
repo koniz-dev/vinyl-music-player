@@ -75,6 +75,9 @@
     /* Typography */
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    /* Player text (title/artist/lyrics) — font-manager.js overrides via inline
+       style on :root when the user picks a non-default font. */
+    --font-player: var(--font-sans);
 }
 
 /* ─── Reset ─────────────────────────────────────────────────────── */

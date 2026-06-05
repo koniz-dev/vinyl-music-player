@@ -21,7 +21,8 @@ vinyl-music-player/
 │   ├── autosync.js         # AI lyric timing — audio decode + Whisper worker + alignment
 │   ├── workers/
 │   │   └── whisper-worker.js # Whisper (transformers.js) transcription, off-main-thread
-│   ├── color-manager.js    # Color overrides + accent sync + history
+│   ├── color-manager.js    # Color overrides + per-color presets + palette templates + accent sync
+│   ├── font-manager.js     # Player font picker + export @font-face embedding
 │   ├── export.js           # Canvas + MediaRecorder MP4/WebM exporter
 │   ├── theme.js            # Derives the accent color from the album art
 │   ├── drawer.js           # Settings drawer open/close

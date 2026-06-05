@@ -67,9 +67,13 @@ ffmpeg -i input.m4a -codec:a libmp3lame -b:a 192k output.mp3
 - Make sure the typed lyrics match what's sung (same language, same words, no section headers like `[Chorus]`).
 - Dense mixes and heavy effects lower transcription accuracy; treat the result as a first pass and fine-tune by ear.
 
-### Color / ratio / format choices don't persist
+### Color / font / ratio / format choices don't persist
 
-Color overrides, aspect ratio, and video format are saved in `localStorage`. If your browser is in private/incognito mode (or you've disabled storage for the origin), they reset every load. This is expected.
+Color overrides, the player font, aspect ratio, and video format are saved in `localStorage`. If your browser is in private/incognito mode (or you've disabled storage for the origin), they reset every load. This is expected.
+
+### Exported video shows the wrong font
+
+Non-default player fonts are fetched from Google Fonts and embedded into the export at setup. If the network is unavailable at that moment (and the font files aren't yet in the browser's HTTP cache), the export proceeds with the system fallback font instead of failing.
 
 ### Service worker keeps serving old code
 

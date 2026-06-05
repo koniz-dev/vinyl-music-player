@@ -2,7 +2,10 @@ import { emit, on, Events } from './lib/events.js';
 import { state } from './lib/state.js';
 import { icon } from './icons.js';
 
-/* Each customizable element. Order = render order in drawer. */
+/* Each customizable element. Order = render order in drawer.
+   `presets` = curated quick-pick swatches tuned to the element's role
+   (dark tones for bg, light for title, pastels for lyrics…), so users who
+   aren't confident with color theory still land on something harmonious. */
 const COLOR_DEFS = [
     {
         key: 'accent',
@@ -12,30 +15,35 @@ const COLOR_DEFS = [
         defaultColor: '#818cf8',
         applyOverride: applyAccentOverride,
         applyReset: applyAccentReset,
+        presets: ['#818cf8', '#a78bfa', '#f472b6', '#fb7185', '#fb923c', '#fbbf24', '#34d399', '#22d3ee'],
     },
     {
         key: 'title',
         label: 'Title',
         cssVar: '--color-title',
         defaultColor: '#fafafa',
+        presets: ['#fafafa', '#f5f5f4', '#fef3c7', '#fbcfe8', '#bfdbfe', '#bbf7d0', '#e9d5ff', '#fed7aa'],
     },
     {
         key: 'artist',
         label: 'Artist',
         cssVar: '--color-artist',
         defaultColor: '#a1a1aa',
+        presets: ['#a1a1aa', '#d4d4d8', '#fda4af', '#93c5fd', '#6ee7b7', '#fcd34d', '#c4b5fd', '#fdba74'],
     },
     {
         key: 'lyrics',
         label: 'Lyrics',
         cssVar: '--color-lyrics',
         defaultColor: '#ffb3d1',
+        presets: ['#ffb3d1', '#fde68a', '#a5f3fc', '#bbf7d0', '#c7d2fe', '#fdba74', '#f0abfc', '#fca5a5'],
     },
     {
         key: 'bg',
         label: 'Background',
         cssVar: '--color-bg',
         defaultColor: '#09090b',
+        presets: ['#09090b', '#18181b', '#0d0b1a', '#0c1929', '#051c26', '#160a0f', '#07150e', '#1f1409'],
     },
     {
         key: 'vinyl',
@@ -45,6 +53,42 @@ const COLOR_DEFS = [
         pickerDefault: '#404040',         // shown in <input type=color> when no override
         defaultLabel: 'None',
         valueToCssOverride: (hex) => hexToRgba(hex, 0.25),  // subtle overlay
+        presets: ['#404040', '#818cf8', '#f472b6', '#fb923c', '#fbbf24', '#34d399', '#22d3ee', '#a78bfa'],
+    },
+];
+
+/* One-tap color schemes built on classic harmony rules (monochrome,
+   analogous, complementary, triadic) so the whole frame stays coordinated.
+   `colors: null` = the reset chip (back to defaults / auto accent). */
+const PALETTES = [
+    { key: 'default', name: 'Default', scheme: 'Auto accent', colors: null },
+    {
+        key: 'indigo-haze', name: 'Indigo Haze', scheme: 'Monochrome',
+        colors: { accent: '#818cf8', title: '#f5f3ff', artist: '#a5b4fc', lyrics: '#c4b5fd', bg: '#0d0b1a', vinyl: '#4338ca' },
+    },
+    {
+        key: 'sunset-glow', name: 'Sunset Glow', scheme: 'Complementary',
+        colors: { accent: '#fb923c', title: '#fff7ed', artist: '#93a8c4', lyrics: '#fed7aa', bg: '#0c1929', vinyl: '#f97316' },
+    },
+    {
+        key: 'ocean-drift', name: 'Ocean Drift', scheme: 'Analogous',
+        colors: { accent: '#22d3ee', title: '#ecfeff', artist: '#67e8f9', lyrics: '#a5f3fc', bg: '#051c26', vinyl: '#0e7490' },
+    },
+    {
+        key: 'rose-noir', name: 'Rose Noir', scheme: 'Monochrome',
+        colors: { accent: '#fb7185', title: '#fff1f2', artist: '#fda4af', lyrics: '#fecdd3', bg: '#160a0f', vinyl: '#be123c' },
+    },
+    {
+        key: 'forest-cream', name: 'Forest Cream', scheme: 'Complementary',
+        colors: { accent: '#34d399', title: '#f0fdf4', artist: '#86efac', lyrics: '#fde68a', bg: '#07150e', vinyl: '#059669' },
+    },
+    {
+        key: 'neon-pop', name: 'Neon Pop', scheme: 'Triadic',
+        colors: { accent: '#e879f9', title: '#fdf4ff', artist: '#22d3ee', lyrics: '#fde047', bg: '#120321', vinyl: '#c026d3' },
+    },
+    {
+        key: 'mono-chic', name: 'Mono Chic', scheme: 'Grayscale',
+        colors: { accent: '#d4d4d8', title: '#fafafa', artist: '#a1a1aa', lyrics: '#e4e4e7', bg: '#09090b', vinyl: '#525252' },
     },
 ];
 
@@ -53,6 +97,7 @@ const STORAGE_KEY = 'colorOverrides';
 // Map<key, hexString>. Only contains user-overridden keys.
 let overrides = loadOverrides();
 let listEl = null;
+let paletteListEl = null;
 
 /* Public state queries — used by theme.js + export.js */
 export function isOverridden(key) {
@@ -167,6 +212,7 @@ function setColor(key, hex) {
     persist();
     applyOverride(def, hex);
     renderRow(def);
+    renderPaletteActive();
 }
 
 function resetColor(key) {
@@ -176,6 +222,17 @@ function resetColor(key) {
     persist();
     applyReset(def);
     renderRow(def);
+    renderPaletteActive();
+}
+
+function applyPalette(palette) {
+    if (!palette.colors) {
+        COLOR_DEFS.forEach(d => resetColor(d.key));
+        return;
+    }
+    for (const [key, hex] of Object.entries(palette.colors)) {
+        setColor(key, hex);
+    }
 }
 
 // ───────────────────── Rendering ─────────────────────
@@ -221,6 +278,12 @@ function renderRow(def) {
     else if (isHex(def.defaultColor)) display = def.defaultColor.toUpperCase();
     else display = def.defaultLabel || 'Default';
     hexLabel.textContent = display;
+
+    // Highlight the preset dot matching the current override (if any).
+    row.querySelectorAll('.color-preset-dot').forEach(dot => {
+        dot.classList.toggle('active',
+            !!overrideHex && dot.dataset.hex.toLowerCase() === overrideHex.toLowerCase());
+    });
 }
 
 function buildRow(def) {
@@ -252,7 +315,94 @@ function buildRow(def) {
     resetBtn.addEventListener('click', () => resetColor(def.key));
 
     row.append(swatch, info, resetBtn);
+
+    // Quick-pick presets, collapsed behind a chevron so the grid stays compact.
+    if (def.presets && def.presets.length) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'color-row-presets-toggle';
+        toggleBtn.setAttribute('aria-label', `Show ${def.label} preset colors`);
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.title = 'Preset colors';
+        toggleBtn.innerHTML = icon('chevron-down', { size: 14 });
+        toggleBtn.addEventListener('click', () => {
+            const open = row.dataset.presetsOpen === 'true';
+            row.dataset.presetsOpen = String(!open);
+            toggleBtn.setAttribute('aria-expanded', String(!open));
+        });
+
+        const strip = document.createElement('div');
+        strip.className = 'color-row-presets';
+        for (const hex of def.presets) {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'color-preset-dot';
+            dot.dataset.hex = hex;
+            dot.style.background = hex;
+            dot.setAttribute('aria-label', `${def.label} ${hex}`);
+            dot.title = hex.toUpperCase();
+            dot.addEventListener('click', () => setColor(def.key, hex));
+            strip.appendChild(dot);
+        }
+
+        row.append(toggleBtn, strip);
+    }
+
     return row;
+}
+
+// ───────────────────── Palette templates ─────────────────────
+
+function paletteIsActive(palette) {
+    if (!palette.colors) return Object.keys(overrides).length === 0;
+    const entries = Object.entries(palette.colors);
+    return entries.every(([key, hex]) =>
+        (overrides[key] || '').toLowerCase() === hex.toLowerCase()
+    ) && Object.keys(overrides).length === entries.length;
+}
+
+function renderPaletteActive() {
+    if (!paletteListEl) return;
+    paletteListEl.querySelectorAll('.palette-chip').forEach(chip => {
+        const palette = PALETTES.find(p => p.key === chip.dataset.paletteKey);
+        chip.classList.toggle('active', !!palette && paletteIsActive(palette));
+    });
+}
+
+function buildPaletteChip(palette) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'palette-chip';
+    chip.dataset.paletteKey = palette.key;
+    chip.setAttribute('aria-label', `Apply ${palette.name} palette`);
+
+    const dots = document.createElement('span');
+    dots.className = 'palette-chip-dots';
+    // Mini preview: bg as the backdrop, accent/lyrics/title as dots.
+    const colors = palette.colors || {
+        bg: '#09090b', accent: '#818cf8', lyrics: '#ffb3d1', title: '#fafafa',
+    };
+    dots.style.background = colors.bg;
+    for (const key of ['accent', 'lyrics', 'title']) {
+        const dot = document.createElement('span');
+        dot.className = 'palette-chip-dot';
+        dot.style.background = colors[key];
+        dots.appendChild(dot);
+    }
+
+    const info = document.createElement('span');
+    info.className = 'palette-chip-info';
+    const name = document.createElement('span');
+    name.className = 'palette-chip-name';
+    name.textContent = palette.name;
+    const scheme = document.createElement('span');
+    scheme.className = 'palette-chip-scheme';
+    scheme.textContent = palette.scheme;
+    info.append(name, scheme);
+
+    chip.append(dots, info);
+    chip.addEventListener('click', () => applyPalette(palette));
+    return chip;
 }
 
 // ───────────────────── Init ─────────────────────
@@ -263,6 +413,11 @@ export function initColorManager() {
 
     listEl.replaceChildren(...COLOR_DEFS.map(buildRow));
 
+    paletteListEl = document.getElementById('palette-list');
+    if (paletteListEl) {
+        paletteListEl.replaceChildren(...PALETTES.map(buildPaletteChip));
+    }
+
     // Apply persisted overrides + initial render
     for (const def of COLOR_DEFS) {
         if (overrides[def.key]) {
@@ -270,6 +425,7 @@ export function initColorManager() {
         }
         renderRow(def);
     }
+    renderPaletteActive();
 
     // Re-render accent row when theme.js updates --accent from a new album art
     on(Events.ACCENT_DERIVED, () => {

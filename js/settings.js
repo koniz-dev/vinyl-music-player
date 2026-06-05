@@ -1,6 +1,7 @@
 import { emit, on, Events } from './lib/events.js';
 import { timeToSeconds, formatTime } from './lib/format.js';
 import { initColorManager } from './color-manager.js';
+import { initFontManager } from './font-manager.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { icon } from './icons.js';
 import { state, RATIOS, DEFAULT_ASPECT_RATIO, FORMATS, DEFAULT_VIDEO_FORMAT } from './lib/state.js';
@@ -829,4 +830,5 @@ export function initSettings() {
     songTitleInput.addEventListener('input', refreshAudioDependentButtons);
 
     initColorManager();
+    initFontManager();
 }

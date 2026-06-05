@@ -1,5 +1,5 @@
 // Versioned cache — bump the suffix on every release to invalidate clients.
-const CACHE_VERSION = 'v65';
+const CACHE_VERSION = 'v66';
 const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
 
 const PRECACHE = [
@@ -18,6 +18,7 @@ const PRECACHE = [
     'js/workers/whisper-worker.js',
     'js/album-art.js',
     'js/color-manager.js',
+    'js/font-manager.js',
     'js/theme.js',
     'js/drawer.js',
     'js/toast.js',

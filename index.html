@@ -54,9 +54,12 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- crossorigin lets html-to-image read cssRules during font embedding for export -->
+    <!-- crossorigin lets html-to-image read cssRules during font embedding for export.
+         Beyond Inter/JetBrains Mono (the UI), the extra families back the player
+         font picker (all include a Vietnamese subset); the browser only downloads
+         a family's woff2 once its text is actually rendered. -->
     <link rel="stylesheet" crossorigin
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Be+Vietnam+Pro:wght@400;500;700&family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@400;500;700&family=Lora:wght@400;500;700&family=Oswald:wght@400;500;700&family=Dancing+Script:wght@400;500;700&family=Pacifico&family=Patrick+Hand&display=swap">
 
     <link rel="stylesheet" href="styles/common.css">
     <link rel="stylesheet" href="styles/index.css">
@@ -305,10 +308,25 @@
                 <h3 class="section-title" id="section-appearance">Appearance</h3>
 
                 <div class="field">
+                    <label class="field-label">Palette <span class="field-hint">one-tap color scheme</span></label>
+                    <div class="palette-list" id="palette-list">
+                        <!-- Populated by color-manager.js. Each chip:
+                             mini bg/accent/lyrics/title preview · name · harmony type -->
+                    </div>
+                </div>
+
+                <div class="field">
                     <label class="field-label">Colors</label>
                     <div class="color-list" id="color-list">
                         <!-- Populated by color-manager.js. Each row:
-                             <swatch picker> · label + hex/status · reset button -->
+                             <swatch picker> · label + hex/status · presets toggle · reset -->
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Font <span class="field-hint">title · artist · lyrics</span></label>
+                    <div class="font-list" id="font-list">
+                        <!-- Populated by font-manager.js. Each option previews its own typeface. -->
                     </div>
                 </div>
             </section>

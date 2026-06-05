@@ -155,6 +155,7 @@
 }
 
 .vinyl-song-title {
+    font-family: var(--font-player);
     font-size: clamp(16px, 5cqmin, 22px);
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -165,6 +166,7 @@
 
 .vinyl-artist-name {
     margin-top: var(--s-1);
+    font-family: var(--font-player);
     font-size: clamp(11px, 3cqmin, 14px);
     color: var(--color-artist);
     letter-spacing: 0.02em;
@@ -178,6 +180,7 @@
 
 .vinyl-lyrics-text {
     margin-top: var(--s-3);
+    font-family: var(--font-player);
     font-size: clamp(13px, 3.5cqmin, 16px);
     color: var(--color-lyrics);
     font-weight: 500;

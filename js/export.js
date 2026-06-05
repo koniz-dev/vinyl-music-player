@@ -5,6 +5,7 @@ import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { toCanvas } from './vendor/html-to-image.js';
 import { icon } from './icons.js';
 import { formatTime } from './lib/format.js';
+import { getFontEmbedCss } from './font-manager.js';
 
 // Safety net while loading metadata, before the real duration is known. Once we
 // have the audio duration we replace this with `duration + buffer` so long
@@ -55,6 +56,7 @@ let tonearmRect = null;
 let canvasScale = 1;              // canvas-px per CSS-px (for shadow blur scaling)
 let baseCapturePending = false;
 let lastBaseCapturedAt = 0;
+let exportFontCss = null;         // @font-face data-URL CSS for the picked player font
 
 // ──────────────────────────────────────────────────────────────────
 // Setup helpers
@@ -200,6 +202,7 @@ function cleanup() {
     canvasScale = 1;
     baseCapturePending = false;
     lastBaseCapturedAt = 0;
+    exportFontCss = null;
     if (resizeHandler) {
         window.removeEventListener('resize', resizeHandler);
         resizeHandler = null;
@@ -394,6 +397,12 @@ async function setupExportLayers() {
     const tonearmEl = document.getElementById('tonearm');
     const sheenEl = document.querySelector('.vinyl-sheen');
 
+    // html-to-image rasterizes inside an isolated SVG document where page
+    // webfonts don't exist — non-default player fonts must be embedded as
+    // data URLs or the export silently falls back to a system font. Resolved
+    // ONCE here (cached per family in font-manager), never on the capture path.
+    exportFontCss = await getFontEmbedCss();
+
     computeLayerRects();
     resizeHandler = () => computeLayerRects();
     window.addEventListener('resize', resizeHandler);
@@ -432,6 +441,8 @@ async function refreshBase() {
             // Render at the export canvas resolution (not the small on-screen
             // size) so text, lyrics, progress bar and controls stay sharp.
             pixelRatio: Math.max(1, canvasScale),
+            // undefined → html-to-image keeps the skipFonts fast path.
+            fontEmbedCSS: exportFontCss || undefined,
             filter: (node) => {
                 if (!node) return true;
                 if (node.id === 'vinyl' || node.id === 'tonearm') return false;

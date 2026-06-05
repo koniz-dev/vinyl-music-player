@@ -60,9 +60,13 @@ Notes:
 - Music is harder than speech for ASR: heavy beats, ad-libs, and dense mixes lower accuracy. Pasting the real lyrics and letting the AI do only the timing gives much better results than transcribing from scratch.
 - Click the button again (it reads **Cancel** while running) to abort. Starting a video export also cancels a running sync — they'd fight over the CPU.
 
-## Colors
+## Appearance
 
-The **Appearance → Colors** list lets you override six element colors: Accent, Title, Artist, Lyrics, Background, and Vinyl tint. Pick with the swatch; the reset button restores the default. The Accent auto-derives from the album art until you override it manually. Overrides persist across sessions via `localStorage`.
+**Palette** offers one-tap color schemes built on classic harmony rules (monochrome, analogous, complementary, triadic) — handy when you don't want to pick six colors by hand. The **Default** chip resets everything back to defaults / auto accent.
+
+The **Colors** list lets you override six element colors: Accent, Title, Artist, Lyrics, Background, and Vinyl tint. Pick with the swatch, or click the chevron on a row to reveal quick-pick presets curated for that element (dark tones for Background, pastels for Lyrics, …). The reset button restores the default. The Accent auto-derives from the album art until you override it manually. Overrides persist across sessions via `localStorage`.
+
+**Font** changes the typeface of the title, artist, and lyrics — popular sans-serif, serif, script, and display options (all with Vietnamese support). The selected font is embedded into exported videos; the first export with a new font fetches its font files, so it needs the network once (cached afterwards by the browser).
 
 ## Playback controls
 
