@@ -278,6 +278,7 @@ function renderRow(def) {
     else if (isHex(def.defaultColor)) display = def.defaultColor.toUpperCase();
     else display = def.defaultLabel || 'Default';
     hexLabel.textContent = display;
+    hexLabel.title = display;   // full value survives the ellipsis
 
     // Highlight the preset dot matching the current override (if any).
     row.querySelectorAll('.color-preset-dot').forEach(dot => {

@@ -58,6 +58,21 @@ function refreshSummaries() {
     });
 }
 
+/* Opening a section near the bottom of the drawer expands its body below the
+   fold — bring the header to the top so the revealed content is on screen.
+   Skipped when the section already fits, so nearby toggles don't jump. */
+function scrollSectionIntoView(section) {
+    requestAnimationFrame(() => {
+        const dock = drawer.querySelector('.export-field');
+        const limit = dock
+            ? dock.getBoundingClientRect().top
+            : drawer.getBoundingClientRect().bottom;
+        if (section.getBoundingClientRect().bottom <= limit) return;
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        section.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    });
+}
+
 function initSectionToggles() {
     const openState = loadSectionState();
     drawer.querySelectorAll('.settings-section[data-section-key]').forEach((section) => {
@@ -78,6 +93,7 @@ function initSectionToggles() {
             try { localStorage.setItem(SECTIONS_KEY, JSON.stringify(openState)); } catch {}
             apply(openState[key]);
             refreshSummaries();
+            if (openState[key]) scrollSectionIntoView(section);
         });
     });
     refreshSummaries();

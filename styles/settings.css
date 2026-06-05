@@ -402,8 +402,8 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;        /* lets the preset strip drop to its own line */
-    gap: 10px;
-    padding: 10px;
+    gap: 8px;
+    padding: 8px;
     background: var(--bg-2);
     border: 1px solid var(--border-1);
     border-radius: var(--r-md);
@@ -415,14 +415,15 @@
     background: var(--bg-3);
 }
 
+/* A tinted border is enough — applying a palette overrides all six rows at
+   once, and six accent-filled boxes drowned out everything else. */
 .color-row[data-overridden="true"] {
-    border-color: var(--accent);
-    background: var(--accent-soft);
+    border-color: var(--accent-glow);
 }
 
 .color-row-swatch {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     border-radius: var(--r-sm);
     border: 2px solid rgba(255, 255, 255, 0.08);
     cursor: pointer;
@@ -486,8 +487,8 @@
 }
 
 .color-row-reset {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     border-radius: var(--r-sm);
     background: transparent;
     border: none;
