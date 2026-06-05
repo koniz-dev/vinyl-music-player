@@ -199,8 +199,17 @@
 
         <form id="musicForm" class="drawer-body">
             <!-- ── Song: what's being played ── -->
-            <section class="settings-section" aria-labelledby="section-song">
-                <h3 class="section-title" id="section-song">Song</h3>
+            <section class="settings-section" data-section-key="song" aria-labelledby="section-song">
+                <h3 class="section-title" id="section-song">
+                    <button type="button" class="section-toggle" aria-expanded="true"
+                        aria-controls="section-body-song">
+                        <span>Song</span>
+                        <span class="section-summary"></span>
+                        <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </button>
+                </h3>
+
+                <div class="settings-section-body" id="section-body-song">
 
                 <div class="field">
                     <label class="field-label" for="audio-file">
@@ -241,32 +250,41 @@
                         <div class="dz-hint">Used as label + ambient bg · JPG · PNG · WebP</div>
                     </div>
                 </div>
+
+                </div>
             </section>
 
             <!-- ── Lyrics: synced subtitle lines ── -->
-            <section class="settings-section" aria-labelledby="section-lyrics">
-                <div class="field-label-row">
-                    <h3 class="section-title" id="section-lyrics">
-                        Lyrics <span class="field-hint">(optional)</span>
-                    </h3>
-                    <div class="lyrics-toolbar">
-                        <button type="button" class="btn btn-ghost lyrics-tool" id="add-lyrics-btn"
-                            aria-label="Add lyrics line">
-                            <span data-icon="plus" data-icon-size="14" aria-hidden="true"></span>
-                            <span>Line</span>
-                        </button>
-                        <button type="button" class="btn btn-ghost lyrics-tool" id="dev-lyrics-btn"
-                            aria-label="Import lyrics from JSON">
-                            <span data-icon="braces" data-icon-size="14" aria-hidden="true"></span>
-                            <span>Import</span>
-                        </button>
-                        <button type="button" class="btn btn-ghost lyrics-tool" id="clear-lyrics-btn"
-                            aria-label="Remove all lyrics" hidden>
-                            <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
-                            <span>Clear</span>
-                        </button>
-                    </div>
+            <section class="settings-section" data-section-key="lyrics" aria-labelledby="section-lyrics">
+                <h3 class="section-title" id="section-lyrics">
+                    <button type="button" class="section-toggle" aria-expanded="true"
+                        aria-controls="section-body-lyrics">
+                        <span>Lyrics <span class="field-hint">(optional)</span></span>
+                        <span class="section-summary"></span>
+                        <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </button>
+                </h3>
+
+                <div class="settings-section-body" id="section-body-lyrics">
+
+                <div class="lyrics-toolbar">
+                    <button type="button" class="btn btn-ghost lyrics-tool" id="add-lyrics-btn"
+                        aria-label="Add lyrics line">
+                        <span data-icon="plus" data-icon-size="14" aria-hidden="true"></span>
+                        <span>Line</span>
+                    </button>
+                    <button type="button" class="btn btn-ghost lyrics-tool" id="dev-lyrics-btn"
+                        aria-label="Import lyrics from JSON">
+                        <span data-icon="braces" data-icon-size="14" aria-hidden="true"></span>
+                        <span>Import</span>
+                    </button>
+                    <button type="button" class="btn btn-ghost lyrics-tool" id="clear-lyrics-btn"
+                        aria-label="Remove all lyrics" hidden>
+                        <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
+                        <span>Clear</span>
+                    </button>
                 </div>
+
                 <div class="lyrics-container" id="lyrics-container">
                     <p class="lyrics-empty" id="lyrics-empty">
                         Skip this to export audio + vinyl only. Add lines manually — or let the AI below time them for you.
@@ -274,12 +292,14 @@
                 </div>
 
                 <!-- AI auto-sync: separate from the manual tools above — paste
-                     plain lyrics, the on-device Whisper model times each line. -->
-                <div class="autosync-panel">
-                    <div class="autosync-panel-head">
+                     plain lyrics, the on-device Whisper model times each line.
+                     A native <details> so the bulky panel starts collapsed. -->
+                <details class="autosync-panel">
+                    <summary class="autosync-panel-head">
                         <span class="autosync-panel-icon" data-icon="sparkles" data-icon-size="14" aria-hidden="true"></span>
                         <span>Auto-sync with AI</span>
-                    </div>
+                        <span class="autosync-panel-chevron" data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </summary>
                     <p class="autosync-panel-desc">
                         Paste the lyrics — one line per row — and the AI listens to your audio
                         and fills in each line's timing. Replaces the lines above. Leave the box
@@ -300,12 +320,23 @@
                         Runs 100% in your browser — nothing is uploaded. First use downloads
                         a ~40 MB model (cached afterwards). Needs an audio file.
                     </p>
+                </details>
+
                 </div>
             </section>
 
             <!-- ── Appearance: how it looks ── -->
-            <section class="settings-section" aria-labelledby="section-appearance">
-                <h3 class="section-title" id="section-appearance">Appearance</h3>
+            <section class="settings-section" data-section-key="appearance" aria-labelledby="section-appearance">
+                <h3 class="section-title" id="section-appearance">
+                    <button type="button" class="section-toggle" aria-expanded="true"
+                        aria-controls="section-body-appearance">
+                        <span>Appearance</span>
+                        <span class="section-summary"></span>
+                        <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </button>
+                </h3>
+
+                <div class="settings-section-body" id="section-body-appearance">
 
                 <div class="field">
                     <label class="field-label">Palette <span class="field-hint">one-tap color scheme</span></label>
@@ -329,11 +360,22 @@
                         <!-- Populated by font-manager.js. Each option previews its own typeface. -->
                     </div>
                 </div>
+
+                </div>
             </section>
 
-            <!-- ── Export: output settings + action ── -->
-            <section class="settings-section" aria-labelledby="section-export">
-                <h3 class="section-title" id="section-export">Export</h3>
+            <!-- ── Export: output settings (the action button lives in the sticky dock below) ── -->
+            <section class="settings-section" data-section-key="export" aria-labelledby="section-export">
+                <h3 class="section-title" id="section-export">
+                    <button type="button" class="section-toggle" aria-expanded="true"
+                        aria-controls="section-body-export">
+                        <span>Export</span>
+                        <span class="section-summary"></span>
+                        <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </button>
+                </h3>
+
+                <div class="settings-section-body" id="section-body-export">
 
                 <div class="field">
                     <label class="field-label">Aspect ratio</label>
@@ -355,21 +397,25 @@
                     <p class="field-help" id="format-help">WEBM · Smaller files · all desktop browsers</p>
                 </div>
 
-                <div class="field export-field">
-                    <!-- During export the button doubles as the progress bar: the
-                         fill layer pours left→right behind the label, the label
-                         shows live progress, and hovering reveals Cancel. -->
-                    <button type="button" class="btn btn-primary export-btn" id="export-btn"
-                        aria-live="polite" disabled>
-                        <span class="export-btn-fill" id="export-btn-fill" aria-hidden="true"></span>
-                        <span class="export-btn-content">
-                            <span class="export-icon" data-icon="download" data-icon-size="18" aria-hidden="true"></span>
-                            <span id="export-btn-label">Export WebM</span>
-                        </span>
-                        <span class="export-btn-cancel" aria-hidden="true">Cancel</span>
-                    </button>
                 </div>
             </section>
+
+            <!-- Sticky dock: the export action stays visible no matter how far
+                 the form above is scrolled or which sections are collapsed. -->
+            <div class="field export-field">
+                <!-- During export the button doubles as the progress bar: the
+                     fill layer pours left→right behind the label, the label
+                     shows live progress, and hovering reveals Cancel. -->
+                <button type="button" class="btn btn-primary export-btn" id="export-btn"
+                    aria-live="polite" disabled>
+                    <span class="export-btn-fill" id="export-btn-fill" aria-hidden="true"></span>
+                    <span class="export-btn-content">
+                        <span class="export-icon" data-icon="download" data-icon-size="18" aria-hidden="true"></span>
+                        <span id="export-btn-label">Export WebM</span>
+                    </span>
+                    <span class="export-btn-cancel" aria-hidden="true">Cancel</span>
+                </button>
+            </div>
         </form>
     </aside>
 

@@ -21,18 +21,70 @@
     letter-spacing: 0.12em;
 }
 
-/* ─── Lyrics editor ─────────────────────────────────────────────── */
-
-.field-label-row {
+/* Accordion header — the whole row toggles the section body (drawer.js).
+   Inherits the section-title look via the button font/color reset. */
+.section-toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--s-2);
+    width: 100%;
+    text-align: left;
+    transition: color var(--dur);
 }
 
+.section-toggle:hover {
+    color: var(--fg-1);
+}
+
+.section-toggle [data-icon] {
+    color: var(--fg-4);
+    transition: transform var(--dur) var(--ease-out);
+}
+
+.settings-section[data-collapsed="true"] .section-toggle [data-icon] {
+    transform: rotate(-90deg);
+}
+
+/* Label takes the slack so summary + chevron hug the right edge. */
+.section-toggle > span:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Collapsed-state status (filename, line count, palette · font, ratio · format) */
+.section-summary {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--fg-4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+}
+
+/* Only meaningful while the body is hidden — expanded shows the real thing. */
+.settings-section:not([data-collapsed="true"]) .section-summary {
+    display: none;
+}
+
+.settings-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+}
+
+/* ─── Lyrics editor ─────────────────────────────────────────────── */
+
+/* Action row at the top of the section body — tucked toward the list it
+   operates on (the body's gap alone reads too far from it). */
 .lyrics-toolbar {
     display: flex;
     gap: var(--s-1);
+    margin-bottom: calc(-1 * var(--s-2));
 }
 
 .lyrics-tool {
@@ -60,6 +112,7 @@
     border-radius: var(--r-md);
 }
 
+/* <summary> of the details panel — collapsed to one row by default. */
 .autosync-panel-head {
     display: flex;
     align-items: center;
@@ -67,6 +120,28 @@
     font-size: 12px;
     font-weight: 600;
     color: var(--fg-1);
+    cursor: pointer;
+    list-style: none;          /* hide the native disclosure triangle */
+    transition: color var(--dur);
+}
+
+.autosync-panel-head::-webkit-details-marker {
+    display: none;
+}
+
+.autosync-panel-head:hover {
+    color: var(--fg-0);
+}
+
+.autosync-panel-chevron {
+    display: inline-flex;
+    margin-left: auto;
+    color: var(--fg-4);
+    transition: transform var(--dur) var(--ease-out);
+}
+
+.autosync-panel:not([open]) .autosync-panel-chevron {
+    transform: rotate(-90deg);
 }
 
 .autosync-panel-icon {
@@ -537,8 +612,18 @@
 
 /* ─── Export ────────────────────────────────────────────────────── */
 
+/* Sticky dock pinned to the drawer's bottom edge: bleeds over the
+   drawer-body padding (negative margins) so the fade spans full width,
+   and the gradient masks form content scrolling underneath.
+   margin-top: auto bottoms it out when the (collapsed) form is shorter
+   than the drawer; once content overflows, sticky takes over. */
 .export-field {
-    margin-top: var(--s-2);
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: auto calc(-1 * var(--s-6)) 0;
+    padding: var(--s-4) var(--s-6) var(--s-5);
+    background: linear-gradient(180deg, transparent 0%, var(--bg-1) 32%);
 }
 
 .export-btn {

@@ -188,7 +188,9 @@
 .drawer-body {
     flex: 1;
     overflow-y: auto;
-    padding: var(--s-6);
+    /* No bottom padding — the sticky export dock supplies its own, so the
+       button sits flush against the drawer's bottom edge. */
+    padding: var(--s-6) var(--s-6) 0;
     display: flex;
     flex-direction: column;
     gap: var(--s-6);

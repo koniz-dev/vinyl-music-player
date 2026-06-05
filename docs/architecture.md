@@ -25,7 +25,7 @@ vinyl-music-player/
 │   ├── font-manager.js     # Player font picker + export @font-face embedding
 │   ├── export.js           # Canvas + MediaRecorder MP4/WebM exporter
 │   ├── theme.js            # Derives the accent color from the album art
-│   ├── drawer.js           # Settings drawer open/close
+│   ├── drawer.js           # Settings drawer open/close + collapsible sections
 │   ├── toast.js            # Toast notifications
 │   ├── icons.js            # Inline SVG icon registry + static hydration
 │   └── vendor/

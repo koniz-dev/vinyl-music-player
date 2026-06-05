@@ -1,6 +1,6 @@
 # Usage Guide
 
-The vinyl player preview fills the stage. Settings live in a slide-in drawer — open it with the **Settings** button (or the stage hint) and close with ✕ or the backdrop. The drawer is grouped into four sections: **Song** (audio, title, artist, album art), **Lyrics**, **Appearance** (colors), and **Export** (ratio, format, export button).
+The vinyl player preview fills the stage. Settings live in a slide-in drawer — open it with the **Settings** button (or the stage hint) and close with ✕ or the backdrop. The drawer is grouped into four collapsible sections — **Song** (audio, title, artist, album art), **Lyrics**, **Appearance** (palette, colors, font), and **Export** (ratio, format) — click a section title to expand or collapse it (only Song starts open; your layout is remembered). A collapsed header shows a one-line status of what's inside (file name, line count, palette · font, ratio · format), so the whole configuration stays glanceable. The export button sits in a dock pinned to the bottom of the drawer, always visible.
 
 Every change in the drawer updates the preview immediately.
 
@@ -44,7 +44,7 @@ Click **Import** in the Lyrics section header, paste an array, choose **Replace*
 
 ### Auto-sync with AI (✦ panel below the lines)
 
-The **Auto-sync with AI** panel sits under the lyric lines. It transcribes your audio with Whisper — running entirely in your browser, nothing is uploaded — and times your lyrics automatically. The button enables once an audio file is loaded.
+The **Auto-sync with AI** panel sits under the lyric lines, collapsed to a single row — click its header to expand. It transcribes your audio with Whisper — running entirely in your browser, nothing is uploaded — and times your lyrics automatically. The button enables once an audio file is loaded.
 
 The typical flow: **paste the full lyrics as plain text** into the panel's box (one line per row), click **Auto-sync**, and the AI creates the lines and fills in every Start/End time. Pasting replaces any lines already in the editor.
 
