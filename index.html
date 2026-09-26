@@ -74,6 +74,10 @@
 
     <header class="topbar">
         <div class="topbar-actions topbar-actions-left">
+            <button type="button" class="btn btn-ghost btn-icon" id="tour-btn"
+                aria-label="Show feature tour" title="Show feature tour">
+                <span data-icon="info" data-icon-size="18" aria-hidden="true"></span>
+            </button>
             <button type="button" class="btn btn-ghost btn-icon" id="debug-btn"
                 aria-label="Check browser support" title="Check browser support">
                 <span data-icon="info" data-icon-size="18" aria-hidden="true"></span>
@@ -558,6 +562,24 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- ─── Feature tour ─────────────────────────────────────────── -->
+
+    <div class="tour-overlay" id="tour-overlay" hidden>
+        <section class="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title"
+            aria-describedby="tour-description">
+            <p class="tour-progress" id="tour-progress" aria-live="polite"></p>
+            <h3 id="tour-title"></h3>
+            <p id="tour-description"></p>
+            <div class="tour-actions">
+                <button type="button" class="btn btn-ghost" id="tour-skip-btn">Skip tour</button>
+                <div class="tour-next-actions">
+                    <button type="button" class="btn btn-ghost" id="tour-back-btn">Back</button>
+                    <button type="button" class="btn btn-primary" id="tour-next-btn">Next</button>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- ─── Toast container ─────────────────────────────────────── -->

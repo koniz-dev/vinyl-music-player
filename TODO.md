@@ -5,7 +5,8 @@
 
 ## Delivery rules (do not miss these)
 
-- [x] **PWA:** `v93` precache covers every local module; hard refresh verified locally; `npm test` asserts every precached local path exists; `?pwa-smoke=1` verifies cached app-shell fetches; an app-shell reload also passed after the local test server was stopped.
+- [x] **PWA:** `v94` precache covers every local module; hard refresh verified locally; `npm test` asserts every precached local path exists; `?pwa-smoke=1` verifies cached app-shell fetches; an app-shell reload also passed after the local test server was stopped.
+- [x] **Feature tour:** a first-visit, local-only six-step guide covers audio, artwork, lyrics, optional lyric tools, appearance, and export. It can be replayed from the top-left info button, skipped with Escape, and never changes the user's section layout.
 - [x] **Privacy:** optional LRCLIB/Pollinations requests are confirmed in UI, disclose provider/fields in docs, and are allowlisted in CSP; model/font downloads are initiated only by their optional controls and never include audio.
 - [x] **Export:** browser fallback is documented in `docs/troubleshooting.md`; unsupported MP4 controls are disabled and the generated extension follows the recorder MIME.
 - [x] **Regression:** `?smoke=1` created the deterministic five-second WAV and completed an MP4 export (`smoke-tone.mp4`, 2,830,518 bytes); `npm test` covers syntax, parsers, and precache paths.

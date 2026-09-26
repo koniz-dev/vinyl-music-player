@@ -4,6 +4,7 @@ import { initPlayer } from './player.js';
 import { initSettings } from './settings.js';
 import { initExport } from './export.js';
 import { initDrawer } from './drawer.js';
+import { initTour } from './tour.js';
 import { toast } from './toast.js';
 
 hydrateStaticIcons();
@@ -12,6 +13,7 @@ initPlayer();
 initSettings();
 initExport();
 initDrawer();
+initTour();
 
 if (new URLSearchParams(location.search).get('smoke') === '1') {
     import('../test/smoke-tone.js').then(({ loadSmokeTone }) => loadSmokeTone());

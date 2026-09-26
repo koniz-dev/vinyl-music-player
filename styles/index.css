@@ -171,6 +171,77 @@
     visibility: visible;
 }
 
+/* ─── Feature tour ─────────────────────────────────────────────── */
+
+.tour-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--s-6);
+    pointer-events: auto;
+}
+
+/* The tour focuses on settings. Keeping the drawer lit gives its target a
+   dependable visual anchor across desktop and the mobile bottom sheet. */
+body.tour-active .drawer,
+body.tour-active .topbar {
+    z-index: 120;
+}
+
+body.tour-active::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.58);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+}
+
+.tour-card {
+    width: min(470px, 100%);
+    padding: var(--s-5);
+    border: 1px solid var(--border-3);
+    border-radius: var(--r-lg);
+    background: var(--bg-2);
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+}
+
+.tour-progress {
+    margin-bottom: var(--s-2);
+    color: var(--accent-hi);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.tour-card h3 { color: var(--fg-0); font-size: 19px; }
+
+.tour-card > p:not(.tour-progress) {
+    margin-top: var(--s-2);
+    color: var(--fg-2);
+    font-size: 14px;
+}
+
+.tour-actions,
+.tour-next-actions { display: flex; align-items: center; gap: var(--s-2); }
+
+.tour-actions { justify-content: space-between; margin-top: var(--s-5); }
+
+.tour-target {
+    position: relative;
+    z-index: 1;
+    outline: 2px solid var(--accent-hi) !important;
+    outline-offset: 4px;
+    border-radius: var(--r-sm);
+    box-shadow: 0 0 0 6px var(--accent-soft), 0 0 24px var(--accent-glow);
+}
+
 .drawer-head {
     display: flex;
     align-items: center;
@@ -287,4 +358,7 @@
     .topbar-actions .btn > span:not([data-icon]) {
         display: none;
     }
+
+    .tour-overlay { padding: var(--s-3); }
+    .tour-card { padding: var(--s-4); }
 }
