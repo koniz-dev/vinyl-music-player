@@ -24,7 +24,16 @@ if (new URLSearchParams(location.search).get('pwa-smoke') === '1') {
     import('../test/pwa-cache-smoke.js').then(({ runPwaCacheSmoke }) => runPwaCacheSmoke());
 }
 
-if ('serviceWorker' in navigator) {
+const isLocalDevelopment = ['127.0.0.1', 'localhost', '::1'].includes(location.hostname);
+
+if ('serviceWorker' in navigator && isLocalDevelopment) {
+    // A cached app shell is valuable in production but actively misleading
+    // during local development. Remove prior registrations once, then leave
+    // localhost entirely network-driven.
+    navigator.serviceWorker.getRegistrations().then(registrations =>
+        Promise.all(registrations.map(registration => registration.unregister()))
+    ).catch(() => {});
+} else if ('serviceWorker' in navigator) {
     // New workers call skipWaiting() and claim clients. Reload exactly once on
     // controller change so a release cannot leave a person looking at the old
     // cached HTML/CSS until they know to hard-refresh manually.

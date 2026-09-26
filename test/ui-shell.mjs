@@ -27,6 +27,8 @@ assert.match(html, /tour-card" role="region"/, 'walkthrough must remain a non-bl
 assert.match(tour, /card\.focus/, 'walkthrough must announce its current step to keyboard users');
 assert.match(indexCss, /prefers-reduced-motion: reduce/, 'walkthrough motion must honor user preference');
 assert.match(main, /controllerchange/, 'a new service worker must refresh the stale app shell once');
+assert.match(main, /isLocalDevelopment/, 'localhost must not retain a stale PWA shell during development');
+assert.match(main, /getRegistrations\(\)/, 'localhost must clear prior service worker registrations');
 assert.match(launcher, /waitForAppServer/, 'background launcher must wait for readiness');
 assert.match(launcher, /APP_MARKER/, 'background launcher must verify the app, not only a port');
 assert.match(stopper, /Refused to stop/, 'stop command must refuse an unowned process');
