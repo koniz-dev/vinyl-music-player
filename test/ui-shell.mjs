@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [html, commonCss, indexCss, uiTheme, tour, launcher, stopper] = await Promise.all([
+const [html, commonCss, indexCss, vinylCss, uiTheme, tour, launcher, stopper] = await Promise.all([
     readFile('./index.html', 'utf8'),
     readFile('./styles/common.css', 'utf8'),
     readFile('./styles/index.css', 'utf8'),
+    readFile('./styles/vinyl-player.css', 'utf8'),
     readFile('./js/ui-theme.js', 'utf8'),
     readFile('./js/tour.js', 'utf8'),
     readFile('./scripts/open-local.mjs', 'utf8'),
@@ -13,6 +14,7 @@ const [html, commonCss, indexCss, uiTheme, tour, launcher, stopper] = await Prom
 
 assert.ok(!html.includes('guide-modal') && !html.includes('data-guide-target'), 'the retired guide panel must not ship');
 assert.ok(!html.includes('vinyl-spindle'), 'the vinyl center must not render a spindle dot');
+assert.ok(!vinylCss.includes('repeating-radial-gradient'), 'vinyl grooves must not alias into radial spokes');
 assert.match(html, /role="radiogroup"[\s\S]*role="radio"/, 'theme choices must expose radio semantics');
 assert.match(uiTheme, /aria-checked/, 'theme logic must keep radio state current');
 assert.match(uiTheme, /ArrowLeft/, 'theme radios must support keyboard navigation');
