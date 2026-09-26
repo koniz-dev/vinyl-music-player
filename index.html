@@ -73,7 +73,19 @@
     <div class="ambient" aria-hidden="true"></div>
 
     <header class="topbar">
-        <div class="topbar-actions topbar-actions-left"></div>
+        <div class="topbar-actions topbar-actions-left">
+            <div class="global-theme-toggle" role="radiogroup" aria-label="App theme">
+                <button type="button" data-ui-theme="system" aria-pressed="true" title="Use system theme">
+                    <span data-icon="monitor" data-icon-size="15" aria-hidden="true"></span><span>System</span>
+                </button>
+                <button type="button" data-ui-theme="dark" aria-pressed="false" title="Use dark theme">
+                    <span data-icon="moon" data-icon-size="15" aria-hidden="true"></span><span>Dark</span>
+                </button>
+                <button type="button" data-ui-theme="light" aria-pressed="false" title="Use light theme">
+                    <span data-icon="sun" data-icon-size="15" aria-hidden="true"></span><span>Light</span>
+                </button>
+            </div>
+        </div>
         <div class="topbar-actions">
             <button type="button" class="btn" id="open-settings-btn"
                 aria-label="Open settings" aria-controls="settings-drawer" aria-expanded="false">
@@ -406,16 +418,6 @@
                 </h3>
 
                 <div class="settings-section-body" id="section-body-appearance">
-
-                <div class="field app-theme-field">
-                    <label class="field-label">App theme <span class="field-hint">interface only</span></label>
-                    <div class="ratio-toggle app-theme-toggle" role="radiogroup" aria-label="App theme">
-                        <button type="button" class="ratio-btn" data-ui-theme="system" aria-pressed="true">System</button>
-                        <button type="button" class="ratio-btn" data-ui-theme="dark" aria-pressed="false">Dark</button>
-                        <button type="button" class="ratio-btn" data-ui-theme="light" aria-pressed="false">Light</button>
-                    </div>
-                    <p class="field-help">Use Palette and Colors below to set the video’s visual palette.</p>
-                </div>
 
                 <div class="field">
                     <label class="field-label">Palette <span class="field-hint">one-tap color scheme</span></label>

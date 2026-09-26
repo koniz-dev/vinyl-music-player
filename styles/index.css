@@ -32,7 +32,32 @@
 }
 
 .topbar-actions-left {
-    /* placeholder for symmetry — info button lives here */
+    /* Global app preferences live here; video-specific settings stay in the drawer. */
+}
+
+.global-theme-toggle {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--bg-1) 88%, transparent);
+    box-shadow: var(--shadow-sm);
+}
+
+.global-theme-toggle button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: var(--r-pill);
+    color: var(--fg-3);
+    font-size: 11px;
+}
+
+.global-theme-toggle button[aria-pressed="true"] {
+    background: var(--bg-3);
+    color: var(--fg-0);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ─── Stage + 9:16 phone frame ──────────────────────────────────── */
@@ -359,5 +384,8 @@
     .topbar-actions .btn > span:not([data-icon]) {
         display: none;
     }
+
+    .global-theme-toggle button { padding: 6px 8px; }
+    .global-theme-toggle button > span:not([data-icon]) { display: none; }
 
 }

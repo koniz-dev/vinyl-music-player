@@ -5,9 +5,9 @@
 
 ## Delivery rules (do not miss these)
 
-- [x] **PWA:** `v100` precache covers every local module; hard refresh verified locally; `npm test` asserts every precached local path exists; `?pwa-smoke=1` verifies cached app-shell fetches; an app-shell reload also passed after the local test server was stopped.
+- [x] **PWA:** `v101` precache covers every local module; hard refresh verified locally; `npm test` asserts every precached local path exists; `?pwa-smoke=1` verifies cached app-shell fetches; an app-shell reload also passed after the local test server was stopped.
 - [x] **In-app guidance:** section-local Help icons launch five focused walkthroughs (Basics, Artwork, Lyrics, Appearance, Export). Each spotlights one real control, says exactly what to click and why, and provides Next/Skip without a global launcher or a 28-step session.
-- [x] **App theme:** System, Dark, and Light choices persist locally and are independent from video palette controls.
+- [x] **App theme:** global System, Dark, and Light controls live in the top-left app bar, persist locally, and stay independent from video palette controls.
 - [x] **Privacy:** optional LRCLIB/Pollinations requests are confirmed in UI, disclose provider/fields in docs, and are allowlisted in CSP; model/font downloads are initiated only by their optional controls and never include audio.
 - [x] **Export:** browser fallback is documented in `docs/troubleshooting.md`; unsupported MP4 controls are disabled and the generated extension follows the recorder MIME.
 - [x] **Regression:** `?smoke=1` created the deterministic five-second WAV and completed an MP4 export (`smoke-tone.mp4`, 2,830,518 bytes); `npm test` covers syntax, parsers, and precache paths.

@@ -98,8 +98,6 @@
     gap: var(--s-4);
 }
 
-.app-theme-field { padding-bottom: var(--s-2); border-bottom: 1px solid var(--border-1); }
-.app-theme-toggle .ratio-btn { flex: 1; }
 
 /* ─── Help guide (on-demand, inside the settings column) ───────── */
 

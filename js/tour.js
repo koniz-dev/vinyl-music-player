@@ -26,7 +26,6 @@ const TOURS = {
     ],
     appearance: [
         { target: '[data-section-key="appearance"] .section-toggle', title: 'Open Appearance', text: 'Click Appearance to customize the visual style. Then press Next.' },
-        { section: 'appearance', target: '.app-theme-toggle', title: 'Choose the app theme', text: 'Click System to follow your device, or choose Dark or Light for the app interface.' },
         { section: 'appearance', target: '#palette-list', title: 'Pick a palette', text: 'Click a palette for a one-tap color scheme. Auto album art derives colors from your artwork.' },
         { section: 'appearance', target: '#color-list', title: 'Fine-tune colors', text: 'Click any color swatch to override an individual color.' },
         { section: 'appearance', target: '.font-list', title: 'Pick a font', text: 'Click a font option to update song text and lyrics.' },
