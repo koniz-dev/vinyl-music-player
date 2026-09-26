@@ -15,7 +15,8 @@ const [html, commonCss, indexCss, vinylCss, main, uiTheme, tour, launcher, stopp
 
 assert.ok(!html.includes('guide-modal') && !html.includes('data-guide-target'), 'the retired guide panel must not ship');
 assert.ok(!html.includes('vinyl-spindle'), 'the vinyl center must not render a spindle dot');
-assert.ok(!vinylCss.includes('repeating-radial-gradient'), 'vinyl grooves must not alias into radial spokes');
+assert.match(vinylCss, /repeating-radial-gradient/, 'vinyl must retain concentric record grooves');
+assert.ok(!vinylCss.includes('transparent 2px'), 'vinyl grooves must not use the dense pattern that aliases into spokes');
 assert.match(vinylCss, /vinyl-album-art[\s\S]*data:image\/svg\+xml/, 'the empty vinyl label must retain its music placeholder');
 assert.match(html, /role="radiogroup"[\s\S]*role="radio"/, 'theme choices must expose radio semantics');
 assert.match(uiTheme, /aria-checked/, 'theme logic must keep radio state current');
