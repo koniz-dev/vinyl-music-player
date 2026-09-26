@@ -6,7 +6,6 @@ import { initSettings } from './settings.js';
 import { initExport } from './export.js';
 import { initDrawer } from './drawer.js';
 import { initTour } from './tour.js';
-import { toast } from './toast.js';
 
 hydrateStaticIcons();
 initTheme();
@@ -26,28 +25,19 @@ if (new URLSearchParams(location.search).get('pwa-smoke') === '1') {
 }
 
 if ('serviceWorker' in navigator) {
+    // New workers call skipWaiting() and claim clients. Reload exactly once on
+    // controller change so a release cannot leave a person looking at the old
+    // cached HTML/CSS until they know to hard-refresh manually.
+    let reloadingForWorker = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloadingForWorker) return;
+        reloadingForWorker = true;
+        window.location.reload();
+    });
+
     window.addEventListener('load', async () => {
         try {
-            const reg = await navigator.serviceWorker.register('./service-worker.js');
-
-            // A new SW has been found and is installing.
-            reg.addEventListener('updatefound', () => {
-                const newWorker = reg.installing;
-                if (!newWorker) return;
-                newWorker.addEventListener('statechange', () => {
-                    // 'installed' + already a controller = there's a stale page to refresh.
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        toast('A new version is available.', {
-                            variant: 'info',
-                            duration: 0, // sticky until user acts
-                            action: {
-                                label: 'Reload',
-                                onClick: () => window.location.reload(),
-                            },
-                        });
-                    }
-                });
-            });
+            await navigator.serviceWorker.register('./service-worker.js');
         } catch {
             // Registration failed — site still works fine without SW.
         }
