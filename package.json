@@ -5,6 +5,8 @@
   "main": "index.html",
   "scripts": {
     "dev": "npx http-server -p 3000 -o -c-1",
+    "app": "node scripts/open-local.mjs",
+    "app:stop": "node scripts/stop-local.mjs",
     "start": "npx http-server -p 3000 -c-1",
     "build": "echo 'No build process needed for static HTML'",
     "preview": "npx http-server -p 3000 -c-1",

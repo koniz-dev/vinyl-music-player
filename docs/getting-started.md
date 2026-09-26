@@ -18,6 +18,8 @@ npm run dev
 
 `npm run dev` starts [http-server](https://www.npmjs.com/package/http-server) on port 3000 with cache disabled and opens your default browser at `http://localhost:3000`.
 
+Want the app without keeping a terminal occupied? Run `npm run app`. It starts the same local server in the background and opens the browser, then returns immediately. Use `npm run app:stop` when you want to stop it.
+
 > The app uses native ES modules. Opening `index.html` directly via `file://` will **not** work — the browser refuses to load modules without a proper HTTP origin.
 
 ## Available scripts
@@ -25,6 +27,8 @@ npm run dev
 | Script | What it does |
 |---|---|
 | `npm run dev` | Start dev server on port 3000 with auto-open |
+| `npm run app` | Start the local server in the background and open the app |
+| `npm run app:stop` | Stop the background server started by `npm run app` |
 | `npm start` | Same server, no auto-open |
 | `npm run serve` | Start server on port 8080 instead |
 | `npm run preview` | Alias of `start` |

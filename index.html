@@ -188,10 +188,6 @@
         <header class="drawer-head">
             <h2>Settings</h2>
             <div class="drawer-head-actions">
-                <button type="button" class="btn btn-ghost btn-icon" id="debug-btn"
-                    aria-label="Check browser support" title="Check browser support">
-                    <span data-icon="info" data-icon-size="18" aria-hidden="true"></span>
-                </button>
                 <button type="button" class="btn btn-ghost btn-icon" id="close-settings-btn"
                     aria-label="Close settings">
                     <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
@@ -478,6 +474,14 @@
                 </h3>
 
                 <div class="settings-section-body" id="section-body-export">
+
+                <div class="export-support">
+                    <p class="field-help">Not sure which format your browser can export?</p>
+                    <button type="button" class="btn btn-ghost" id="debug-btn">
+                        <span data-icon="info" data-icon-size="15" aria-hidden="true"></span>
+                        Check export support
+                    </button>
+                </div>
 
                 <div class="field">
                     <label class="field-label">Aspect ratio</label>
