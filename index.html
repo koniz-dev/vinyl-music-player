@@ -74,14 +74,9 @@
 
     <header class="topbar">
         <div class="topbar-actions topbar-actions-left">
-            <button type="button" class="btn btn-ghost" id="tour-btn"
+            <button type="button" class="btn btn-ghost btn-icon" id="tour-btn"
                 aria-label="Open help and feature guide" title="Help and feature guide">
-                <span data-icon="info" data-icon-size="18" aria-hidden="true"></span>
-                <span>Guide</span>
-            </button>
-            <button type="button" class="btn btn-ghost btn-icon" id="debug-btn"
-                aria-label="Check browser support" title="Check browser support">
-                <span data-icon="info" data-icon-size="18" aria-hidden="true"></span>
+                <span data-icon="circle-help" data-icon-size="18" aria-hidden="true"></span>
             </button>
         </div>
         <div class="topbar-actions">
@@ -216,18 +211,6 @@
                 </h3>
 
                 <div class="settings-section-body" id="section-body-song">
-
-                <section class="getting-started" id="getting-started" aria-labelledby="getting-started-title">
-                    <p class="getting-started-kicker">Start here</p>
-                    <h4 id="getting-started-title">Make your first music video</h4>
-                    <p>Add an audio file, optionally make it yours, then export. Nothing is uploaded.</p>
-                    <ol class="getting-started-steps">
-                        <li><strong>1. Add audio</strong><span>Required</span></li>
-                        <li><strong>2. Add lyrics or artwork</strong><span>Optional</span></li>
-                        <li><strong>3. Export the video</strong><span>Ready when audio is loaded</span></li>
-                    </ol>
-                    <button type="button" class="btn btn-ghost getting-started-help" data-guide-open>See guided recipes and every feature</button>
-                </section>
 
                 <div class="field">
                     <label class="field-label" for="audio-file">
@@ -580,7 +563,7 @@
     <!-- ─── Help and feature guide ───────────────────────────────── -->
 
     <div class="modal-overlay guide-modal" id="guide-modal" hidden>
-        <div class="modal-content guide-content" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+        <aside class="modal-content guide-content" aria-labelledby="guide-title">
             <header class="modal-header">
                 <div>
                     <p class="guide-kicker">Help &amp; guide</p>
@@ -611,7 +594,7 @@
                         <article><div><strong>Audio, title &amp; artist</strong><p>Drop MP3, WAV, OGG, M4A, or AAC. Title, artist, and embedded cover can be filled from the file’s ID3 metadata.</p></div><button type="button" class="btn btn-ghost" data-guide-target="song:#audio-upload-area">Show me</button></article>
                         <article><div><strong>Playback controls</strong><p>Preview the finished look while listening. Space plays/pauses; left and right arrow keys seek 5 seconds when you are not typing.</p></div><button type="button" class="btn btn-ghost" data-guide-target="song:#audio-upload-area">Show song</button></article>
                         <article><div><strong>Export</strong><p>Set aspect ratio, MP4/WebM when supported, and an optional mm:ss segment. Export stays on your device.</p></div><button type="button" class="btn btn-ghost" data-guide-target="export:.ratio-toggle">Show me</button></article>
-                        <article><div><strong>Offline &amp; browser support</strong><p>The app is installable and works offline after its first load. Use the info button in the top bar to check the export formats your browser supports.</p></div><button type="button" class="btn btn-ghost" data-guide-target="song:#audio-upload-area">Show song</button></article>
+                        <article><div><strong>Offline &amp; browser support</strong><p>The app is installable and works offline after its first load. Check the export formats your browser supports before choosing MP4 or WebM.</p></div><button type="button" class="btn btn-ghost" id="debug-btn">Check support</button></article>
                     </div>
                 </details>
 
@@ -635,7 +618,7 @@
 
                 <p class="guide-privacy-note"><strong>Privacy at a glance:</strong> audio, lyrics, preview, AI timing, translation, and export remain in this browser. Only the explicitly confirmed LRCLIB metadata lookup and Pollinations cover prompt leave your device; optional model and font files download from their stated providers.</p>
             </div>
-        </div>
+        </aside>
     </div>
 
     <!-- ─── Toast container ─────────────────────────────────────── -->

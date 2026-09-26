@@ -5,8 +5,8 @@
 
 ## Delivery rules (do not miss these)
 
-- [x] **PWA:** `v95` precache covers every local module; hard refresh verified locally; `npm test` asserts every precached local path exists; `?pwa-smoke=1` verifies cached app-shell fetches; an app-shell reload also passed after the local test server was stopped.
-- [x] **In-app guidance:** a first-run Start here card leads to the first export; Help & Guide has task recipes plus every feature's purpose, prerequisites, downloads/privacy behavior, and a Show me action that opens the exact setting. It is on-demand, rather than a forced tooltip carousel.
+- [x] **PWA:** `v96` precache covers every local module; hard refresh verified locally; `npm test` asserts every precached local path exists; `?pwa-smoke=1` verifies cached app-shell fetches; an app-shell reload also passed after the local test server was stopped.
+- [x] **In-app guidance:** one visually distinct Help icon opens task recipes plus every feature's purpose, prerequisites, downloads/privacy behavior, and a Show me action that opens the exact setting. It is on-demand and replaces only the Settings column, never the live preview or the initial UI.
 - [x] **Privacy:** optional LRCLIB/Pollinations requests are confirmed in UI, disclose provider/fields in docs, and are allowlisted in CSP; model/font downloads are initiated only by their optional controls and never include audio.
 - [x] **Export:** browser fallback is documented in `docs/troubleshooting.md`; unsupported MP4 controls are disabled and the generated extension follows the recorder MIME.
 - [x] **Regression:** `?smoke=1` created the deterministic five-second WAV and completed an MP4 export (`smoke-tone.mp4`, 2,830,518 bytes); `npm test` covers syntax, parsers, and precache paths.
