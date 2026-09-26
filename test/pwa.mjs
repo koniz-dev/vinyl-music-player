@@ -4,6 +4,8 @@ import path from 'node:path';
 import { constants } from 'node:fs';
 
 const source = await readFile('./service-worker.js', 'utf8');
+assert.match(source, /Network-first/, 'app shell must prefer fresh network content when online');
+assert.ok(!source.includes('cached || networkPromise'), 'app shell must not serve a stale cache before the network');
 const block = source.match(/const PRECACHE = \[([\s\S]*?)\n\];/);
 assert.ok(block, 'service worker must declare PRECACHE');
 

@@ -1,5 +1,5 @@
 // Versioned cache — bump the suffix on every release to invalidate clients.
-const CACHE_VERSION = 'v104';
+const CACHE_VERSION = 'v105';
 const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
 
 const PRECACHE = [
@@ -109,19 +109,18 @@ self.addEventListener('fetch', (event) => {
 
     const isModelWorker = MODEL_WORKER_PATHS.some(path => url.pathname.endsWith(path));
 
-    // Stale-while-revalidate: serve cache fast, refresh in background.
+    // Network-first keeps localhost and a live release on the same source
+    // version. The precache remains an offline fallback, rather than trapping
+    // an editor on yesterday's HTML/CSS while the network is available.
     event.respondWith(
         caches.open(CACHE_NAME).then(async (cache) => {
-            const cached = await cache.match(request);
-            const networkPromise = fetch(request)
-                .then((response) => {
-                    if (response.ok) cache.put(request, response.clone());
-                    return response;
-                })
-                // Offline + not cached: return a proper network-error Response
-                // instead of resolving to undefined (which throws in respondWith).
-                .catch(() => cached || Response.error());
-            const response = await (cached || networkPromise);
+            let response;
+            try {
+                response = await fetch(request);
+                if (response.ok) await cache.put(request, response.clone());
+            } catch {
+                response = await cache.match(request) || Response.error();
+            }
             return isModelWorker ? withWorkerCsp(response) : response;
         })
     );
