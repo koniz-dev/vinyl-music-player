@@ -92,14 +92,14 @@
     width: 78%;
     height: 78%;
     border-radius: 50%;
-    /* Leave the default label clean. A cover is drawn only after the user
-       chooses one, avoiding a black center dot and music-note strokes. */
-    background-color: transparent;
-    background-image: none;
+    /* This is the label artwork placeholder, not the spindle. It remains
+       visible until the user supplies a cover; the spindle itself is absent. */
+    background-color: var(--bg-1);
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-opacity="0.4" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>');
     background-position: center;
     background-repeat: no-repeat;
     background-size: 40%;
-    box-shadow: none;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .music-player.has-album-art .vinyl-album-art,
@@ -110,7 +110,6 @@
 /* When album art is present, swap the SVG hint */
 .vinyl-album-art[data-has-art="true"] {
     background-size: cover;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 /* ─── Tonearm ───────────────────────────────────────────────────── */
