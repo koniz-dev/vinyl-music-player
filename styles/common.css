@@ -80,6 +80,27 @@
     --font-player: var(--font-sans);
 }
 
+/* Workspace theme. The video palette remains configurable in Appearance;
+   these tokens give the surrounding app a comfortable light alternative. */
+:root[data-ui-theme="light"] {
+    --bg-0: #f6f6f8;
+    --bg-1: #ffffff;
+    --bg-2: #eeeeF2;
+    --bg-3: #dedee5;
+    --bg-4: #c5c5cf;
+    --fg-0: #18181b;
+    --fg-1: #27272a;
+    --fg-2: #52525b;
+    --fg-3: #71717a;
+    --fg-4: #a1a1aa;
+    --border-1: rgba(24, 24, 27, 0.08);
+    --border-2: rgba(24, 24, 27, 0.14);
+    --border-3: rgba(24, 24, 27, 0.22);
+    --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.12);
+    --shadow-md: 0 4px 16px rgba(24, 24, 27, 0.14);
+    --shadow-lg: 0 12px 40px rgba(24, 24, 27, 0.18);
+}
+
 /* ─── Reset ─────────────────────────────────────────────────────── */
 
 *, *::before, *::after {
@@ -109,6 +130,8 @@ body {
     text-rendering: optimizeLegibility;
     line-height: 1.5;
 }
+
+:root[data-ui-theme="light"] body { background: var(--bg-0); }
 
 button {
     font: inherit;

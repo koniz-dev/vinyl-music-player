@@ -33,6 +33,27 @@
     transition: color var(--dur);
 }
 
+.section-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+}
+
+.section-title-row .section-toggle { flex: 1; }
+
+.section-guide-btn {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--border-2);
+    border-radius: var(--r-pill);
+    color: var(--fg-3);
+}
+
+.section-guide-btn:hover { border-color: var(--accent); color: var(--accent-hi); }
+
 .section-toggle:hover {
     color: var(--fg-1);
 }
@@ -76,6 +97,9 @@
     flex-direction: column;
     gap: var(--s-4);
 }
+
+.app-theme-field { padding-bottom: var(--s-2); border-bottom: 1px solid var(--border-1); }
+.app-theme-toggle .ratio-btn { flex: 1; }
 
 /* ─── Help guide (on-demand, inside the settings column) ───────── */
 

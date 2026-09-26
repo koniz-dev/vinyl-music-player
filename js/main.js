@@ -1,5 +1,6 @@
 import { hydrateStaticIcons } from './icons.js';
 import { initTheme } from './theme.js';
+import { initUiTheme } from './ui-theme.js';
 import { initPlayer } from './player.js';
 import { initSettings } from './settings.js';
 import { initExport } from './export.js';
@@ -9,6 +10,7 @@ import { toast } from './toast.js';
 
 hydrateStaticIcons();
 initTheme();
+initUiTheme();
 initPlayer();
 initSettings();
 initExport();

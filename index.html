@@ -73,12 +73,7 @@
     <div class="ambient" aria-hidden="true"></div>
 
     <header class="topbar">
-        <div class="topbar-actions topbar-actions-left">
-            <button type="button" class="btn btn-ghost btn-icon" id="tour-btn"
-                aria-label="Open help and feature guide" title="Help and feature guide">
-                <span data-icon="circle-help" data-icon-size="18" aria-hidden="true"></span>
-            </button>
-        </div>
+        <div class="topbar-actions topbar-actions-left"></div>
         <div class="topbar-actions">
             <button type="button" class="btn" id="open-settings-btn"
                 aria-label="Open settings" aria-controls="settings-drawer" aria-expanded="false">
@@ -208,12 +203,16 @@
             <!-- ── Song: what's being played ── -->
             <section class="settings-section" data-section-key="song" aria-labelledby="section-song">
                 <h3 class="section-title" id="section-song">
+                    <span class="section-title-row">
                     <button type="button" class="section-toggle" aria-expanded="true"
                         aria-controls="section-body-song">
                         <span>Song</span>
                         <span class="section-summary"></span>
                         <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
                     </button>
+                    <button type="button" class="section-guide-btn" data-tour-start="basics"
+                        aria-label="Guide to Song" title="Guide to Song"><span data-icon="circle-help" data-icon-size="15" aria-hidden="true"></span></button>
+                    </span>
                 </h3>
 
                 <div class="settings-section-body" id="section-body-song">
@@ -251,12 +250,16 @@
             <!-- ── Artwork: the visual identity, separate from audio metadata ── -->
             <section class="settings-section" data-section-key="artwork" aria-labelledby="section-artwork">
                 <h3 class="section-title" id="section-artwork">
+                    <span class="section-title-row">
                     <button type="button" class="section-toggle" aria-expanded="false"
                         aria-controls="section-body-artwork">
                         <span>Artwork <span class="field-hint">(optional)</span></span>
                         <span class="section-summary"></span>
                         <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
                     </button>
+                    <button type="button" class="section-guide-btn" data-tour-start="artwork"
+                        aria-label="Guide to Artwork" title="Guide to Artwork"><span data-icon="circle-help" data-icon-size="15" aria-hidden="true"></span></button>
+                    </span>
                 </h3>
 
                 <div class="settings-section-body" id="section-body-artwork">
@@ -290,12 +293,16 @@
             <!-- ── Lyrics: synced subtitle lines ── -->
             <section class="settings-section" data-section-key="lyrics" aria-labelledby="section-lyrics">
                 <h3 class="section-title" id="section-lyrics">
+                    <span class="section-title-row">
                     <button type="button" class="section-toggle" aria-expanded="true"
                         aria-controls="section-body-lyrics">
                         <span>Lyrics <span class="field-hint">(optional)</span></span>
                         <span class="section-summary"></span>
                         <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
                     </button>
+                    <button type="button" class="section-guide-btn" data-tour-start="lyrics"
+                        aria-label="Guide to Lyrics" title="Guide to Lyrics"><span data-icon="circle-help" data-icon-size="15" aria-hidden="true"></span></button>
+                    </span>
                 </h3>
 
                 <div class="settings-section-body" id="section-body-lyrics">
@@ -390,15 +397,29 @@
             <!-- ── Appearance: how it looks ── -->
             <section class="settings-section" data-section-key="appearance" aria-labelledby="section-appearance">
                 <h3 class="section-title" id="section-appearance">
+                    <span class="section-title-row">
                     <button type="button" class="section-toggle" aria-expanded="true"
                         aria-controls="section-body-appearance">
                         <span>Appearance</span>
                         <span class="section-summary"></span>
                         <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
                     </button>
+                    <button type="button" class="section-guide-btn" data-tour-start="appearance"
+                        aria-label="Guide to Appearance" title="Guide to Appearance"><span data-icon="circle-help" data-icon-size="15" aria-hidden="true"></span></button>
+                    </span>
                 </h3>
 
                 <div class="settings-section-body" id="section-body-appearance">
+
+                <div class="field app-theme-field">
+                    <label class="field-label">App theme <span class="field-hint">interface only</span></label>
+                    <div class="ratio-toggle app-theme-toggle" role="radiogroup" aria-label="App theme">
+                        <button type="button" class="ratio-btn" data-ui-theme="system" aria-pressed="true">System</button>
+                        <button type="button" class="ratio-btn" data-ui-theme="dark" aria-pressed="false">Dark</button>
+                        <button type="button" class="ratio-btn" data-ui-theme="light" aria-pressed="false">Light</button>
+                    </div>
+                    <p class="field-help">Use Palette and Colors below to set the video’s visual palette.</p>
+                </div>
 
                 <div class="field">
                     <label class="field-label">Palette <span class="field-hint">one-tap color scheme</span></label>
@@ -444,12 +465,16 @@
             <!-- ── Export: output settings (the action button lives in the sticky dock below) ── -->
             <section class="settings-section" data-section-key="export" aria-labelledby="section-export">
                 <h3 class="section-title" id="section-export">
+                    <span class="section-title-row">
                     <button type="button" class="section-toggle" aria-expanded="true"
                         aria-controls="section-body-export">
                         <span>Export</span>
                         <span class="section-summary"></span>
                         <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
                     </button>
+                    <button type="button" class="section-guide-btn" data-tour-start="export"
+                        aria-label="Guide to Export" title="Guide to Export"><span data-icon="circle-help" data-icon-size="15" aria-hidden="true"></span></button>
+                    </span>
                 </h3>
 
                 <div class="settings-section-body" id="section-body-export">
@@ -633,27 +658,12 @@
         <div class="tour-spotlight" id="tour-spotlight" aria-hidden="true"></div>
         <section class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-title"
             aria-describedby="tour-description">
-            <div id="tour-menu">
-                <p class="tour-progress">Choose a walkthrough</p>
-                <h3 id="tour-title">Learn one part at a time</h3>
-                <p id="tour-description">Each guide highlights the exact controls to click. You can run another part later.</p>
-                <div class="tour-menu-options">
-                    <button type="button" data-tour-group="basics"><strong>Basics</strong><span>3 steps · audio and names</span></button>
-                    <button type="button" data-tour-group="artwork"><strong>Artwork</strong><span>3 steps · image and AI cover</span></button>
-                    <button type="button" data-tour-group="lyrics"><strong>Lyrics</strong><span>10 steps · add, sync, find, translate</span></button>
-                    <button type="button" data-tour-group="appearance"><strong>Appearance</strong><span>7 steps · colors, type, enhancements</span></button>
-                    <button type="button" data-tour-group="export"><strong>Export</strong><span>5 steps · ratio, format, download</span></button>
-                </div>
-                <div class="tour-actions"><button type="button" class="btn btn-ghost" id="tour-skip-btn">Close</button></div>
-            </div>
-            <div id="tour-step" hidden>
-                <p class="tour-progress" id="tour-progress"></p>
-                <h3 id="tour-step-title"></h3>
-                <p id="tour-step-description"></p>
-                <div class="tour-actions">
-                    <button type="button" class="btn btn-ghost" id="tour-step-skip-btn">Skip</button>
-                    <button type="button" class="btn btn-primary" id="tour-next-btn">Next</button>
-                </div>
+            <p class="tour-progress" id="tour-progress"></p>
+            <h3 id="tour-title"></h3>
+            <p id="tour-description"></p>
+            <div class="tour-actions">
+                <button type="button" class="btn btn-ghost" id="tour-skip-btn">Skip</button>
+                <button type="button" class="btn btn-primary" id="tour-next-btn">Next</button>
             </div>
         </section>
     </div>

@@ -26,6 +26,7 @@ const TOURS = {
     ],
     appearance: [
         { target: '[data-section-key="appearance"] .section-toggle', title: 'Open Appearance', text: 'Click Appearance to customize the visual style. Then press Next.' },
+        { section: 'appearance', target: '.app-theme-toggle', title: 'Choose the app theme', text: 'Click System to follow your device, or choose Dark or Light for the app interface.' },
         { section: 'appearance', target: '#palette-list', title: 'Pick a palette', text: 'Click a palette for a one-tap color scheme. Auto album art derives colors from your artwork.' },
         { section: 'appearance', target: '#color-list', title: 'Fine-tune colors', text: 'Click any color swatch to override an individual color.' },
         { section: 'appearance', target: '.font-list', title: 'Pick a font', text: 'Click a font option to update song text and lyrics.' },
@@ -46,16 +47,13 @@ export function initTour() {
     const overlay = document.getElementById('tour-overlay');
     const spotlight = document.getElementById('tour-spotlight');
     const card = overlay?.querySelector('.tour-card');
-    const menu = document.getElementById('tour-menu');
-    const stepView = document.getElementById('tour-step');
-    const title = document.getElementById('tour-step-title');
-    const description = document.getElementById('tour-step-description');
+    const title = document.getElementById('tour-title');
+    const description = document.getElementById('tour-description');
     const progress = document.getElementById('tour-progress');
     const next = document.getElementById('tour-next-btn');
-    const close = document.getElementById('tour-skip-btn');
-    const skip = document.getElementById('tour-step-skip-btn');
-    const start = document.getElementById('tour-btn');
-    if (!overlay || !spotlight || !card || !menu || !stepView || !title || !description || !progress || !next || !close || !skip || !start) return;
+    const skip = document.getElementById('tour-skip-btn');
+    const starts = document.querySelectorAll('[data-tour-start]');
+    if (!overlay || !spotlight || !card || !title || !description || !progress || !next || !skip || !starts.length) return;
 
     let steps = [];
     let index = 0;
@@ -109,36 +107,22 @@ export function initTour() {
         previousFocus?.focus?.({ preventScroll: true });
     };
 
-    const openMenu = () => {
-        target = undefined;
-        overlay.hidden = false;
-        spotlight.hidden = true;
-        menu.hidden = false;
-        stepView.hidden = true;
-        card.style.width = `${Math.min(330, innerWidth - 24)}px`;
-        card.style.left = `${Math.max(12, (innerWidth - Math.min(330, innerWidth - 24)) / 2)}px`;
-        card.style.top = `${Math.max(12, (innerHeight - card.offsetHeight) / 2)}px`;
-        close.focus({ preventScroll: true });
-    };
-
-    start.addEventListener('click', () => {
-        previousFocus = document.activeElement;
-        if (!matchMedia('(min-width: 880px)').matches) document.getElementById('open-settings-btn')?.click();
-        openMenu();
-    });
-    menu.querySelectorAll('[data-tour-group]').forEach(button => button.addEventListener('click', () => {
-        steps = TOURS[button.dataset.tourGroup] || [];
+    const startTour = (group, opener) => {
+        steps = TOURS[group] || [];
         if (!steps.length) return;
+        previousFocus = document.activeElement;
+        if (opener) previousFocus = opener;
+        if (!matchMedia('(min-width: 880px)').matches) document.getElementById('open-settings-btn')?.click();
         index = 0;
-        menu.hidden = true;
-        stepView.hidden = false;
+        overlay.hidden = false;
         spotlight.hidden = false;
         showStep();
-    }));
+    };
+
+    starts.forEach(button => button.addEventListener('click', () => startTour(button.dataset.tourStart, button)));
     next.addEventListener('click', () => { if (index === steps.length - 1) finish(); else { index += 1; showStep(); } });
-    close.addEventListener('click', finish);
     skip.addEventListener('click', finish);
-    addEventListener('resize', () => { if (!menu.hidden) openMenu(); else position(); });
+    addEventListener('resize', position);
     addEventListener('scroll', position, true);
     document.addEventListener('keydown', (event) => {
         if (!overlay.hidden && event.key === 'Escape') { event.preventDefault(); finish(); }
