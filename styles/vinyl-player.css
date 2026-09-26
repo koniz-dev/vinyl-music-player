@@ -22,14 +22,24 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    /* Deliberately spaced grooves: the previous 3px pattern aliased into
-       spokes at preview/export sizes. These remain visibly circular. */
+    /* A handful of irregular, low-contrast groove bands read more naturally
+       than a perfectly repeated pattern, which can look synthetic or alias. */
     background:
-        repeating-radial-gradient(
+        radial-gradient(
             circle at 50% 50%,
-            transparent 0 6px,
-            rgba(255, 255, 255, 0.028) 6.5px,
-            transparent 7px 9px
+            transparent 0 25%,
+            rgba(255, 255, 255, 0.026) 25.3% 25.55%,
+            transparent 25.9% 30.5%,
+            rgba(255, 255, 255, 0.017) 30.8% 31.05%,
+            transparent 31.4% 35.2%,
+            rgba(255, 255, 255, 0.024) 35.55% 35.8%,
+            transparent 36.2% 40.6%,
+            rgba(255, 255, 255, 0.015) 40.9% 41.1%,
+            transparent 41.55% 45.1%,
+            rgba(255, 255, 255, 0.021) 45.35% 45.6%,
+            transparent 46% 49.2%,
+            rgba(255, 255, 255, 0.014) 49.45% 49.65%,
+            transparent 50%
         ),
         radial-gradient(circle at 50% 50%, #1a1a1d 0%, #0c0c0e 65%, #050506 100%);
     position: relative;
