@@ -13,6 +13,14 @@ initSettings();
 initExport();
 initDrawer();
 
+if (new URLSearchParams(location.search).get('smoke') === '1') {
+    import('../test/smoke-tone.js').then(({ loadSmokeTone }) => loadSmokeTone());
+}
+
+if (new URLSearchParams(location.search).get('pwa-smoke') === '1') {
+    import('../test/pwa-cache-smoke.js').then(({ runPwaCacheSmoke }) => runPwaCacheSmoke());
+}
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
         try {

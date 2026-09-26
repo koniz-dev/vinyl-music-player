@@ -61,6 +61,7 @@ const COLOR_DEFS = [
    analogous, complementary, triadic) so the whole frame stays coordinated.
    `colors: null` = the reset chip (back to defaults / auto accent). */
 const PALETTES = [
+    { key: 'auto-art', name: 'Auto album art', scheme: 'Artwork', colors: 'dynamic' },
     { key: 'default', name: 'Default', scheme: 'Auto accent', colors: null },
     {
         key: 'indigo-haze', name: 'Indigo Haze', scheme: 'Monochrome',
@@ -226,6 +227,13 @@ function resetColor(key) {
 }
 
 function applyPalette(palette) {
+    if (palette.colors === 'dynamic') {
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#818cf8';
+        const rgb = hexToRgb(accent);
+        const mix = (amount) => `#${rgb.map(value => Math.round(value + (255 - value) * amount).toString(16).padStart(2, '0')).join('')}`;
+        const dark = `#${rgb.map(value => Math.round(value * 0.12).toString(16).padStart(2, '0')).join('')}`;
+        return applyPalette({ colors: { accent, title: mix(0.9), artist: mix(0.55), lyrics: mix(0.78), bg: dark, vinyl: accent } });
+    }
     if (!palette.colors) {
         COLOR_DEFS.forEach(d => resetColor(d.key));
         return;
@@ -233,6 +241,14 @@ function applyPalette(palette) {
     for (const [key, hex] of Object.entries(palette.colors)) {
         setColor(key, hex);
     }
+}
+
+// Used by the local mood suggestion. Keeping this as the same code path as a
+// chip click means overrides, storage, active state, and CSS tokens cannot
+// drift apart.
+export function applyPaletteByKey(key) {
+    const palette = PALETTES.find(item => item.key === key);
+    if (palette) applyPalette(palette);
 }
 
 // ───────────────────── Rendering ─────────────────────
@@ -380,7 +396,9 @@ function buildPaletteChip(palette) {
     const dots = document.createElement('span');
     dots.className = 'palette-chip-dots';
     // Mini preview: bg as the backdrop, accent/lyrics/title as dots.
-    const colors = palette.colors || {
+    const colors = palette.colors === 'dynamic' ? {
+        bg: '#09090b', accent: '#818cf8', lyrics: '#ffb3d1', title: '#fafafa',
+    } : palette.colors || {
         bg: '#09090b', accent: '#818cf8', lyrics: '#ffb3d1', title: '#fafafa',
     };
     dots.style.background = colors.bg;
@@ -403,6 +421,25 @@ function buildPaletteChip(palette) {
 
     chip.append(dots, info);
     chip.addEventListener('click', () => applyPalette(palette));
+    let preview = null;
+    const clearPreview = () => {
+        if (!preview) return;
+        for (const [property, value] of preview) {
+            if (value) document.documentElement.style.setProperty(property, value);
+            else document.documentElement.style.removeProperty(property);
+        }
+        preview = null;
+    };
+    chip.addEventListener('pointerenter', () => {
+        if (!palette.colors || palette.colors === 'dynamic') return;
+        preview = COLOR_DEFS.map(def => [def.cssVar, document.documentElement.style.getPropertyValue(def.cssVar)]);
+        for (const [key, hex] of Object.entries(palette.colors)) {
+            const def = COLOR_DEFS.find(item => item.key === key);
+            if (def) document.documentElement.style.setProperty(def.cssVar, hex);
+        }
+    });
+    chip.addEventListener('pointerleave', clearPreview);
+    chip.addEventListener('blur', clearPreview);
     return chip;
 }
 

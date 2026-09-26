@@ -73,6 +73,10 @@ function setFont(key) {
     renderActive();
 }
 
+export function setPlayerFont(key) {
+    setFont(key);
+}
+
 // ───────────────────── Export font embedding ─────────────────────
 
 async function inlineFontUrls(cssText) {

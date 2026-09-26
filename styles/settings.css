@@ -85,6 +85,7 @@
     display: flex;
     gap: var(--s-1);
     margin-bottom: calc(-1 * var(--s-2));
+    flex-wrap: wrap;
 }
 
 .lyrics-tool {
@@ -98,6 +99,90 @@
 .lyrics-tool:hover {
     color: var(--fg-0);
     background: var(--bg-2);
+}
+
+/* ── Advanced tool panels ─────────────────────────────────────── */
+
+.advanced-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-3);
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-md);
+}
+
+.advanced-panel-head {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--fg-1);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.advanced-panel-head::-webkit-details-marker { display: none; }
+.advanced-panel-head:hover { color: var(--fg-0); }
+
+.advanced-panel-chevron {
+    display: inline-flex;
+    margin-left: auto;
+    color: var(--fg-4);
+    transition: transform var(--dur) var(--ease-out);
+}
+
+.advanced-panel:not([open]) .advanced-panel-chevron { transform: rotate(-90deg); }
+
+.advanced-panel-desc {
+    margin: 0;
+    color: var(--fg-3);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.advanced-panel-label {
+    margin: 0 0 2px;
+    color: var(--fg-2);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.inline-action-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+}
+
+.inline-action-row > .text-input,
+.inline-action-row > select { min-width: 0; flex: 1; }
+
+.cover-generator-panel { margin-top: calc(-1 * var(--s-1)); }
+.lyrics-tools-panel { margin-top: calc(-1 * var(--s-1)); }
+
+.lyric-utility-row { flex-wrap: wrap; }
+
+.translation-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding-top: var(--s-3);
+    border-top: 1px solid var(--border-1);
+}
+
+.remove-model-btn { align-self: flex-start; }
+
+.appearance-enhancements { margin-top: calc(-1 * var(--s-1)); }
+
+/* Fields inside an advanced disclosure need their own small rhythm, but not
+   the full section spacing which makes the compact panel feel bloated. */
+.advanced-panel .compact-field { gap: var(--s-1); }
+
+@media (max-width: 390px) {
+    .inline-action-row { align-items: stretch; flex-direction: column; }
+    .inline-action-row > .btn { width: 100%; }
 }
 
 /* ── AI auto-sync panel ── */

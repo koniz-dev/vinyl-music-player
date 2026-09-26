@@ -9,7 +9,11 @@
     "build": "echo 'No build process needed for static HTML'",
     "preview": "npx http-server -p 3000 -c-1",
     "serve": "npx http-server -p 8080 -c-1",
-    "test": "echo 'No tests configured yet'"
+    "test": "npm run test:syntax && npm run test:parsers && npm run test:translation && npm run test:pwa",
+    "test:syntax": "find js test -name '*.js' -print0 | xargs -0 -n1 node --check"
+    ,"test:parsers": "node test/parsers.mjs",
+    "test:pwa": "node test/pwa.mjs",
+    "test:translation": "node test/translation-worker.mjs"
   },
   "keywords": [
     "music",

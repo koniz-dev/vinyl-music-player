@@ -19,7 +19,7 @@ Drop in an MP3, type the song title, add timed lyrics, click export. You get a *
 - 📝 **Synced lyrics** — type per-line or bulk-paste JSON; live preview as audio plays
 - ✨ **AI auto-sync** — Whisper runs *in your browser* to time your lyrics (or transcribe from scratch); nothing is uploaded
 - 🎨 **Live vinyl preview** — record spins, tonearm tracks, lyrics fade in/out
-- 🔒 **100% local** — no servers, no uploads, no account
+- 🔒 **Audio stays local** — no account or audio uploads; optional lyric lookup and cover generation clearly ask before contacting their providers
 - 📦 **Offline-ready PWA** — works on the train after the first load
 - ⚡ **Zero install** — open the [demo](https://koniz-dev.github.io/vinyl-music-player/) and go
 
@@ -45,11 +45,16 @@ Open <http://localhost:3000>. Need more detail? See [Getting Started](docs/getti
 | [JSON Lyrics Format](docs/json-lyrics-format.md) | Bulk-import spec, LRC conversion |
 | [Architecture](docs/architecture.md) | Modules, event bus, render pipeline |
 | [Troubleshooting](docs/troubleshooting.md) | Browser matrix + fixes |
+| [Release Checklist](docs/release-checklist.md) | Offline, export, and translation smoke tests |
 | [Contributing](docs/contributing.md) | Dev workflow + code style |
 
 ## Tech
 
 Vanilla HTML / CSS / JavaScript. ES modules, no build step, no backend. Uses `MediaRecorder`, Web Audio, Canvas, a service worker for offline support, and on-device Whisper (transformers.js + ONNX Runtime, WebGPU/WASM) for lyric auto-sync. Full breakdown in [docs/architecture.md](docs/architecture.md).
+
+## Privacy
+
+Audio decoding, playback, lyric timing, translation, rendering, and export stay in the browser. **Find lyrics** asks before sending song title, artist, and duration to LRCLIB; **Generate cover** asks before sending its prompt to Pollinations. Whisper/translation model files and selected web fonts download from their stated providers when the user starts those optional features, but the audio and lyrics themselves are never uploaded. Details: [Usage Guide](docs/usage.md).
 
 ## License
 

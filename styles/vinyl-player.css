@@ -9,6 +9,15 @@
     height: auto;
 }
 
+.vinyl-visualizer {
+    position: absolute;
+    inset: -9%;
+    width: 118%;
+    height: 118%;
+    pointer-events: none;
+    z-index: 3;
+}
+
 .vinyl-record {
     width: 100%;
     height: 100%;
@@ -154,6 +163,16 @@
     width: 100%;
 }
 
+.vinyl-lyrics-text .lyric-word {
+    color: color-mix(in srgb, var(--color-lyrics) 52%, transparent);
+    transition: color 120ms ease, text-shadow 120ms ease;
+}
+
+.vinyl-lyrics-text .lyric-word.active {
+    color: var(--color-lyrics);
+    text-shadow: 0 0 10px var(--accent-glow);
+}
+
 .vinyl-song-title {
     font-family: var(--font-player);
     font-size: clamp(16px, 5cqmin, 22px);
@@ -188,6 +207,12 @@
     min-height: 1.4em;
     transition: opacity var(--dur) var(--ease-out);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: pre-line;
+}
+
+.lyric-translation {
+    color: color-mix(in srgb, var(--color-lyrics) 68%, transparent);
+    font-size: 0.82em;
 }
 
 /* ─── First-time hint (hidden once audio loaded) ────────────────── */

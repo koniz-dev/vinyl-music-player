@@ -52,7 +52,7 @@ export function cancelAutoSync() {
  *                 | { mode: 'fill',  lines: {start,end,text}[] }>}
  *   In align mode, lines[i] matches lineTexts[i] (null = leave untouched).
  */
-export async function runAutoSync({ file, lineTexts, hintText, onProgress }) {
+export async function runAutoSync({ file, lineTexts, hintText, model = 'tiny', onProgress }) {
     if (activeJob) throw new Error('Auto-sync is already running.');
     const job = { cancelled: false, rejectWorker: null };
     activeJob = job;
@@ -67,7 +67,7 @@ export async function runAutoSync({ file, lineTexts, hintText, onProgress }) {
         const language = detectLanguage(`${texts.join(' ')} ${hintText || ''}`);
 
         const { chunks, wordLevel } = await transcribeInWorker(
-            job, audio, hasLines ? 'word' : 'segment', language, onProgress
+            job, audio, hasLines ? 'word' : 'segment', language, model, onProgress
         );
         if (job.cancelled) throw abortError();
 
@@ -142,7 +142,7 @@ function detectLanguage(text) {
     return null;
 }
 
-function transcribeInWorker(job, audio, timestamps, language, onProgress) {
+function transcribeInWorker(job, audio, timestamps, language, model, onProgress) {
     return new Promise((resolve, reject) => {
         job.rejectWorker = reject;
         const w = getWorker();
@@ -180,7 +180,7 @@ function transcribeInWorker(job, audio, timestamps, language, onProgress) {
         };
 
         // Transfer, don't copy — a 4-minute song is ~15 MB of Float32.
-        w.postMessage({ type: 'transcribe', audio, timestamps, language }, [audio.buffer]);
+        w.postMessage({ type: 'transcribe', audio, timestamps, language, model }, [audio.buffer]);
     });
 }
 
@@ -359,7 +359,48 @@ function alignLinesToTranscript(lineTexts, chunks, wordLevel, duration) {
     });
 
     interpolateMissing(raw, tokenCounts, duration);
-    return finalizeTimes(raw, duration);
+    const finalized = finalizeTimes(raw, duration);
+    let tokenOffset = 0;
+    return finalized.map((time, lineIdx) => {
+        const count = tokenCounts[lineIdx];
+        const result = time ? {
+            ...time,
+            words: timedWordsForLine(lineTexts[lineIdx], time, tokenOffset, count, matched, words),
+        } : null;
+        tokenOffset += count;
+        return result;
+    });
+}
+
+// Keep the actual Whisper timestamps that survived alignment, rather than
+// merely colouring a word by its position in the line. Unmatched words get a
+// conservative proportional fallback inside the already-aligned line.
+function timedWordsForLine(text, time, tokenOffset, tokenCount, matched, transcriptWords) {
+    const displayed = String(text || '').trim().split(/\s+/).filter(Boolean);
+    const normalized = displayed.map(normalizeWord).filter(Boolean);
+    if (!normalized.length || !tokenCount) return [];
+
+    const [sm, ss] = time.start.split(':').map(Number);
+    const [em, es] = time.end.split(':').map(Number);
+    const lineStart = sm * 60 + ss;
+    const lineEnd = em * 60 + es;
+    let tokenIndex = 0;
+
+    return displayed.map((textPart, displayIndex) => {
+        const norm = normalizeWord(textPart);
+        // Punctuation-only fragments are visually retained but share the
+        // nearest proportional slice instead of consuming an ASR token.
+        const relative = Math.min(tokenIndex, Math.max(0, normalized.length - 1));
+        const matchedIndex = norm ? matched[tokenOffset + tokenIndex++] : -1;
+        const fallbackStart = lineStart + ((lineEnd - lineStart) * relative / normalized.length);
+        const fallbackEnd = lineStart + ((lineEnd - lineStart) * (relative + 1) / normalized.length);
+        const transcript = matchedIndex >= 0 ? transcriptWords[matchedIndex] : null;
+        return {
+            text: textPart,
+            start: transcript?.start ?? fallbackStart,
+            end: transcript?.end ?? fallbackEnd,
+        };
+    });
 }
 
 // Lines Whisper couldn't match (mumbled, ad-libs, ASR misses) get times

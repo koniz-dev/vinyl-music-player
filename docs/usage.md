@@ -27,6 +27,10 @@ Playback starts automatically once the file is loaded.
 
 Image formats: JPG, PNG, WebP.
 
+### Generate a cover with AI
+
+Enter a prompt below Album Art and choose **Generate cover**. The app asks before sending that prompt to Pollinations; it does not send your audio, lyrics, or account data. The returned image is then used locally as album art.
+
 ## Lyrics
 
 ### Add lyrics one-by-one
@@ -41,6 +45,14 @@ Click the red `×` to remove a row.
 ### Bulk import via JSON
 
 Click **Import** in the Lyrics section header, paste an array, choose **Replace** or **Append**, hit Import. Full spec: [JSON Lyrics Format](json-lyrics-format.md).
+
+### LRC and online lookup
+
+The same Import dialog accepts timestamped LRC (`[mm:ss.xx] lyric`) and **LRC** exports the edited lyrics. **Find lyrics** is optional: it asks before sending only song title, artist, and duration to LRCLIB. Audio never leaves the browser; choose a search result before it replaces current lyrics.
+
+Use **Translate** to add a second lyric line in Vietnamese or English. It checks browser storage and asks before downloading the on-device NLLB model (over 1 GB on first use); lyrics and audio stay in the browser. Use **Remove translation model** to delete only the cached NLLB files; music, lyrics, and app settings stay intact.
+
+When Auto-sync aligns existing lyrics, its matched word timestamps also drive a karaoke-style highlight in the live preview. Editing a line clears those per-word timings, so run Auto-sync again after substantial text changes.
 
 ### Auto-sync with AI (✦ panel below the lines)
 
@@ -67,6 +79,10 @@ Notes:
 The **Colors** list lets you override six element colors: Accent, Title, Artist, Lyrics, Background, and Vinyl tint. Pick with the swatch, or click the chevron on a row to reveal quick-pick presets curated for that element (dark tones for Background, pastels for Lyrics, …). The reset button restores the default. The Accent auto-derives from the album art until you override it manually. Overrides persist across sessions via `localStorage`.
 
 **Font** changes the typeface of the title, artist, and lyrics — popular sans-serif, serif, script, and display options (all with Vietnamese support). The selected font is embedded into exported videos; the first export with a new font fetches its font files, so it needs the network once (cached afterwards by the browser).
+
+Enable **Audio-reactive visualizer** in Appearance to add a lightweight spectrum ring around the record in both the preview and exported video. It is off by default.
+
+Choose **Suggest theme from audio** to analyze the first 30 seconds on-device and select a matching palette and font. This is a lightweight energy/activity heuristic, so it is instant and does not download a model or send audio anywhere.
 
 ## Playback controls
 

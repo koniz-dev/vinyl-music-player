@@ -9,6 +9,7 @@ export const state = {
     lyricsColor: '#ffb3d1',
     aspectRatio: '9:16',
     videoFormat: 'webm',
+    visualizerEnabled: false,
 };
 
 export const DEFAULT_LYRICS_COLOR = '#ffb3d1';

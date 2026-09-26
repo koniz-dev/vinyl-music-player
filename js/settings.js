@@ -1,11 +1,15 @@
 import { emit, on, Events } from './lib/events.js';
 import { timeToSeconds, formatTime } from './lib/format.js';
-import { initColorManager } from './color-manager.js';
-import { initFontManager } from './font-manager.js';
+import { initColorManager, applyPaletteByKey } from './color-manager.js';
+import { initFontManager, setPlayerFont } from './font-manager.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
 import { icon } from './icons.js';
 import { state, RATIOS, DEFAULT_ASPECT_RATIO, FORMATS, DEFAULT_VIDEO_FORMAT } from './lib/state.js';
 import { runAutoSync, cancelAutoSync, isAutoSyncRunning } from './autosync.js';
+import { readId3Metadata } from './id3.js';
+import { parseLrc, serializeLrc } from './lrc.js';
+import { findSyncedLyrics } from './lrclib.js';
+import { translateLyrics, getTranslationStorageEstimate, removeTranslationModel, TRANSLATION_MODEL_MIN_FREE_BYTES } from './translate.js';
 
 const TIME_PATTERN = /^[0-9]{1,2}:[0-9]{2}$/;
 
@@ -21,6 +25,7 @@ const autoSyncBtn = document.getElementById('auto-sync-btn');
 const autoSyncLabel = document.getElementById('auto-sync-label');
 const autoSyncStatus = document.getElementById('autosync-status');
 const autoSyncInput = document.getElementById('autosync-lyrics-input');
+const whisperModelInput = document.getElementById('whisper-model');
 const importOverwriteWarning = document.getElementById('import-overwrite-warning');
 const importOverwriteCount = document.getElementById('import-overwrite-count');
 const importModeReplaceBtn = document.getElementById('import-mode-replace');
@@ -41,18 +46,31 @@ const songTitleInput = document.getElementById('song-title');
 const artistNameInput = document.getElementById('artist-name');
 const audioClearBtn = document.getElementById('audio-clear-btn');
 const albumArtClearBtn = document.getElementById('album-art-clear-btn');
+const aiArtPrompt = document.getElementById('ai-art-prompt');
+const aiArtBtn = document.getElementById('ai-art-btn');
 const exportBtn = document.getElementById('export-btn');
 const debugBtn = document.getElementById('debug-btn');
 const exportBtnFill = document.getElementById('export-btn-fill');
 const exportBtnLabel = document.getElementById('export-btn-label');
+const visualizerEnabledInput = document.getElementById('visualizer-enabled');
+const suggestThemeBtn = document.getElementById('suggest-theme-btn');
+const exportLrcBtn = document.getElementById('export-lrc-btn');
+const findLyricsBtn = document.getElementById('find-lyrics-btn');
+const translateLyricsBtn = document.getElementById('translate-lyrics-btn');
+const translationDirectionInput = document.getElementById('translation-direction');
+const removeTranslationModelBtn = document.getElementById('remove-translation-model-btn');
+const exportStartInput = document.getElementById('export-start');
+const exportEndInput = document.getElementById('export-end');
 
 // ---------- Lyrics editor ----------
 
-function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
+function buildLyricsItem({ start = '', end = '', text = '', words = [], translation = '' } = {}) {
     lyricsCount++;
 
     const item = document.createElement('div');
     item.className = 'lyrics-item';
+    if (Array.isArray(words) && words.length) item.dataset.words = JSON.stringify(words);
+    if (translation) item.dataset.translation = translation;
 
     const header = document.createElement('div');
     header.className = 'lyrics-item-header';
@@ -108,6 +126,10 @@ function buildLyricsItem({ start = '', end = '', text = '' } = {}) {
         ariaLabel: 'Lyric text',
     });
     textWrap.appendChild(textInput);
+
+    // A textual edit invalidates word-level ASR alignment. Keep line timing,
+    // but never highlight a stale word map against newly edited lyrics.
+    textInput.addEventListener('input', () => { delete item.dataset.words; delete item.dataset.translation; }, true);
 
     inputs.append(startInput, endInput, textWrap);
     item.append(header, inputs);
@@ -278,7 +300,13 @@ function publishLyrics() {
         if (!text) return;
         const start = timeToSeconds(startStr);
         const end = endStr === '' ? start + 5 : timeToSeconds(endStr);
-        data.push({ start, end, text });
+        let words;
+        try {
+            const parsed = JSON.parse(item.dataset.words || '[]');
+            if (Array.isArray(parsed)) words = parsed;
+        } catch {}
+        const translation = item.dataset.translation || '';
+        data.push({ start, end, text, ...(words?.length ? { words } : {}), ...(translation ? { translation } : {}) });
     });
     emit(Events.UPDATE_LYRICS, data);
 }
@@ -354,6 +382,7 @@ async function handleAutoSync() {
             lineTexts,
             // Title/artist help guess the song's language when no lyrics exist.
             hintText: `${songTitleInput.value} ${artistNameInput.value}`,
+            model: whisperModelInput.value,
             onProgress: showAutoSyncProgress,
         });
 
@@ -365,6 +394,9 @@ async function handleAutoSync() {
                 const timeInputs = item.querySelectorAll('.time-input');
                 if (timeInputs[0]) timeInputs[0].value = time.start;
                 if (timeInputs[1]) timeInputs[1].value = time.end;
+                if (Array.isArray(time.words) && time.words.length) {
+                    item.dataset.words = JSON.stringify(time.words);
+                }
                 synced++;
             });
             publishLyrics();
@@ -454,7 +486,7 @@ function importLyricsFromJson() {
         return;
     }
     try {
-        const rows = JSON.parse(raw);
+        const rows = raw.startsWith('[') && raw.includes('{') ? JSON.parse(raw) : parseLrc(raw, state.totalTime);
         validateImportedLyrics(rows);
 
         if (importMode === 'replace') {
@@ -470,6 +502,96 @@ function importLyricsFromJson() {
         toastSuccess(`${verb} ${rows.length} lyric lines.`);
     } catch (error) {
         toastError(error.message);
+    }
+}
+
+function exportLrc() {
+    if (!state.lyrics.length) return toastInfo('Add lyrics before exporting LRC.');
+    const blob = new Blob([serializeLrc(state.lyrics)], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${songTitleInput.value.trim() || 'lyrics'}.lrc`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 0);
+}
+
+async function handleFindLyrics() {
+    const title = songTitleInput.value.trim();
+    const artist = artistNameInput.value.trim();
+    if (!title && !artist) return toastInfo('Add a song title or artist first.');
+    if (!window.confirm('This sends song title, artist, and duration to LRCLIB to find lyrics. Audio stays on your device. Continue?')) return;
+    findLyricsBtn.disabled = true;
+    try {
+        const results = await findSyncedLyrics({ title, artist, duration: state.totalTime });
+        if (!results.length) return toastInfo('No synced lyrics found. Try Auto-sync instead.');
+        let selected = results[0];
+        if (results.length > 1) {
+            const choices = results.slice(0, 10).map((r, i) => `${i + 1}. ${r.trackName} — ${r.artistName}`).join('\n');
+            const pick = Number(window.prompt(`Choose synced lyrics:\n${choices}`, '1'));
+            if (!Number.isInteger(pick) || pick < 1 || pick > Math.min(results.length, 10)) return;
+            selected = results[pick - 1];
+        }
+        const rows = parseLrc(selected.syncedLyrics, state.totalTime);
+        if (!rows.length) return toastInfo('That result did not contain usable timed lyrics.');
+        if (lyricsContainer.children.length && !window.confirm('Replace current lyrics with this result?')) return;
+        lyricsContainer.querySelectorAll('.lyrics-item').forEach(el => el.remove());
+        lyricsCount = 0;
+        rows.forEach(row => lyricsContainer.appendChild(buildLyricsItem(row)));
+        refreshLyricsEmptyState(); publishLyrics();
+        toastSuccess('Imported synced lyrics.');
+    } catch (error) { toastError(`Could not find lyrics: ${error.message || error}`); }
+    finally { findLyricsBtn.disabled = false; }
+}
+
+async function handleTranslateLyrics() {
+    const items = [...lyricsContainer.querySelectorAll('.lyrics-item')];
+    const lines = items.map(item => item.querySelector('.lyrics-text-input')?.value.trim() || '').filter(Boolean);
+    if (!lines.length) return toastInfo('Add lyrics before translating.');
+    const direction = translationDirectionInput.value;
+    const estimate = await getTranslationStorageEstimate();
+    const requiredGb = (TRANSLATION_MODEL_MIN_FREE_BYTES / 1e9).toFixed(1);
+    if (estimate && estimate.available < TRANSLATION_MODEL_MIN_FREE_BYTES) {
+        return toastError(`Not enough browser storage. Free at least about ${requiredGb} GB, then try again.`);
+    }
+    const space = estimate
+        ? ` Browser storage reports about ${(estimate.available / 1e9).toFixed(1)} GB available.`
+        : ' Your browser could not report available storage.';
+    if (!window.confirm(`This downloads the on-device NLLB ${direction.replace('-', ' → ')} translation model (over 1 GB on first use). It uses disk space and may take time; lyrics and audio stay in your browser.${space} Continue?`)) return;
+    translateLyricsBtn.disabled = true;
+    const label = translateLyricsBtn.textContent;
+    try {
+        const translations = await translateLyrics(lines, direction, (stage) => {
+            translateLyricsBtn.textContent = stage === 'download' ? 'Downloading model…' : 'Translating…';
+        });
+        let index = 0;
+        items.forEach(item => {
+            const text = item.querySelector('.lyrics-text-input')?.value.trim();
+            if (text) item.dataset.translation = translations[index++] || '';
+        });
+        publishLyrics();
+        toastSuccess(`Translated ${lines.length} lyric line${lines.length === 1 ? '' : 's'} locally.`);
+    } catch (error) {
+        toastError(`Translation failed: ${error.message || error}`);
+    } finally {
+        translateLyricsBtn.disabled = false;
+        translateLyricsBtn.textContent = label;
+    }
+}
+
+async function handleRemoveTranslationModel() {
+    if (!window.confirm('Remove the downloaded NLLB translation model from this browser? This does not remove your music, lyrics, or app settings. Translating again will download the model again.')) return;
+    removeTranslationModelBtn.disabled = true;
+    const label = removeTranslationModelBtn.textContent;
+    try {
+        const removed = await removeTranslationModel((stage) => {
+            if (stage === 'removing') removeTranslationModelBtn.textContent = 'Removing model…';
+        });
+        toastSuccess(removed ? 'Removed the downloaded translation model.' : 'No downloaded translation model was found.');
+    } catch (error) {
+        toastError(`Could not remove model: ${error.message || error}`);
+    } finally {
+        removeTranslationModelBtn.disabled = false;
+        removeTranslationModelBtn.textContent = label;
     }
 }
 
@@ -518,6 +640,24 @@ function handleAlbumArt(file) {
     emit(Events.UPDATE_ALBUM_ART, imageUrl);
 }
 
+async function generateAlbumArt() {
+    const prompt = aiArtPrompt.value.trim();
+    if (!prompt) return toastInfo('Describe the cover art first.');
+    if (!window.confirm('This sends your cover prompt to Pollinations to generate an image. Continue?')) return;
+    aiArtBtn.disabled = true;
+    try {
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Image service returned ${response.status}.`);
+        const blob = await response.blob();
+        if (lastAlbumArtObjectUrl) URL.revokeObjectURL(lastAlbumArtObjectUrl);
+        lastAlbumArtObjectUrl = URL.createObjectURL(blob);
+        emit(Events.UPDATE_ALBUM_ART, lastAlbumArtObjectUrl);
+        toastSuccess('Generated cover art.');
+    } catch (error) { toastError(`Could not generate cover: ${error.message || error}`); }
+    finally { aiArtBtn.disabled = false; }
+}
+
 function handleAudioFile(file) {
     describeFile(audioUploadArea, file);
     if (lastAudioObjectUrl) URL.revokeObjectURL(lastAudioObjectUrl);
@@ -539,6 +679,83 @@ function handleAudioFile(file) {
         albumArtUrl,
     });
     refreshAudioDependentButtons();
+    autofillId3Metadata(file);
+}
+
+async function suggestThemeFromAudio() {
+    const file = audioFileInput.files[0];
+    if (!file) return toastInfo('Add an audio file first.');
+    suggestThemeBtn.disabled = true;
+    const originalLabel = suggestThemeBtn.textContent;
+    suggestThemeBtn.textContent = 'Analyzing locally…';
+    try {
+        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContextCtor();
+        let audioBuffer;
+        try {
+            audioBuffer = await audioContext.decodeAudioData(await file.arrayBuffer());
+        } finally {
+            audioContext.close().catch(() => {});
+        }
+        const samples = audioBuffer.getChannelData(0);
+        const limit = Math.min(samples.length, Math.floor(audioBuffer.sampleRate * 30));
+        const step = Math.max(1, Math.floor(audioBuffer.sampleRate / 80));
+        let power = 0, crossings = 0, count = 0, previous = samples[0] || 0;
+        for (let i = 0; i < limit; i += step) {
+            const value = samples[i];
+            power += value * value;
+            if ((value >= 0) !== (previous >= 0)) crossings++;
+            previous = value;
+            count++;
+        }
+        const energy = Math.sqrt(power / Math.max(1, count));
+        const activity = crossings / Math.max(1, count);
+        let palette = 'rose-noir', font = 'playfair-display', mood = 'calm';
+        if (energy > 0.22 && activity > 0.2) {
+            palette = 'neon-pop'; font = 'montserrat'; mood = 'energetic';
+        } else if (energy > 0.14) {
+            palette = 'sunset-glow'; font = 'oswald'; mood = 'upbeat';
+        } else if (activity > 0.23) {
+            palette = 'ocean-drift'; font = 'be-vietnam-pro'; mood = 'bright';
+        }
+        applyPaletteByKey(palette);
+        setPlayerFont(font);
+        toastSuccess(`Applied a ${mood} theme from the first 30 seconds.`);
+    } catch {
+        toastError("Couldn't analyze this audio file. Try a different format.");
+    } finally {
+        suggestThemeBtn.disabled = false;
+        suggestThemeBtn.textContent = originalLabel;
+    }
+}
+
+async function autofillId3Metadata(file) {
+    try {
+        const metadata = await readId3Metadata(file);
+        // Ignore a slow read from a file that has since been replaced/cleared.
+        if (audioFileInput.files[0] !== file) return;
+        let filled = false;
+        // Respect edits made before this asynchronous read finishes.
+        if (metadata.title && !songTitleInput.value.trim()) {
+            songTitleInput.value = metadata.title;
+            emit(Events.UPDATE_SONG_TITLE, metadata.title);
+            filled = true;
+        }
+        if (metadata.artist && !artistNameInput.value.trim()) {
+            artistNameInput.value = metadata.artist;
+            emit(Events.UPDATE_ARTIST_NAME, metadata.artist);
+            filled = true;
+        }
+        if (metadata.cover && !albumArtInput.files[0]) {
+            if (lastAlbumArtObjectUrl) URL.revokeObjectURL(lastAlbumArtObjectUrl);
+            lastAlbumArtObjectUrl = URL.createObjectURL(metadata.cover);
+            emit(Events.UPDATE_ALBUM_ART, lastAlbumArtObjectUrl);
+            filled = true;
+        }
+        if (filled) toastInfo('Filled available title, artist, and cover from this audio file.');
+    } catch {
+        // Metadata is optional; malformed tags must never block playback.
+    }
 }
 
 function clearAudio() {
@@ -632,9 +849,18 @@ function bindExport() {
         const songTitle = songTitleInput.value.trim();
         const artistName = artistNameInput.value.trim();
         const albumArtFile = albumArtInput.files[0];
+        const rangeStart = timeToSeconds(exportStartInput.value || '00:00');
+        const rangeEnd = exportEndInput.value ? timeToSeconds(exportEndInput.value) : null;
 
         if (!audioFile) {
             toastError('Upload an audio file first.');
+            return;
+        }
+        if ((exportStartInput.value && !TIME_PATTERN.test(exportStartInput.value))
+            || (exportEndInput.value && !TIME_PATTERN.test(exportEndInput.value))
+            || (rangeEnd !== null && rangeEnd <= rangeStart)
+            || (state.totalTime && (rangeStart >= state.totalTime || (rangeEnd !== null && rangeEnd > state.totalTime)))) {
+            toastError('Use a valid export range within the track (mm:ss).');
             return;
         }
 
@@ -646,7 +872,7 @@ function bindExport() {
         exportBtn.classList.add('exporting');
         exportBtnLabel.textContent = 'Preparing…';
 
-        emit(Events.EXPORT_REQUESTED, { audioFile, songTitle, artistName, albumArtFile });
+        emit(Events.EXPORT_REQUESTED, { audioFile, songTitle, artistName, albumArtFile, rangeStart, rangeEnd });
     });
 
     debugBtn.addEventListener('click', () => emit(Events.DEBUG_BROWSER_SUPPORT));
@@ -670,6 +896,8 @@ function bindExport() {
 
 function bindImportModal() {
     devLyricsBtn.addEventListener('click', openImportModal);
+    exportLrcBtn.addEventListener('click', exportLrc);
+    findLyricsBtn.addEventListener('click', handleFindLyrics);
     modalCloseBtn.addEventListener('click', closeImportModal);
     modalCancelBtn.addEventListener('click', closeImportModal);
     modalImportBtn.addEventListener('click', importLyricsFromJson);
@@ -811,12 +1039,20 @@ export function initSettings() {
     });
     clearLyricsBtn.addEventListener('click', clearAllLyrics);
     autoSyncBtn.addEventListener('click', handleAutoSync);
+    translateLyricsBtn.addEventListener('click', handleTranslateLyrics);
+    removeTranslationModelBtn.addEventListener('click', handleRemoveTranslationModel);
+    try { whisperModelInput.value = localStorage.getItem('whisperModel') || 'tiny'; } catch {}
+    whisperModelInput.addEventListener('change', () => {
+        try { localStorage.setItem('whisperModel', whisperModelInput.value); } catch {}
+        if (whisperModelInput.value === 'small') toastInfo('Small model downloads about 250 MB on first use.');
+    });
 
     wireUpload(uploadArea, albumArtInput, handleAlbumArt);
     wireUpload(audioUploadArea, audioFileInput, handleAudioFile);
 
     audioClearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearAudio(); });
     albumArtClearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearAlbumArt(); });
+    aiArtBtn.addEventListener('click', generateAlbumArt);
 
     bindImportModal();
     bindInputs();
@@ -825,9 +1061,20 @@ export function initSettings() {
     setAspectRatio(loadPersistedRatio(), { persist: false });
     bindFormatToggle();
     setVideoFormat(loadPersistedFormat(), { persist: false });
+    try { state.visualizerEnabled = localStorage.getItem('visualizerEnabled') === 'true'; } catch {}
+    visualizerEnabledInput.checked = state.visualizerEnabled;
+    visualizerEnabledInput.addEventListener('change', () => {
+        state.visualizerEnabled = visualizerEnabledInput.checked;
+        try { localStorage.setItem('visualizerEnabled', String(state.visualizerEnabled)); } catch {}
+    });
+    suggestThemeBtn.addEventListener('click', suggestThemeFromAudio);
 
     audioFileInput.addEventListener('change', refreshAudioDependentButtons);
     songTitleInput.addEventListener('input', refreshAudioDependentButtons);
+    [exportStartInput, exportEndInput].forEach(input => input?.addEventListener('blur', () => {
+        const normalized = normalizeTimeString(input.value);
+        if (normalized !== null) input.value = normalized;
+    }));
 
     initColorManager();
     initFontManager();

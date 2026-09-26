@@ -57,6 +57,11 @@ let canvasScale = 1;              // canvas-px per CSS-px (for shadow blur scali
 let baseCapturePending = false;
 let lastBaseCapturedAt = 0;
 let exportFontCss = null;         // @font-face data-URL CSS for the picked player font
+let exportEndTime = null;
+let analyser = null;
+let spectrum = null;
+let lyricsRect = null;
+let lyricsStyle = null;
 
 // ──────────────────────────────────────────────────────────────────
 // Setup helpers
@@ -166,7 +171,7 @@ function syncLiveDomToExportAudio(b) {
     // Lyrics — boundary matches player.js getCurrentLyric (>= start, < end)
     // so the editor preview and the exported video stay frame-consistent.
     const current = exportLyrics.find(l => t >= l.start && t < l.end);
-    const nextLyric = current ? current.text : '';
+    const nextLyric = current ? [current.text, current.translation].filter(Boolean).join('\n') : '';
     if (nextLyric !== b.lyricsEl.textContent) {
         b.lyricsEl.textContent = nextLyric;
     }
@@ -190,6 +195,8 @@ function cleanup() {
     teardownVisibilityHandler();
     if (exportAudio) { exportAudio.pause(); exportAudio = null; }
     if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
+    analyser = null;
+    spectrum = null;
     if (audioObjectUrl) { URL.revokeObjectURL(audioObjectUrl); audioObjectUrl = null; }
     if (liveDomBindings) { restoreLiveDom(liveDomBindings); liveDomBindings = null; }
     cachedBase = null;
@@ -199,6 +206,8 @@ function cleanup() {
     vinylRect = null;
     sheenRect = null;
     tonearmRect = null;
+    lyricsRect = null;
+    lyricsStyle = null;
     canvasScale = 1;
     baseCapturePending = false;
     lastBaseCapturedAt = 0;
@@ -232,7 +241,8 @@ function abortExport(message) {
 function armExportTimeout() {
     if (timeoutId) clearTimeout(timeoutId);
     if (!exportAudio) return;
-    const remainingS = Math.max(0, (exportAudio.duration || 0) - exportAudio.currentTime);
+    const stopAt = exportEndTime ?? exportAudio.duration ?? 0;
+    const remainingS = Math.max(0, stopAt - exportAudio.currentTime);
     timeoutId = setTimeout(() => {
         abortExport('Export timed out. Please try again.');
     }, remainingS * 1000 + EXPORT_TIMEOUT_BUFFER_MS);
@@ -390,6 +400,70 @@ function computeLayerRects() {
         width: wrapW * 0.22,
         height: wrapH * 0.75,
     };
+
+    const lyricsEl = document.querySelector('.vinyl-lyrics-text');
+    const lyricsDomRect = lyricsEl?.getBoundingClientRect();
+    if (lyricsDomRect) {
+        lyricsRect = {
+            x: (lyricsDomRect.left - fRect.left) * canvasScale,
+            y: (lyricsDomRect.top - fRect.top) * canvasScale,
+            width: lyricsDomRect.width * canvasScale,
+        };
+        const computed = getComputedStyle(lyricsEl);
+        lyricsStyle = {
+            fontFamily: computed.fontFamily,
+            fontWeight: computed.fontWeight,
+            fontSize: Math.max(1, parseFloat(computed.fontSize) * canvasScale),
+            color: computed.color,
+        };
+    }
+}
+
+function hasTimedWords() {
+    return exportLyrics.some(line => Array.isArray(line.words) && line.words.length);
+}
+
+function drawKaraokeLyrics(time) {
+    if (!lyricsRect || !lyricsStyle || !hasTimedWords()) return;
+    const line = exportLyrics.find(item => time >= item.start && time < item.end);
+    if (!line) return;
+    ctx.save();
+    ctx.font = `${lyricsStyle.fontWeight} ${lyricsStyle.fontSize}px ${lyricsStyle.fontFamily}`;
+    ctx.textBaseline = 'top';
+    ctx.shadowBlur = 2 * canvasScale;
+    const drawTranslation = () => {
+        if (!line.translation) return;
+        ctx.font = `${lyricsStyle.fontWeight} ${lyricsStyle.fontSize * 0.82}px ${lyricsStyle.fontFamily}`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.68)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        const width = ctx.measureText(line.translation).width;
+        ctx.fillText(line.translation, lyricsRect.x + Math.max(0, (lyricsRect.width - width) / 2), lyricsRect.y + lyricsStyle.fontSize * 1.42);
+    };
+    if (!line.words?.length) {
+        ctx.fillStyle = lyricsStyle.color;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        const width = ctx.measureText(line.text).width;
+        ctx.fillText(line.text, lyricsRect.x + Math.max(0, (lyricsRect.width - width) / 2), lyricsRect.y);
+        drawTranslation();
+        ctx.restore();
+        return;
+    }
+    const widths = line.words.map(word => ctx.measureText(word.text).width);
+    const spaces = ctx.measureText(' ').width;
+    const totalWidth = widths.reduce((sum, width) => sum + width, 0) + spaces * (widths.length - 1);
+    let x = lyricsRect.x + Math.max(0, (lyricsRect.width - totalWidth) / 2);
+    for (let i = 0; i < line.words.length; i++) {
+        const word = line.words[i];
+        const active = time >= word.start && time < word.end;
+        ctx.fillStyle = active ? lyricsStyle.color : 'rgba(255, 255, 255, 0.52)';
+        ctx.shadowColor = active
+            ? getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim() || 'rgba(129, 140, 248, 0.35)'
+            : 'rgba(0, 0, 0, 0.5)';
+        ctx.fillText(word.text, x, lyricsRect.y);
+        x += widths[i] + spaces;
+    }
+    drawTranslation();
+    ctx.restore();
 }
 
 async function setupExportLayers() {
@@ -447,6 +521,7 @@ async function refreshBase() {
                 if (!node) return true;
                 if (node.id === 'vinyl' || node.id === 'tonearm') return false;
                 if (node.classList && node.classList.contains('vinyl-sheen')) return false;
+                if (hasTimedWords() && node.classList && node.classList.contains('vinyl-lyrics-text')) return false;
                 return true;
             },
         });
@@ -462,6 +537,7 @@ function drawFrame() {
 
     // 1) Base: frame bg, header, meta, lyrics, progress, controls.
     ctx.drawImage(cachedBase, 0, 0, canvasW, canvasH);
+    drawKaraokeLyrics(exportAudio?.currentTime || 0);
 
     // 2) Vinyl drop shadow. CSS `box-shadow: 0 24px 80px rgba(0,0,0,0.6)` —
     // gets cropped when we capture vinyl alone, so re-create it here.
@@ -496,6 +572,27 @@ function drawFrame() {
             vinylRect.width,
             vinylRect.height
         );
+        ctx.restore();
+    }
+
+    // Optional FFT ring: intentionally cheap enough for the per-frame path.
+    if (state.visualizerEnabled && analyser && spectrum && vinylRect) {
+        analyser.getByteFrequencyData(spectrum);
+        const cx = vinylRect.x + vinylRect.width / 2;
+        const cy = vinylRect.y + vinylRect.height / 2;
+        const base = vinylRect.width * 0.53;
+        ctx.save();
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#818cf8';
+        ctx.lineWidth = Math.max(2, canvasScale * 2);
+        for (let i = 0; i < spectrum.length; i++) {
+            const angle = (i / spectrum.length) * Math.PI * 2 - Math.PI / 2;
+            const length = (spectrum[i] / 255) * vinylRect.width * 0.08;
+            ctx.globalAlpha = 0.25 + (spectrum[i] / 255) * 0.65;
+            ctx.beginPath();
+            ctx.moveTo(cx + Math.cos(angle) * base, cy + Math.sin(angle) * base);
+            ctx.lineTo(cx + Math.cos(angle) * (base + length), cy + Math.sin(angle) * (base + length));
+            ctx.stroke();
+        }
         ctx.restore();
     }
 
@@ -544,7 +641,7 @@ function renderLoop() {
 // Recording orchestrator
 // ──────────────────────────────────────────────────────────────────
 
-async function startVideoRecording({ audioFile, songTitle }) {
+async function startVideoRecording({ audioFile, songTitle, rangeStart = 0, rangeEnd = null }) {
     if (state.isExporting) return;
     state.isExporting = true;
     finalized = false;
@@ -600,12 +697,21 @@ async function startVideoRecording({ audioFile, songTitle }) {
         }
 
         const source = audioCtx.createMediaElementSource(exportAudio);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 128;
+        spectrum = new Uint8Array(analyser.frequencyBinCount);
         const destination = audioCtx.createMediaStreamDestination();
-        source.connect(destination);
+        source.connect(analyser);
+        analyser.connect(destination);
 
         if (!isFinite(exportAudio.duration) || exportAudio.duration <= 0) {
             throw new Error('Audio has no valid duration. Try re-encoding the file.');
         }
+
+        const startTime = Math.min(Math.max(rangeStart, 0), exportAudio.duration - 0.01);
+        exportEndTime = rangeEnd === null ? exportAudio.duration : Math.min(rangeEnd, exportAudio.duration);
+        if (exportEndTime <= startTime) throw new Error('Export segment is outside this audio file.');
+        exportAudio.currentTime = startTime;
 
         // Now that we know the real length, replace the init safety net with a
         // duration-based cap so long songs aren't cut off by a fixed timeout.
@@ -721,10 +827,10 @@ async function startVideoRecording({ audioFile, songTitle }) {
 
             // Setup owns 0–5%; recording sweeps the remaining 5→99 linearly with
             // the audio, so the fill never jumps — 100 lands on finalize ('Done.').
-            const progress = Math.min(5 + (elapsed / duration) * 94, 99);
+            const progress = Math.min(5 + ((elapsed - startTime) / (exportEndTime - startTime)) * 94, 99);
             emit(Events.EXPORT_PROGRESS, { progress, message: `Recording… ${Math.round(progress)}%` });
 
-            if (elapsed >= duration - 0.05) {
+            if (elapsed >= exportEndTime - 0.05) {
                 clearInterval(progressInterval);
                 progressInterval = null;
                 stopRecording();
@@ -854,7 +960,7 @@ function bindBrowserSupportModal() {
 export function initExport() {
     bindBrowserSupportModal();
 
-    on(Events.EXPORT_REQUESTED, ({ audioFile, songTitle, artistName }) => {
+    on(Events.EXPORT_REQUESTED, ({ audioFile, songTitle, artistName, rangeStart, rangeEnd }) => {
         if (state.isExporting) return;
         if (!window.MediaRecorder) {
             emit(Events.EXPORT_ERROR,
@@ -866,7 +972,7 @@ export function initExport() {
         if (songTitle) document.querySelector('.vinyl-song-title').textContent = songTitle;
         if (artistName) document.querySelector('.vinyl-artist-name').textContent = artistName;
 
-        startVideoRecording({ audioFile, songTitle });
+        startVideoRecording({ audioFile, songTitle, rangeStart, rangeEnd });
     });
 
     on(Events.DEBUG_BROWSER_SUPPORT, debugBrowserSupport);

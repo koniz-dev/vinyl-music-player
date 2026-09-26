@@ -22,7 +22,7 @@
 
 // Pinned: v4 changed APIs; 3.8.1 is the last v3 release.
 const TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/transformers.min.js';
-const MODEL_ID = 'onnx-community/whisper-tiny';
+let activeModel = null;
 
 // transformers.js and ONNX Runtime log benign internals (chunked downloads
 // without content-length, Windows powerPreference, shape ops assigned to
@@ -52,8 +52,10 @@ for (const method of ['warn', 'error', 'log']) {
 
 let asrPromise = null;
 
-function getPipeline() {
-    if (asrPromise) return asrPromise;
+function getPipeline(model = 'tiny') {
+    const modelId = model === 'small' ? 'onnx-community/whisper-small' : 'onnx-community/whisper-tiny';
+    if (asrPromise && activeModel === modelId) return asrPromise;
+    activeModel = modelId;
 
     asrPromise = (async () => {
         const { pipeline, env } = await import(TRANSFORMERS_CDN);
@@ -97,7 +99,7 @@ function getPipeline() {
         let lastError = null;
         for (const opts of attempts) {
             try {
-                const asr = await pipeline('automatic-speech-recognition', MODEL_ID, {
+                const asr = await pipeline('automatic-speech-recognition', modelId, {
                     ...opts,
                     progress_callback,
                 });
@@ -116,11 +118,11 @@ function getPipeline() {
 }
 
 self.onmessage = async (event) => {
-    const { type, audio, timestamps, language } = event.data || {};
+    const { type, audio, timestamps, language, model } = event.data || {};
     if (type !== 'transcribe') return;
 
     try {
-        const asr = await getPipeline();
+        const asr = await getPipeline(model);
         self.postMessage({ type: 'progress', stage: 'transcribe' });
 
         // >30s audio needs chunking; the 5s stride lets Whisper stitch

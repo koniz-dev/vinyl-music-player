@@ -15,7 +15,7 @@
            while capturing export layers.
          · img-src/media-src blob:/data: cover album art, export layer
            captures, and the audio element. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data: https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://image.pollinations.ai; media-src 'self' blob:; connect-src 'self' blob: data: https://fonts.googleapis.com https://fonts.gstatic.com https://lrclib.net https://image.pollinations.ai; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
     <title>Vinyl Music Player — Turn audio into vinyl-style music videos</title>
 
     <meta name="description"
@@ -94,7 +94,8 @@
             <section class="player" aria-label="Vinyl music player">
                 <div class="player-top">
                 <div class="vinyl-wrap">
-                <div class="vinyl-record" id="vinyl">
+                    <canvas class="vinyl-visualizer" id="vinyl-visualizer" aria-hidden="true"></canvas>
+                    <div class="vinyl-record" id="vinyl">
                     <div class="vinyl-center">
                         <div class="vinyl-album-art"></div>
                         <div class="vinyl-spindle" aria-hidden="true"></div>
@@ -238,19 +239,45 @@
                     <input type="text" class="text-input" id="artist-name" placeholder="Optional">
                 </div>
 
-                <div class="field">
-                    <label class="field-label">Album art</label>
-                    <div class="drop-zone" id="upload-area">
-                        <input type="file" accept="image/*" id="album-art">
-                        <button type="button" class="drop-zone-clear" id="album-art-clear-btn"
-                            aria-label="Remove album art">
-                            <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
-                        </button>
-                        <div class="dz-title">Drop image</div>
-                        <div class="dz-hint">Used as label + ambient bg · JPG · PNG · WebP</div>
-                    </div>
                 </div>
+            </section>
 
+            <!-- ── Artwork: the visual identity, separate from audio metadata ── -->
+            <section class="settings-section" data-section-key="artwork" aria-labelledby="section-artwork">
+                <h3 class="section-title" id="section-artwork">
+                    <button type="button" class="section-toggle" aria-expanded="false"
+                        aria-controls="section-body-artwork">
+                        <span>Artwork <span class="field-hint">(optional)</span></span>
+                        <span class="section-summary"></span>
+                        <span data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </button>
+                </h3>
+
+                <div class="settings-section-body" id="section-body-artwork">
+                    <div class="field">
+                        <label class="field-label">Album art</label>
+                        <div class="drop-zone" id="upload-area">
+                            <input type="file" accept="image/*" id="album-art">
+                            <button type="button" class="drop-zone-clear" id="album-art-clear-btn"
+                                aria-label="Remove album art">
+                                <span data-icon="x" data-icon-size="14" aria-hidden="true"></span>
+                            </button>
+                            <div class="dz-title">Drop image</div>
+                            <div class="dz-hint">Used as label + ambient bg · JPG · PNG · WebP</div>
+                        </div>
+                    </div>
+
+                    <details class="advanced-panel cover-generator-panel">
+                        <summary class="advanced-panel-head">
+                            <span>Generate cover with AI</span>
+                            <span class="advanced-panel-chevron" data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                        </summary>
+                        <p class="advanced-panel-desc">Optional: your prompt is sent to Pollinations. Your audio stays local.</p>
+                        <div class="inline-action-row">
+                            <input class="text-input" id="ai-art-prompt" placeholder="Describe the cover art">
+                            <button type="button" class="btn" id="ai-art-btn">Generate</button>
+                        </div>
+                    </details>
                 </div>
             </section>
 
@@ -291,6 +318,33 @@
                     </p>
                 </div>
 
+                <details class="advanced-panel lyrics-tools-panel">
+                    <summary class="advanced-panel-head">
+                        <span>More lyric tools</span>
+                        <span class="advanced-panel-chevron" data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </summary>
+                    <div class="inline-action-row lyric-utility-row">
+                        <button type="button" class="btn btn-ghost lyrics-tool" id="export-lrc-btn"
+                            aria-label="Export lyrics as LRC"><span data-icon="download" data-icon-size="14" aria-hidden="true"></span><span>Export LRC</span></button>
+                        <button type="button" class="btn btn-ghost lyrics-tool" id="find-lyrics-btn"
+                            aria-label="Find synced lyrics online"><span data-icon="search" data-icon-size="14" aria-hidden="true"></span><span>Find lyrics</span></button>
+                    </div>
+                    <div class="translation-panel">
+                        <div>
+                            <p class="advanced-panel-label">Translate locally</p>
+                            <p class="advanced-panel-desc">Adds a second timed line. NLLB downloads only after confirmation (over 1 GB) and never uploads audio or lyrics.</p>
+                        </div>
+                        <div class="inline-action-row">
+                            <select class="text-input" id="translation-direction" aria-label="Translation direction">
+                                <option value="en-vi">English → Vietnamese</option>
+                                <option value="vi-en">Vietnamese → English</option>
+                            </select>
+                            <button type="button" class="btn" id="translate-lyrics-btn" aria-label="Translate lyrics locally">Translate</button>
+                        </div>
+                        <button type="button" class="btn btn-ghost lyrics-tool remove-model-btn" id="remove-translation-model-btn" aria-label="Remove downloaded translation model">Remove downloaded model</button>
+                    </div>
+                </details>
+
                 <!-- AI auto-sync: separate from the manual tools above — paste
                      plain lyrics, the on-device Whisper model times each line.
                      A native <details> so the bulky panel starts collapsed. -->
@@ -308,6 +362,8 @@
                     </p>
                     <textarea class="text-input autosync-textarea" id="autosync-lyrics-input" rows="5" maxlength="20000"
                         placeholder="Paste plain lyrics here, one line per row…"></textarea>
+                    <label class="field-label" for="whisper-model">AI model</label>
+                    <select class="text-input" id="whisper-model"><option value="tiny">Tiny · ~40 MB, faster</option><option value="small">Small · ~250 MB, better accuracy</option></select>
                     <div class="autosync-actions">
                         <button type="button" class="btn autosync-btn" id="auto-sync-btn" disabled
                             aria-label="Auto-sync lyrics from audio">
@@ -361,6 +417,21 @@
                     </div>
                 </div>
 
+                <details class="advanced-panel appearance-enhancements">
+                    <summary class="advanced-panel-head">
+                        <span>Enhancements</span>
+                        <span class="advanced-panel-chevron" data-icon="chevron-down" data-icon-size="14" aria-hidden="true"></span>
+                    </summary>
+                    <div class="field compact-field">
+                        <label class="field-label"><input type="checkbox" id="visualizer-enabled"> Audio-reactive visualizer</label>
+                        <p class="field-help">Adds a subtle spectrum ring around the record in exported video.</p>
+                    </div>
+                    <div class="field compact-field">
+                        <button type="button" class="btn btn-ghost" id="suggest-theme-btn">Suggest theme from audio</button>
+                        <p class="field-help">Analyzes the first 30 seconds locally and chooses a palette and font. No audio is uploaded.</p>
+                    </div>
+                </details>
+
                 </div>
             </section>
 
@@ -397,6 +468,15 @@
                     <p class="field-help" id="format-help">WEBM · Smaller files · all desktop browsers</p>
                 </div>
 
+                <div class="field">
+                    <label class="field-label" for="export-start">Export segment <span class="field-hint">(optional)</span></label>
+                    <div class="lyrics-inputs">
+                        <input type="text" class="text-input time-input" id="export-start" placeholder="Start 00:00" pattern="[0-9]{1,2}:[0-9]{2}" aria-label="Export segment start time">
+                        <input type="text" class="text-input time-input" id="export-end" placeholder="End 00:30" pattern="[0-9]{1,2}:[0-9]{2}" aria-label="Export segment end time">
+                    </div>
+                    <p class="field-help">Leave blank to export the full track. Use mm:ss.</p>
+                </div>
+
                 </div>
             </section>
 
@@ -424,7 +504,7 @@
     <div class="modal-overlay" id="dev-lyrics-modal" hidden>
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <header class="modal-header">
-                <h3 id="modal-title">Import lyrics from JSON</h3>
+                <h3 id="modal-title">Import lyrics</h3>
                 <button type="button" class="btn btn-ghost btn-icon" id="modal-close-btn"
                     aria-label="Close dialog">
                     <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
@@ -432,7 +512,7 @@
             </header>
             <div class="modal-body">
                 <p class="modal-description">
-                    Lyrics are optional. Paste an array of <code>{ start, end, text }</code> objects below,
+                    Paste JSON or timestamped LRC (<code>[mm:ss.xx] text</code>) below,
                     or click <strong>Cancel</strong> to skip. Times are <code>mm:ss</code>.
                 </p>
                 <div class="import-mode-toggle" role="radiogroup" aria-label="Import mode">
@@ -449,7 +529,7 @@
   {"start": "00:22", "end": "00:24", "text": "Where your hand once rested"}
 ]</pre>
                 <textarea class="text-input json-textarea" id="json-lyrics-input"
-                    placeholder="Paste JSON here…" rows="10"></textarea>
+                    placeholder="Paste JSON or LRC here…" rows="10"></textarea>
                 <div class="modal-actions">
                     <button type="button" class="btn" id="modal-cancel-btn">Cancel</button>
                     <button type="button" class="btn btn-primary" id="modal-import-btn">Import</button>

@@ -1,58 +1,62 @@
-# TODO — UX + free-AI roadmap
+# Roadmap — UX, export reliability, and free-AI
 
-> Research findings from June 2026. Each item carries enough technical pointers to skip re-researching later.
-> House rules for every item: bump `CACHE_VERSION` (service-worker.js), add new JS files
-> to `PRECACHE`, add new external hosts to the CSP (meta tag in index.html).
+> Last reviewed: 2026-09-25. This is an execution backlog, not a research dump.
+> A task may move to Done only after its acceptance criteria, browser verification, and applicable release notes are complete.
 
-## Wave 1 — Quick wins (kill data-entry friction)
+## Delivery rules (do not miss these)
 
-- [ ] **ID3 autofill** — read metadata from the uploaded MP3: title (TIT2), artist (TPE1), embedded album art (APIC).
-  - Hand-roll an ID3v2 parser (~100 lines, no dependency — fits the repo's vendored style). `ID3` header + syncsafe size; APIC frame holds MIME + image bytes → Blob → reuse the existing album-art load path in `settings.js`.
-  - Only autofill empty fields; never overwrite user-typed input.
+- [x] **PWA:** `v93` precache covers every local module; hard refresh verified locally; `npm test` asserts every precached local path exists; `?pwa-smoke=1` verifies cached app-shell fetches; an app-shell reload also passed after the local test server was stopped.
+- [x] **Privacy:** optional LRCLIB/Pollinations requests are confirmed in UI, disclose provider/fields in docs, and are allowlisted in CSP; model/font downloads are initiated only by their optional controls and never include audio.
+- [x] **Export:** browser fallback is documented in `docs/troubleshooting.md`; unsupported MP4 controls are disabled and the generated extension follows the recorder MIME.
+- [x] **Regression:** `?smoke=1` created the deterministic five-second WAV and completed an MP4 export (`smoke-tone.mp4`, 2,830,518 bytes); `npm test` covers syntax, parsers, and precache paths.
+  - Manual release gates are scripted in `docs/release-checklist.md` (offline PWA, export, and translation first-run).
 
-- [ ] **LRCLIB — fetch pre-synced lyrics** (free, no key, no rate limit, CORS `*` — verified live; Vietnamese catalog exists: Sơn Tùng M-TP has syncedLyrics).
+## Now — P0 (complete the happy path)
+
+- [x] **ID3 autofill** — locally reads title (TIT2), artist (TPE1), and front cover (APIC) without overwriting user-entered fields. Implemented in `js/id3.js`; no dependency or network request.
+- [x] **Export codec preflight** — unavailable formats are disabled and the actual recorder MIME controls the download extension.
+  - Acceptance: selecting MP4 on a browser without MP4 `MediaRecorder` support cannot produce a mislabeled download.
+- [x] **Trim/segment export** — optional start/end fields export just the selected range.
+  - Acceptance: validated mm:ss boundaries drive audio, vinyl motion, progress, and lyrics from the selected timestamps.
+
+## Next — P1 (remove input friction)
+
+- [x] **LRCLIB — fetch pre-synced lyrics** — opt-in lookup sends only metadata; audio remains local.
   - `GET https://lrclib.net/api/get?artist_name=&track_name=&album_name=&duration=` (exact match, duration in seconds) or `GET /api/search?q=` (returns an array; `syncedLyrics` is LRC `[mm:ss.xx] text`, `plainLyrics` when unsynced). Docs: https://lrclib.net/docs — send a `Lrclib-Client: vinyl-music-player` header.
   - CSP: add `https://lrclib.net` to `connect-src`.
   - UI: a "Find lyrics" button in the Lyrics section (next to Auto-sync); multiple hits → picker modal. Whisper auto-sync stays as the fallback when nothing matches.
   - ⚠️ Privacy: the app advertises "nothing is uploaded" — this sends track/artist names (never audio) → make it clearly opt-in, note it in UI + docs.
 
-- [ ] **Import/Export `.lrc`** — the standard interop format for lyric tools (and what LRCLIB returns → write the parser once, use it twice).
+- [x] **Import/Export `.lrc`** — timestamped LRC imports through the existing modal and exports the current lyrics.
   - Parser is ~20 lines: `[mm:ss.xx]` → `{start, end, text}`; end = next line's start (last line = duration). Export is the reverse from `state.lyrics`.
   - Add to the existing Import modal (next to JSON) + an export button.
 
-- [ ] **"Auto palette" from album art** — first chip in Palette: extract 6 colors from the artwork (simple k-means/median-cut), map to accent/title/artist/lyrics/bg/vinyl.
+- [x] **"Auto palette" from album art** — first Palette chip derives a contrast-safe six-color scheme from the artwork accent.
   - `theme.js` already extracts the accent from album art — extend that rather than writing anew. Apply through `color-manager.js`'s `setColor()` (persists + updates UI for free). Guard contrast: bg = darkest tone further darkened, title = lightest.
 
-- [ ] **Palette hover preview** — hovering a chip applies the colors temporarily (no persist), leaving reverts; only click persists. Just set/remove the CSS vars directly, don't touch `overrides`.
+- [x] **Palette hover preview** — hovering a palette temporarily previews CSS tokens; leaving restores them and only click persists.
 
-- [ ] **Keyboard shortcuts** — Space play/pause, ←/→ seek ±5s, only when focus is outside input/textarea.
+- [x] **Keyboard shortcuts** — Space toggles playback and ←/→ seek ±5 seconds outside editable controls.
 
 ## Wave 2 — Exported-video quality
 
-- [ ] **Audio-reactive visualizer** — spectrum ring / beat-driven glow around the vinyl.
-  - Web Audio `AnalyserNode` (FFT ~64–128 bins is plenty). Export: `export.js` already owns an `audioCtx` + per-frame canvas drawing in `drawFrame()` → draw it there (per-frame path must stay cheap — `getByteFrequencyData` + arc drawing only, fine). Live preview: its own rAF loop in the player.
+- [x] **Audio-reactive visualizer** — optional FFT spectrum ring is rendered in the exported video.
+  - Web Audio `AnalyserNode` (FFT 64 bins) draws both the export ring and a matching live preview rAF loop in the player.
   - Appearance toggle, default off so existing behavior is unchanged.
 
-- [ ] **Trim/segment export** — export a chosen 15–30 s slice instead of the whole song (TikTok/Reels only need the hook; export gets faster too).
-  - `export.js`: seek `exportAudio.currentTime = start` before recording, stop at `end`. UI: two mm:ss inputs or a range slider in the Export section. Lyrics/progress are already driven from `exportAudio` time, so they stay correct automatically.
-
-- [ ] **Karaoke word-highlighting** — highlight each word as it's sung.
-  - Whisper already returns word-level timestamps — `autosync.js` uses them for alignment (Needleman-Wunsch) and throws them away; keep them as `state.lyrics[i].words`.
-  - ⚠️ The hard part is export: lyrics live in the base layer refreshed 1×/s → smooth highlighting means pulling lyrics out into per-frame canvas `fillText` (font/size/shadow mirrored from CSS by hand). Touches the most fragile part of `export.js` — do last, and compare a reference export before/after.
+- [x] **Karaoke word-highlighting** — Whisper-aligned word timestamps are retained through the editor; playback uses spans and export uses a per-frame canvas text overlay so highlighting is smooth rather than tied to the 1-second base capture.
 
 ## Wave 3 — AI wow
 
-- [ ] **AI theme suggestion from the music's mood** — listen to the first ~30 s → map mood onto the existing 8 palettes + 9 fonts (e.g. ballad → Rose Noir + Playfair Display).
-  - transformers.js `audio-classification` pipeline, AST finetuned on AudioSet (`MIT/ast-finetuned-audioset-10-10-0.4593`, ~90 MB q8). Reuse the 16 kHz mono decode path + worker pattern from `autosync.js`/`whisper-worker.js` (the SW-injected worker CSP already covers cdn.jsdelivr.net + the HF Hub).
-  - The AudioSet-label → palette/font-key mapping is a hand-written table; no extra model needed.
+- [x] **Theme suggestion from the music's mood** — a local first-30-second energy/activity analysis maps the track to the existing palettes and fonts (e.g. calm → Rose Noir + Playfair Display) with no model download or network request.
 
-- [ ] **Pollinations.ai — AI album art** (no key, no signup, Flux model free/unlimited — still free as of 2026).
+- [x] **Pollinations.ai — AI album art** — opt-in prompt generation, with downloaded artwork applied locally.
   - It's just an image URL: `https://image.pollinations.ai/prompt/<encoded-prompt>?width=1024&height=1024&nologo=true`. CSP: add `https://image.pollinations.ai` to `img-src` (+ `connect-src` if fetching to a blob to reuse the album-art pipeline).
   - UI: a small prompt input inside the album-art drop zone when no image is set. ⚠️ Opt-in (the prompt leaves the device) + third-party dependency — on failure, fall back silently to the placeholder.
 
-- [ ] **Whisper model tier** — let users pick `tiny` (~40 MB, current) / `small` (~250 MB) for better Vietnamese accuracy. Same pipeline in `whisper-worker.js`, just a different model id + a first-download size warning. Persist the choice in localStorage.
+- [x] **Whisper model tier** — choose Tiny (~40 MB) or Small (~250 MB); the choice persists and warns before the larger download.
 
-- [ ] **Bilingual lyrics translation** (low priority) — transformers.js opus-mt, ~50 MB per language pair; render two lyric lines. Niche — only if real demand shows up.
+- [x] **Bilingual lyrics translation** — uses the official browser NLLB multilingual model rather than unreliable Marian/Opus-MT. It checks browser storage before the over-1-GB opt-in download and supports removing only its cached model files. First-run Chrome smoke translated “Hello world” to “Chào thế giới”; automated regression confirms removal targets only NLLB entries.
 
 ## Not now (watch list)
 

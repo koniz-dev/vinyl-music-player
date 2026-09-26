@@ -6,11 +6,11 @@ const backdrop = document.getElementById('drawer-backdrop');
 const openBtn = document.getElementById('open-settings-btn');
 const closeBtn = document.getElementById('close-settings-btn');
 
-/* Collapsible sections — the workflow is linear (song → lyrics → style →
-   export), so only the first step starts open; the rest is one click away.
-   Open/closed state persists so returning users keep their layout. */
-const SECTIONS_KEY = 'settingsSections';
-const SECTION_DEFAULTS = { song: true, lyrics: false, appearance: false, export: false };
+/* Collapsible sections — only the required first step opens initially. The
+   rest is progressive disclosure; once a user chooses a layout, keep it.
+   V2 intentionally resets the old mixed defaults from the previous layout. */
+const SECTIONS_KEY = 'settingsSectionsV2';
+const SECTION_DEFAULTS = { song: true, artwork: false, lyrics: false, appearance: false, export: false };
 
 function loadSectionState() {
     try {
@@ -30,6 +30,11 @@ const SUMMARIZERS = {
         const zone = document.getElementById('audio-upload-area');
         if (!zone || zone.dataset.loaded !== 'true') return '';
         return zone.querySelector('.dz-title')?.textContent.trim() || '';
+    },
+    artwork() {
+        const zone = document.getElementById('upload-area');
+        if (!zone || zone.dataset.loaded !== 'true') return '';
+        return zone.querySelector('.dz-title')?.textContent.trim() || 'Album art';
     },
     lyrics() {
         const n = document.querySelectorAll('#lyrics-container .lyrics-item').length;

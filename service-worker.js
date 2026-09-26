@@ -1,5 +1,5 @@
 // Versioned cache — bump the suffix on every release to invalidate clients.
-const CACHE_VERSION = 'v68';
+const CACHE_VERSION = 'v93';
 const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
 
 const PRECACHE = [
@@ -13,9 +13,14 @@ const PRECACHE = [
     'js/main.js',
     'js/player.js',
     'js/settings.js',
+    'js/id3.js',
+    'js/lrc.js',
+    'js/lrclib.js',
+    'js/translate.js',
     'js/export.js',
     'js/autosync.js',
     'js/workers/whisper-worker.js',
+    'js/workers/translate-worker.js',
     'js/album-art.js',
     'js/color-manager.js',
     'js/font-manager.js',
@@ -63,15 +68,18 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-/* Workers take their CSP from the script *response* headers — which GitHub
- * Pages can't set — so the SW injects one when serving the Whisper worker.
+/* Model workers take their CSP from the script *response* headers — which GitHub
+ * Pages can't set — so the SW injects one when serving Whisper/translation workers.
  * It locks the worker to the pinned CDN + model hosts: even a compromised
  * transformers.js build couldn't exfiltrate the user's audio elsewhere.
  * ('wasm-unsafe-eval' lets ONNX Runtime compile its WebAssembly; *.hf.co
  * covers Hugging Face's Xet/LFS storage redirects.) The very first visit
  * runs before any SW controls the page and is therefore un-wrapped — every
  * later load gets the locked-down worker. */
-const WHISPER_WORKER_PATH = '/js/workers/whisper-worker.js';
+const MODEL_WORKER_PATHS = [
+    '/js/workers/whisper-worker.js',
+    '/js/workers/translate-worker.js',
+];
 const WORKER_CSP = [
     "default-src 'none'",
     "script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'",
@@ -97,7 +105,7 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(request.url);
     if (url.origin !== self.location.origin) return;
 
-    const isWhisperWorker = url.pathname.endsWith(WHISPER_WORKER_PATH);
+    const isModelWorker = MODEL_WORKER_PATHS.some(path => url.pathname.endsWith(path));
 
     // Stale-while-revalidate: serve cache fast, refresh in background.
     event.respondWith(
@@ -112,7 +120,7 @@ self.addEventListener('fetch', (event) => {
                 // instead of resolving to undefined (which throws in respondWith).
                 .catch(() => cached || Response.error());
             const response = await (cached || networkPromise);
-            return isWhisperWorker ? withWorkerCsp(response) : response;
+            return isModelWorker ? withWorkerCsp(response) : response;
         })
     );
 });
