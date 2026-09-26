@@ -282,11 +282,15 @@
 .inline-action-row {
     display: flex;
     align-items: center;
-    gap: var(--s-2);
+    gap: var(--s-3);
 }
 
 .inline-action-row > .text-input,
 .inline-action-row > select { min-width: 0; flex: 1; }
+
+/* Select controls and their action buttons need a deliberate visual break;
+   the browser's select edge otherwise reads as fused to the button. */
+.inline-action-row > select + .btn { margin-left: 2px; }
 
 .cover-generator-panel { margin-top: calc(-1 * var(--s-1)); }
 .lyrics-tools-panel { margin-top: calc(-1 * var(--s-1)); }

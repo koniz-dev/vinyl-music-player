@@ -633,12 +633,27 @@
         <div class="tour-spotlight" id="tour-spotlight" aria-hidden="true"></div>
         <section class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-title"
             aria-describedby="tour-description">
-            <p class="tour-progress" id="tour-progress"></p>
-            <h3 id="tour-title"></h3>
-            <p id="tour-description"></p>
-            <div class="tour-actions">
-                <button type="button" class="btn btn-ghost" id="tour-skip-btn">Skip</button>
-                <button type="button" class="btn btn-primary" id="tour-next-btn">Next</button>
+            <div id="tour-menu">
+                <p class="tour-progress">Choose a walkthrough</p>
+                <h3 id="tour-title">Learn one part at a time</h3>
+                <p id="tour-description">Each guide highlights the exact controls to click. You can run another part later.</p>
+                <div class="tour-menu-options">
+                    <button type="button" data-tour-group="basics"><strong>Basics</strong><span>3 steps · audio and names</span></button>
+                    <button type="button" data-tour-group="artwork"><strong>Artwork</strong><span>3 steps · image and AI cover</span></button>
+                    <button type="button" data-tour-group="lyrics"><strong>Lyrics</strong><span>10 steps · add, sync, find, translate</span></button>
+                    <button type="button" data-tour-group="appearance"><strong>Appearance</strong><span>7 steps · colors, type, enhancements</span></button>
+                    <button type="button" data-tour-group="export"><strong>Export</strong><span>5 steps · ratio, format, download</span></button>
+                </div>
+                <div class="tour-actions"><button type="button" class="btn btn-ghost" id="tour-skip-btn">Close</button></div>
+            </div>
+            <div id="tour-step" hidden>
+                <p class="tour-progress" id="tour-progress"></p>
+                <h3 id="tour-step-title"></h3>
+                <p id="tour-step-description"></p>
+                <div class="tour-actions">
+                    <button type="button" class="btn btn-ghost" id="tour-step-skip-btn">Skip</button>
+                    <button type="button" class="btn btn-primary" id="tour-next-btn">Next</button>
+                </div>
             </div>
         </section>
     </div>
