@@ -95,7 +95,7 @@ export function initTour() {
             progress.textContent = `${index + 1} / ${steps.length}`;
             next.textContent = index === steps.length - 1 ? 'Finish' : 'Next';
             target?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
-            requestAnimationFrame(() => { position(); next.focus({ preventScroll: true }); });
+            requestAnimationFrame(() => { position(); card.focus({ preventScroll: true }); });
         });
     };
 

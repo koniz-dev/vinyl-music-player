@@ -80,12 +80,12 @@
     --font-player: var(--font-sans);
 }
 
-/* Workspace theme. The video palette remains configurable in Appearance;
-   these tokens give the surrounding app a comfortable light alternative. */
+/* Workspace theme. The video frame resets its own neutral tokens below, so
+   this preference never leaks into a captured/exported video. */
 :root[data-ui-theme="light"] {
     --bg-0: #f6f6f8;
     --bg-1: #ffffff;
-    --bg-2: #eeeeF2;
+    --bg-2: #eeeef2;
     --bg-3: #dedee5;
     --bg-4: #c5c5cf;
     --fg-0: #18181b;

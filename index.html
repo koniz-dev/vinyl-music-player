@@ -75,13 +75,13 @@
     <header class="topbar">
         <div class="topbar-actions topbar-actions-left">
             <div class="global-theme-toggle" role="radiogroup" aria-label="App theme">
-                <button type="button" data-ui-theme="system" aria-pressed="true" title="Use system theme">
+                <button type="button" role="radio" data-ui-theme="system" aria-checked="true" tabindex="0" title="Use system theme">
                     <span data-icon="monitor" data-icon-size="15" aria-hidden="true"></span><span>System</span>
                 </button>
-                <button type="button" data-ui-theme="dark" aria-pressed="false" title="Use dark theme">
+                <button type="button" role="radio" data-ui-theme="dark" aria-checked="false" tabindex="-1" title="Use dark theme">
                     <span data-icon="moon" data-icon-size="15" aria-hidden="true"></span><span>Dark</span>
                 </button>
-                <button type="button" data-ui-theme="light" aria-pressed="false" title="Use light theme">
+                <button type="button" role="radio" data-ui-theme="light" aria-checked="false" tabindex="-1" title="Use light theme">
                     <span data-icon="sun" data-icon-size="15" aria-hidden="true"></span><span>Light</span>
                 </button>
             </div>
@@ -105,7 +105,6 @@
                     <div class="vinyl-record" id="vinyl">
                     <div class="vinyl-center">
                         <div class="vinyl-album-art"></div>
-                        <div class="vinyl-spindle" aria-hidden="true"></div>
                     </div>
                 </div>
                 <div class="vinyl-sheen" aria-hidden="true"></div>
@@ -597,72 +596,11 @@
         </div>
     </div>
 
-    <!-- ─── Help and feature guide ───────────────────────────────── -->
-
-    <div class="modal-overlay guide-modal" id="guide-modal" hidden>
-        <aside class="modal-content guide-content" aria-labelledby="guide-title">
-            <header class="modal-header">
-                <div>
-                    <p class="guide-kicker">Help &amp; guide</p>
-                    <h3 id="guide-title">What do you want to make?</h3>
-                </div>
-                <button type="button" class="btn btn-ghost btn-icon" id="guide-close-btn" aria-label="Close guide">
-                    <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
-                </button>
-            </header>
-            <div class="modal-body guide-body">
-                <p class="modal-description">Start with one recipe, or open a group below to see every tool and its privacy or download requirements.</p>
-
-                <div class="guide-recipes" aria-label="Guided recipes">
-                    <button type="button" class="guide-recipe" data-guide-target="song:#audio-upload-area">
-                        <strong>Quick video</strong><span>Add audio → title/artist → Export. The shortest path.</span>
-                    </button>
-                    <button type="button" class="guide-recipe" data-guide-target="lyrics:.lyrics-toolbar">
-                        <strong>Lyrics video</strong><span>Add, import, find, or auto-sync lyrics, then export.</span>
-                    </button>
-                    <button type="button" class="guide-recipe" data-guide-target="appearance:#palette-list">
-                        <strong>Custom visual</strong><span>Artwork, colors, font, visualizer, and audio-based theme.</span>
-                    </button>
-                </div>
-
-                <details class="guide-group" open>
-                    <summary>Core workflow</summary>
-                    <div class="guide-feature-list">
-                        <article><div><strong>Audio, title &amp; artist</strong><p>Drop MP3, WAV, OGG, M4A, or AAC. Title, artist, and embedded cover can be filled from the file’s ID3 metadata.</p></div><button type="button" class="btn btn-ghost" data-guide-target="song:#audio-upload-area">Show me</button></article>
-                        <article><div><strong>Playback controls</strong><p>Preview the finished look while listening. Space plays/pauses; left and right arrow keys seek 5 seconds when you are not typing.</p></div><button type="button" class="btn btn-ghost" data-guide-target="song:#audio-upload-area">Show song</button></article>
-                        <article><div><strong>Export</strong><p>Set aspect ratio, MP4/WebM when supported, and an optional mm:ss segment. Export stays on your device.</p></div><button type="button" class="btn btn-ghost" data-guide-target="export:.ratio-toggle">Show me</button></article>
-                        <article><div><strong>Offline &amp; browser support</strong><p>The app is installable and works offline after its first load. Use the info button beside Settings to check the export formats your browser supports.</p></div></article>
-                    </div>
-                </details>
-
-                <details class="guide-group">
-                    <summary>Lyrics</summary>
-                    <div class="guide-feature-list">
-                        <article><div><strong>Manual lines and import</strong><p>Add timed lines one by one, or import JSON/LRC. Export LRC later from More lyric tools.</p></div><button type="button" class="btn btn-ghost" data-guide-target="lyrics:.lyrics-toolbar">Show me</button></article>
-                        <article><div><strong>Auto-sync with AI</strong><p>Paste plain lyrics one line per row, choose Tiny (~40 MB) or Small (~250 MB), and run Whisper locally. Leave it blank to transcribe from scratch.</p></div><button type="button" class="btn btn-ghost" data-guide-target="lyrics:.autosync-panel" data-guide-details=".autosync-panel">Show me</button></article>
-                        <article><div><strong>Find, translate &amp; export lyrics</strong><p>Find lyrics sends only track metadata to LRCLIB after confirmation. Translation is local but downloads NLLB (over 1 GB) after confirmation; you can remove it here.</p></div><button type="button" class="btn btn-ghost" data-guide-target="lyrics:.lyrics-tools-panel" data-guide-details=".lyrics-tools-panel">Show me</button></article>
-                    </div>
-                </details>
-
-                <details class="guide-group">
-                    <summary>Artwork &amp; appearance</summary>
-                    <div class="guide-feature-list">
-                        <article><div><strong>Album artwork</strong><p>Upload an image for the record label and ambient background. Generate cover sends only your prompt to Pollinations after confirmation.</p></div><button type="button" class="btn btn-ghost" data-guide-target="artwork:#upload-area">Show me</button></article>
-                        <article><div><strong>Palette, colors &amp; font</strong><p>Choose a palette or customize individual colors; the first palette can derive colors from your album art. Pick a font for song text and lyrics.</p></div><button type="button" class="btn btn-ghost" data-guide-target="appearance:#palette-list">Show me</button></article>
-                        <article><div><strong>Enhancements</strong><p>Add an export-only audio-reactive visualizer or ask the app to suggest a palette and font from the first 30 seconds of audio. Both stay local.</p></div><button type="button" class="btn btn-ghost" data-guide-target="appearance:.appearance-enhancements" data-guide-details=".appearance-enhancements">Show me</button></article>
-                    </div>
-                </details>
-
-                <p class="guide-privacy-note"><strong>Privacy at a glance:</strong> audio, lyrics, preview, AI timing, translation, and export remain in this browser. Only the explicitly confirmed LRCLIB metadata lookup and Pollinations cover prompt leave your device; optional model and font files download from their stated providers.</p>
-            </div>
-        </aside>
-    </div>
-
     <!-- ─── Interactive feature walkthrough ─────────────────────── -->
 
     <div class="tour-overlay" id="tour-overlay" hidden>
         <div class="tour-spotlight" id="tour-spotlight" aria-hidden="true"></div>
-        <section class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-title"
+        <section class="tour-card" role="region" tabindex="-1" aria-live="polite" aria-labelledby="tour-title"
             aria-describedby="tour-description">
             <p class="tour-progress" id="tour-progress"></p>
             <h3 id="tour-title"></h3>

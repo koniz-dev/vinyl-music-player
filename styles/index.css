@@ -54,7 +54,7 @@
     font-size: 11px;
 }
 
-.global-theme-toggle button[aria-pressed="true"] {
+.global-theme-toggle button[aria-checked="true"] {
     background: var(--bg-3);
     color: var(--fg-0);
     box-shadow: var(--shadow-sm);
@@ -71,6 +71,24 @@
 }
 
 .frame {
+    /* Video-canvas tokens stay independent from the global app theme.
+       Appearance still controls --color-* and accent palette values. */
+    --bg-0: #09090b;
+    --bg-1: #0e0e10;
+    --bg-2: #18181b;
+    --bg-3: #27272a;
+    --bg-4: #3f3f46;
+    --fg-0: #fafafa;
+    --fg-1: #e4e4e7;
+    --fg-2: #a1a1aa;
+    --fg-3: #71717a;
+    --fg-4: #52525b;
+    --border-1: rgba(255, 255, 255, 0.06);
+    --border-2: rgba(255, 255, 255, 0.10);
+    --border-3: rgba(255, 255, 255, 0.16);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
     --ratio-w: 9;
     --ratio-h: 16;
     position: relative;
@@ -258,30 +276,6 @@
 .tour-card > p:not(.tour-progress) { margin-top: var(--s-1); color: var(--fg-2); font-size: 12px; line-height: 1.5; }
 .tour-actions { display: flex; justify-content: space-between; margin-top: var(--s-3); }
 
-.tour-menu-options {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--s-2);
-    margin-top: var(--s-3);
-}
-
-.tour-menu-options button {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--s-2);
-    width: 100%;
-    padding: var(--s-2) var(--s-3);
-    border: 1px solid var(--border-2);
-    border-radius: var(--r-sm);
-    color: var(--fg-1);
-    text-align: left;
-}
-
-.tour-menu-options button:hover { border-color: var(--accent); background: var(--accent-soft); }
-.tour-menu-options strong { color: var(--fg-0); font-size: 12px; }
-.tour-menu-options span { color: var(--fg-3); font-size: 10px; }
-
 .drawer-body {
     flex: 1;
     overflow-y: auto;
@@ -291,6 +285,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--s-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tour-spotlight { transition: none; }
 }
 
 /* ─── Mono helper ───────────────────────────────────────────────── */

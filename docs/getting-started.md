@@ -16,7 +16,7 @@ npm install
 npm run dev
 ```
 
-`npm run dev` starts [http-server](https://www.npmjs.com/package/http-server) on port 3000 with cache disabled and opens your default browser at `http://localhost:3000`.
+`npm run dev` starts [http-server](https://www.npmjs.com/package/http-server) on local-only port 3000 with cache disabled and opens your default browser at `http://localhost:3000`.
 
 Want the app without keeping a terminal occupied? Run `npm run app`. It starts the same local server in the background and opens the browser, then returns immediately. Use `npm run app:stop` when you want to stop it.
 
