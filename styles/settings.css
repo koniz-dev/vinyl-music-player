@@ -77,6 +77,145 @@
     gap: var(--s-4);
 }
 
+/* ─── First-run orientation + help guide ────────────────────────── */
+
+.getting-started {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-4);
+    background: linear-gradient(135deg, var(--accent-soft), var(--bg-2) 62%);
+    border: 1px solid var(--border-2);
+    border-color: color-mix(in srgb, var(--accent) 34%, var(--border-2));
+    border-radius: var(--r-md);
+}
+
+.getting-started-kicker,
+.guide-kicker {
+    color: var(--accent-hi);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.getting-started h4 {
+    color: var(--fg-0);
+    font-size: 15px;
+}
+
+.getting-started > p:not(.getting-started-kicker) {
+    color: var(--fg-2);
+    font-size: 12px;
+}
+
+.getting-started-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    list-style: none;
+    counter-reset: start;
+}
+
+.getting-started-steps li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-2);
+    color: var(--fg-1);
+    font-size: 12px;
+}
+
+.getting-started-steps span {
+    flex: none;
+    color: var(--fg-3);
+    font-size: 11px;
+}
+
+.getting-started-help {
+    align-self: flex-start;
+    margin-top: var(--s-1);
+    padding: 5px 0;
+    color: var(--accent-hi);
+    font-size: 12px;
+}
+
+.guide-content { width: min(650px, 100%); }
+.guide-content .modal-header { align-items: flex-start; }
+.guide-kicker { margin-bottom: 2px; }
+.guide-body { gap: var(--s-4); }
+
+.guide-recipes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s-2);
+}
+
+.guide-recipe {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-1);
+    min-height: 104px;
+    padding: var(--s-3);
+    border: 1px solid var(--border-2);
+    border-radius: var(--r-md);
+    background: var(--bg-2);
+    text-align: left;
+    transition: border-color var(--dur), background var(--dur);
+}
+
+.guide-recipe:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.guide-recipe strong { color: var(--fg-0); font-size: 13px; }
+.guide-recipe span { color: var(--fg-3); font-size: 11px; line-height: 1.45; }
+
+.guide-group {
+    border-top: 1px solid var(--border-1);
+    padding-top: var(--s-3);
+}
+
+.guide-group > summary {
+    color: var(--fg-1);
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.guide-feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    margin-top: var(--s-3);
+}
+
+.guide-feature-list article {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--s-3);
+}
+
+.guide-feature-list strong { color: var(--fg-1); font-size: 12px; }
+.guide-feature-list p { margin-top: 2px; color: var(--fg-3); font-size: 11px; line-height: 1.5; }
+.guide-feature-list .btn { flex: none; padding: 5px 8px; color: var(--accent-hi); font-size: 11px; }
+
+.guide-privacy-note {
+    padding: var(--s-3);
+    border-radius: var(--r-sm);
+    background: var(--bg-2);
+    color: var(--fg-2);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+    .guide-recipes { grid-template-columns: 1fr; }
+    .guide-recipe { min-height: 0; }
+}
+
 /* ─── Lyrics editor ─────────────────────────────────────────────── */
 
 /* Action row at the top of the section body — tucked toward the list it

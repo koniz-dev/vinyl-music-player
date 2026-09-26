@@ -147,6 +147,25 @@ function setOpen(open) {
     document.body.style.overflow = '';
 }
 
+/* Used by the in-app guide. This follows the same accordion path as a person
+   tapping the header, so aria state, summaries, persistence and scrolling all
+   remain owned by this module. */
+export function revealSettingsSection(key, selector) {
+    setOpen(true);
+    const section = drawer.querySelector(`.settings-section[data-section-key="${key}"]`);
+    if (!section) return;
+    if (section.dataset.collapsed === 'true') section.querySelector('.section-toggle')?.click();
+
+    requestAnimationFrame(() => {
+        const target = selector ? section.querySelector(selector) : section.querySelector('.section-toggle');
+        target?.scrollIntoView({
+            behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            block: 'center',
+        });
+        target?.focus?.({ preventScroll: true });
+    });
+}
+
 function syncToViewport() {
     setOpen(isDesktop());
 }
