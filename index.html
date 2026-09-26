@@ -192,10 +192,16 @@
     <aside class="drawer" id="settings-drawer" aria-label="Settings" inert>
         <header class="drawer-head">
             <h2>Settings</h2>
-            <button type="button" class="btn btn-ghost btn-icon" id="close-settings-btn"
-                aria-label="Close settings">
-                <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
-            </button>
+            <div class="drawer-head-actions">
+                <button type="button" class="btn btn-ghost btn-icon" id="debug-btn"
+                    aria-label="Check browser support" title="Check browser support">
+                    <span data-icon="info" data-icon-size="18" aria-hidden="true"></span>
+                </button>
+                <button type="button" class="btn btn-ghost btn-icon" id="close-settings-btn"
+                    aria-label="Close settings">
+                    <span data-icon="x" data-icon-size="20" aria-hidden="true"></span>
+                </button>
+            </div>
         </header>
 
         <form id="musicForm" class="drawer-body">
@@ -594,7 +600,7 @@
                         <article><div><strong>Audio, title &amp; artist</strong><p>Drop MP3, WAV, OGG, M4A, or AAC. Title, artist, and embedded cover can be filled from the file’s ID3 metadata.</p></div><button type="button" class="btn btn-ghost" data-guide-target="song:#audio-upload-area">Show me</button></article>
                         <article><div><strong>Playback controls</strong><p>Preview the finished look while listening. Space plays/pauses; left and right arrow keys seek 5 seconds when you are not typing.</p></div><button type="button" class="btn btn-ghost" data-guide-target="song:#audio-upload-area">Show song</button></article>
                         <article><div><strong>Export</strong><p>Set aspect ratio, MP4/WebM when supported, and an optional mm:ss segment. Export stays on your device.</p></div><button type="button" class="btn btn-ghost" data-guide-target="export:.ratio-toggle">Show me</button></article>
-                        <article><div><strong>Offline &amp; browser support</strong><p>The app is installable and works offline after its first load. Check the export formats your browser supports before choosing MP4 or WebM.</p></div><button type="button" class="btn btn-ghost" id="debug-btn">Check support</button></article>
+                        <article><div><strong>Offline &amp; browser support</strong><p>The app is installable and works offline after its first load. Use the info button beside Settings to check the export formats your browser supports.</p></div></article>
                     </div>
                 </details>
 
@@ -619,6 +625,22 @@
                 <p class="guide-privacy-note"><strong>Privacy at a glance:</strong> audio, lyrics, preview, AI timing, translation, and export remain in this browser. Only the explicitly confirmed LRCLIB metadata lookup and Pollinations cover prompt leave your device; optional model and font files download from their stated providers.</p>
             </div>
         </aside>
+    </div>
+
+    <!-- ─── Interactive feature walkthrough ─────────────────────── -->
+
+    <div class="tour-overlay" id="tour-overlay" hidden>
+        <div class="tour-spotlight" id="tour-spotlight" aria-hidden="true"></div>
+        <section class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-title"
+            aria-describedby="tour-description">
+            <p class="tour-progress" id="tour-progress"></p>
+            <h3 id="tour-title"></h3>
+            <p id="tour-description"></p>
+            <div class="tour-actions">
+                <button type="button" class="btn btn-ghost" id="tour-skip-btn">Skip</button>
+                <button type="button" class="btn btn-primary" id="tour-next-btn">Next</button>
+            </div>
+        </section>
     </div>
 
     <!-- ─── Toast container ─────────────────────────────────────── -->

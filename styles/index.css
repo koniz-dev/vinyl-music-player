@@ -185,6 +185,54 @@
     letter-spacing: -0.01em;
 }
 
+.drawer-head-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+}
+
+/* ─── Interactive walkthrough ──────────────────────────────────── */
+
+.tour-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+}
+
+/* A real hole rather than a full-screen card: the dimmed box-shadow makes
+   the next control obvious while leaving it visible and clickable. */
+.tour-spotlight {
+    position: fixed;
+    border: 2px solid var(--accent-hi);
+    border-radius: var(--r-md);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62), 0 0 28px var(--accent-glow);
+    transition: left var(--dur) var(--ease-out), top var(--dur) var(--ease-out), width var(--dur) var(--ease-out), height var(--dur) var(--ease-out);
+}
+
+.tour-card {
+    position: fixed;
+    z-index: 1;
+    padding: var(--s-4);
+    border: 1px solid var(--border-3);
+    border-radius: var(--r-md);
+    background: var(--bg-2);
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+}
+
+.tour-progress {
+    margin-bottom: var(--s-1);
+    color: var(--accent-hi);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.tour-card h3 { color: var(--fg-0); font-size: 15px; }
+.tour-card > p:not(.tour-progress) { margin-top: var(--s-1); color: var(--fg-2); font-size: 12px; line-height: 1.5; }
+.tour-actions { display: flex; justify-content: space-between; margin-top: var(--s-3); }
+
 .drawer-body {
     flex: 1;
     overflow-y: auto;
