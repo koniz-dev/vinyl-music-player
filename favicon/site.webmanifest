@@ -17,8 +17,8 @@
   "theme_color": "#6366f1",
   "background_color": "#1e1b4b",
   "display": "standalone",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "../",
+  "scope": "../",
   "orientation": "portrait-primary",
   "categories": ["music", "entertainment", "multimedia"]
 }

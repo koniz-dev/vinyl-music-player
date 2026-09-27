@@ -3,9 +3,17 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { constants } from 'node:fs';
 
-const source = await readFile('./service-worker.js', 'utf8');
+const [source, manifestSource] = await Promise.all([
+    readFile('./service-worker.js', 'utf8'),
+    readFile('./favicon/site.webmanifest', 'utf8'),
+]);
+const manifest = JSON.parse(manifestSource);
 assert.match(source, /Network-first/, 'app shell must prefer fresh network content when online');
 assert.ok(!source.includes('cached || networkPromise'), 'app shell must not serve a stale cache before the network');
+assert.match(source, /startsWith\('vinyl-music-player-'\)/,
+    'activation must delete only older app-shell caches, not ML model caches');
+assert.equal(manifest.start_url, '../', 'installed app must launch from the project path, not the site root');
+assert.equal(manifest.scope, '../', 'installed app scope must stay within the project path');
 const block = source.match(/const PRECACHE = \[([\s\S]*?)\n\];/);
 assert.ok(block, 'service worker must declare PRECACHE');
 

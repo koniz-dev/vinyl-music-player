@@ -64,7 +64,11 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) =>
-            Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+            // Cache Storage is shared with transformers.js. Only remove older
+            // app-shell revisions; model caches must survive a deployment.
+            Promise.all(keys
+                .filter((k) => k.startsWith('vinyl-music-player-') && k !== CACHE_NAME)
+                .map((k) => caches.delete(k)))
         )
     );
     self.clients.claim();

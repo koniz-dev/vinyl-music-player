@@ -62,6 +62,15 @@ let analyser = null;
 let spectrum = null;
 let lyricsRect = null;
 let lyricsStyle = null;
+let exportRunId = 0;             // invalidates async setup after cancellation
+
+function ensureActiveExport(runId) {
+    if (!state.isExporting || runId !== exportRunId) {
+        const error = new Error('Export cancelled.');
+        error.name = 'AbortError';
+        throw error;
+    }
+}
 
 // ──────────────────────────────────────────────────────────────────
 // Setup helpers
@@ -212,6 +221,7 @@ function cleanup() {
     baseCapturePending = false;
     lastBaseCapturedAt = 0;
     exportFontCss = null;
+    exportEndTime = null;
     if (resizeHandler) {
         window.removeEventListener('resize', resizeHandler);
         resizeHandler = null;
@@ -644,6 +654,7 @@ function renderLoop() {
 async function startVideoRecording({ audioFile, songTitle, rangeStart = 0, rangeEnd = null }) {
     if (state.isExporting) return;
     state.isExporting = true;
+    const runId = ++exportRunId;
     finalized = false;
 
     wasMainAudioPlaying = !!(state.audioElement && !state.audioElement.paused);
@@ -685,6 +696,7 @@ async function startVideoRecording({ audioFile, songTitle, rangeStart = 0, range
             exportAudio.addEventListener('error', reject);
             setTimeout(() => reject(new Error('Audio loading timeout')), 10000);
         });
+        ensureActiveExport(runId);
 
         const canvasStream = canvas.captureStream(OUTPUT_FPS);
         const AudioCtxCtor = window.AudioContext || window.webkitAudioContext;
@@ -694,6 +706,7 @@ async function startVideoRecording({ audioFile, songTitle, rangeStart = 0, range
         // gesture. The export button click qualifies — resume() unblocks audio.
         if (audioCtx.state === 'suspended') {
             await audioCtx.resume();
+            ensureActiveExport(runId);
         }
 
         const source = audioCtx.createMediaElementSource(exportAudio);
@@ -776,6 +789,7 @@ async function startVideoRecording({ audioFile, songTitle, rangeStart = 0, range
         // html-to-image capture takes.
         emit(Events.EXPORT_PROGRESS, { progress: 4, message: 'Preparing visuals…' });
         await setupExportLayers();
+        ensureActiveExport(runId);
         drawFrame();
         animationId = requestAnimationFrame(renderLoop);
 
@@ -794,6 +808,7 @@ async function startVideoRecording({ audioFile, songTitle, rangeStart = 0, range
 
         try {
             await exportAudio.play();
+            ensureActiveExport(runId);
         } catch (err) {
             throw new Error(`Could not start audio playback: ${err.message || err.name}`);
         }
@@ -838,7 +853,12 @@ async function startVideoRecording({ audioFile, songTitle, rangeStart = 0, range
         }, 200);
 
     } catch (error) {
-        abortExport(error.message || 'Unknown error occurred');
+        // cancelExport() may have torn down globals while an awaited setup
+        // step was still pending. That stale run must not emit a second error
+        // or proceed to start a recorder after the UI says it was cancelled.
+        if (runId === exportRunId && state.isExporting) {
+            abortExport(error.message || 'Unknown error occurred');
+        }
     }
 }
 
@@ -862,6 +882,7 @@ function stopRecording() {
 
 function cancelExport() {
     if (!state.isExporting) return;
+    exportRunId += 1;
     // Block both the native 'stop' event and the stopRecording fallback from
     // emitting a (now unwanted) EXPORT_COMPLETE.
     finalized = true;
