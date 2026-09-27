@@ -48,6 +48,7 @@ const audioClearBtn = document.getElementById('audio-clear-btn');
 const albumArtClearBtn = document.getElementById('album-art-clear-btn');
 const aiArtPrompt = document.getElementById('ai-art-prompt');
 const aiArtBtn = document.getElementById('ai-art-btn');
+const aiArtPanel = aiArtBtn.closest('.cover-generator-panel');
 const exportBtn = document.getElementById('export-btn');
 const debugBtn = document.getElementById('debug-btn');
 const exportBtnFill = document.getElementById('export-btn-fill');
@@ -645,6 +646,9 @@ async function generateAlbumArt() {
     if (!prompt) return toastInfo('Describe the cover art first.');
     if (!window.confirm('This sends your cover prompt to Pollinations to generate an image. Continue?')) return;
     aiArtBtn.disabled = true;
+    aiArtPrompt.disabled = true;
+    aiArtBtn.textContent = 'Generating…';
+    aiArtPanel.setAttribute('aria-busy', 'true');
     try {
         const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
         const response = await fetch(url);
@@ -654,8 +658,14 @@ async function generateAlbumArt() {
         lastAlbumArtObjectUrl = URL.createObjectURL(blob);
         emit(Events.UPDATE_ALBUM_ART, lastAlbumArtObjectUrl);
         toastSuccess('Generated cover art.');
-    } catch (error) { toastError(`Could not generate cover: ${error.message || error}`); }
-    finally { aiArtBtn.disabled = false; }
+    } catch (error) {
+        toastError(`Could not generate cover: ${error.message || error}`);
+    } finally {
+        aiArtBtn.disabled = false;
+        aiArtPrompt.disabled = false;
+        aiArtBtn.textContent = 'Generate';
+        aiArtPanel.removeAttribute('aria-busy');
+    }
 }
 
 function handleAudioFile(file) {

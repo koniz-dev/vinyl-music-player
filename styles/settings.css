@@ -186,6 +186,18 @@
 .inline-action-row > select + .btn { margin-left: 2px; }
 
 .cover-generator-panel { margin-top: calc(-1 * var(--s-1)); }
+.cover-generator-panel[aria-busy="true"] #ai-art-btn::before {
+    width: 10px;
+    height: 10px;
+    flex: none;
+    border: 1.5px solid var(--fg-3);
+    border-right-color: transparent;
+    border-radius: 50%;
+    content: '';
+    animation: cover-generator-spin 0.7s linear infinite;
+}
+
+@keyframes cover-generator-spin { to { transform: rotate(360deg); } }
 .lyrics-tools-panel { margin-top: calc(-1 * var(--s-1)); }
 
 .lyric-utility-row { flex-wrap: wrap; }
