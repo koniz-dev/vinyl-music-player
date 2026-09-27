@@ -3,6 +3,7 @@ import { timeToSeconds, formatTime } from './lib/format.js';
 import { initColorManager, applyPaletteByKey } from './color-manager.js';
 import { initFontManager, setPlayerFont } from './font-manager.js';
 import { toastSuccess, toastError, toastInfo } from './toast.js';
+import { confirmDialog, selectDialog } from './dialog.js';
 import { icon } from './icons.js';
 import { state, RATIOS, DEFAULT_ASPECT_RATIO, FORMATS, DEFAULT_VIDEO_FORMAT } from './lib/state.js';
 import { runAutoSync, cancelAutoSync, isAutoSyncRunning } from './autosync.js';
@@ -520,21 +521,34 @@ async function handleFindLyrics() {
     const title = songTitleInput.value.trim();
     const artist = artistNameInput.value.trim();
     if (!title && !artist) return toastInfo('Add a song title or artist first.');
-    if (!window.confirm('This sends song title, artist, and duration to LRCLIB to find lyrics. Audio stays on your device. Continue?')) return;
+    if (!await confirmDialog({
+        dialogTitle: 'Find synced lyrics?',
+        dialogMessage: 'This sends the song title, artist, and duration to LRCLIB. Your audio stays on this device.',
+    })) return;
     findLyricsBtn.disabled = true;
     try {
         const results = await findSyncedLyrics({ title, artist, duration: state.totalTime });
         if (!results.length) return toastInfo('No synced lyrics found. Try Auto-sync instead.');
         let selected = results[0];
         if (results.length > 1) {
-            const choices = results.slice(0, 10).map((r, i) => `${i + 1}. ${r.trackName} — ${r.artistName}`).join('\n');
-            const pick = Number(window.prompt(`Choose synced lyrics:\n${choices}`, '1'));
-            if (!Number.isInteger(pick) || pick < 1 || pick > Math.min(results.length, 10)) return;
-            selected = results[pick - 1];
+            const candidates = results.slice(0, 10);
+            const selectedCandidate = await selectDialog({
+                dialogTitle: 'Choose synced lyrics',
+                dialogMessage: 'Select the version that best matches this track.',
+                confirmLabel: 'Use lyrics',
+                options: candidates.map(result => `${result.trackName} — ${result.artistName}`),
+            });
+            if (selectedCandidate === null) return;
+            selected = selectedCandidate;
         }
         const rows = parseLrc(selected.syncedLyrics, state.totalTime);
         if (!rows.length) return toastInfo('That result did not contain usable timed lyrics.');
-        if (lyricsContainer.children.length && !window.confirm('Replace current lyrics with this result?')) return;
+        if (lyricsContainer.children.length && !await confirmDialog({
+            dialogTitle: 'Replace current lyrics?',
+            dialogMessage: 'Your current lyric lines will be replaced by the selected synced lyrics.',
+            confirmLabel: 'Replace lyrics',
+            dangerous: true,
+        })) return;
         lyricsContainer.querySelectorAll('.lyrics-item').forEach(el => el.remove());
         lyricsCount = 0;
         rows.forEach(row => lyricsContainer.appendChild(buildLyricsItem(row)));
@@ -557,7 +571,11 @@ async function handleTranslateLyrics() {
     const space = estimate
         ? ` Browser storage reports about ${(estimate.available / 1e9).toFixed(1)} GB available.`
         : ' Your browser could not report available storage.';
-    if (!window.confirm(`This downloads the on-device NLLB ${direction.replace('-', ' → ')} translation model (over 1 GB on first use). It uses disk space and may take time; lyrics and audio stay in your browser.${space} Continue?`)) return;
+    if (!await confirmDialog({
+        dialogTitle: 'Download translation model?',
+        dialogMessage: `This downloads the on-device NLLB ${direction.replace('-', ' → ')} translation model (over 1 GB on first use). It uses disk space and may take time; lyrics and audio stay in your browser.${space}`,
+        confirmLabel: 'Download model',
+    })) return;
     translateLyricsBtn.disabled = true;
     const label = translateLyricsBtn.textContent;
     try {
@@ -580,7 +598,12 @@ async function handleTranslateLyrics() {
 }
 
 async function handleRemoveTranslationModel() {
-    if (!window.confirm('Remove the downloaded NLLB translation model from this browser? This does not remove your music, lyrics, or app settings. Translating again will download the model again.')) return;
+    if (!await confirmDialog({
+        dialogTitle: 'Remove translation model?',
+        dialogMessage: 'This does not remove your music, lyrics, or app settings. Translating again will download the model again.',
+        confirmLabel: 'Remove model',
+        dangerous: true,
+    })) return;
     removeTranslationModelBtn.disabled = true;
     const label = removeTranslationModelBtn.textContent;
     try {
@@ -644,7 +667,11 @@ function handleAlbumArt(file) {
 async function generateAlbumArt() {
     const prompt = aiArtPrompt.value.trim();
     if (!prompt) return toastInfo('Describe the cover art first.');
-    if (!window.confirm('This sends your cover prompt to Pollinations to generate an image. Continue?')) return;
+    if (!await confirmDialog({
+        dialogTitle: 'Generate cover art?',
+        dialogMessage: 'This sends your cover prompt to Pollinations to generate an image.',
+        confirmLabel: 'Generate',
+    })) return;
     aiArtBtn.disabled = true;
     aiArtPrompt.disabled = true;
     aiArtBtn.textContent = 'Generating…';

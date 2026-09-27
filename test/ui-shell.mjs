@@ -13,6 +13,11 @@ const [html, commonCss, indexCss, vinylCss, main, uiTheme, tour, launcher, stopp
     readFile('./scripts/stop-local.mjs', 'utf8'),
 ]);
 
+const [settings, dialog] = await Promise.all([
+    readFile('./js/settings.js', 'utf8'),
+    readFile('./js/dialog.js', 'utf8'),
+]);
+
 assert.ok(!html.includes('guide-modal') && !html.includes('data-guide-target'), 'the retired guide panel must not ship');
 assert.ok(!html.includes('vinyl-spindle'), 'the vinyl center must not render a spindle dot');
 assert.match(vinylCss, /radial-gradient\([\s\S]*25\.3%/, 'vinyl must retain subtle concentric record grooves');
@@ -41,6 +46,10 @@ assert.match(await readFile('./styles/toast.css', 'utf8'), /min-height: 36px/,
     'toast actions must retain a usable touch target');
 assert.match(main, /isLocalDevelopment/, 'localhost must not retain a stale PWA shell during development');
 assert.match(main, /getRegistrations\(\)/, 'localhost must clear prior service worker registrations');
+assert.ok(!/window\.(confirm|prompt|alert)\s*\(/.test(settings),
+    'settings actions must use the in-app dialog instead of browser prompts');
+assert.match(dialog, /confirmDialog/, 'the reusable in-app confirmation dialog must remain available');
+assert.match(html, /id="app-dialog"/, 'confirmation and selection actions must render in the app shell');
 assert.match(launcher, /waitForAppServer/, 'background launcher must wait for readiness');
 assert.match(launcher, /APP_MARKER/, 'background launcher must verify the app, not only a port');
 assert.match(stopper, /Refused to stop/, 'stop command must refuse an unowned process');

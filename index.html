@@ -596,6 +596,25 @@
         </div>
     </div>
 
+    <!-- ─── App confirmation and choice dialog ──────────────────── -->
+
+    <div class="modal-overlay" id="app-dialog" hidden>
+        <div class="modal-content app-dialog-content" role="dialog" aria-modal="true"
+            aria-labelledby="app-dialog-title" aria-describedby="app-dialog-message">
+            <header class="modal-header">
+                <h3 id="app-dialog-title">Continue?</h3>
+            </header>
+            <div class="modal-body">
+                <p class="modal-description" id="app-dialog-message"></p>
+                <div class="dialog-choices" id="app-dialog-choices" role="radiogroup" hidden></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="app-dialog-cancel">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="app-dialog-confirm">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ─── Interactive feature walkthrough ─────────────────────── -->
 
     <div class="tour-overlay" id="tour-overlay" hidden>
