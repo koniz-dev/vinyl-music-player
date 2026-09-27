@@ -12,6 +12,14 @@ assert.match(source, /Network-first/, 'app shell must prefer fresh network conte
 assert.ok(!source.includes('cached || networkPromise'), 'app shell must not serve a stale cache before the network');
 assert.match(source, /startsWith\('vinyl-music-player-'\)/,
     'activation must delete only older app-shell caches, not ML model caches');
+assert.match(source, /event\.data\?\.type === 'SKIP_WAITING'/,
+    'a waiting worker must activate only after an explicit update request');
+const installBlock = source.slice(
+    source.indexOf("self.addEventListener('install'"),
+    source.indexOf("self.addEventListener('message'")
+);
+assert.doesNotMatch(installBlock, /skipWaiting/,
+    'the install handler must not auto-activate a new worker');
 assert.equal(manifest.start_url, '../', 'installed app must launch from the project path, not the site root');
 assert.equal(manifest.scope, '../', 'installed app scope must stay within the project path');
 const block = source.match(/const PRECACHE = \[([\s\S]*?)\n\];/);

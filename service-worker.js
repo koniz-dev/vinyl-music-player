@@ -1,5 +1,5 @@
 // Versioned cache — bump the suffix on every release to invalidate clients.
-const CACHE_VERSION = 'v108';
+const CACHE_VERSION = 'v109';
 const CACHE_NAME = `vinyl-music-player-${CACHE_VERSION}`;
 
 const PRECACHE = [
@@ -58,7 +58,13 @@ self.addEventListener('install', (event) => {
             }
         }));
     })());
-    self.skipWaiting();
+});
+
+// An updated worker stays in `waiting` until the in-app update prompt is
+// accepted. This preserves an in-progress editor session and avoids a flash
+// reload on the first install.
+self.addEventListener('message', (event) => {
+    if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

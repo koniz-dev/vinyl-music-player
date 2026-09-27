@@ -27,7 +27,9 @@ assert.ok(!indexCss.includes('tour-menu-options'), 'retired tour menu CSS must n
 assert.match(html, /tour-card" role="region"/, 'walkthrough must remain a non-blocking coachmark');
 assert.match(tour, /card\.focus/, 'walkthrough must announce its current step to keyboard users');
 assert.match(indexCss, /prefers-reduced-motion: reduce/, 'walkthrough motion must honor user preference');
-assert.match(main, /controllerchange/, 'a new service worker must refresh the stale app shell once');
+assert.match(main, /offerUpdate/, 'a waiting service worker must offer an in-app update action');
+assert.match(main, /SKIP_WAITING/, 'the update action must explicitly activate the waiting worker');
+assert.match(main, /updateRequested/, 'the page must reload only after the update action is chosen');
 assert.match(main, /isLocalDevelopment/, 'localhost must not retain a stale PWA shell during development');
 assert.match(main, /getRegistrations\(\)/, 'localhost must clear prior service worker registrations');
 assert.match(launcher, /waitForAppServer/, 'background launcher must wait for readiness');

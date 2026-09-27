@@ -77,7 +77,7 @@ Non-default player fonts are fetched from Google Fonts and embedded into the exp
 
 ### Service worker keeps serving old code
 
-After a deployment, the app automatically reloads once when its service worker changes version. If a browser was offline during that update, reconnect and reload once; as a fallback, hard-reload with **Ctrl + Shift + R** (or DevTools → Application → Service Workers → Update). Always bump `CACHE_VERSION` in `service-worker.js` before deploying.
+After a deployment, an in-app **Update** prompt appears when the new service worker is ready. Choose it to activate the update and reload once. If a browser was offline during that update, reconnect and reload once; as a fallback, hard-reload with **Ctrl + Shift + R** (or DevTools → Application → Service Workers → Update). Always bump `CACHE_VERSION` in `service-worker.js` before deploying.
 
 ## Still stuck?
 

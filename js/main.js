@@ -6,6 +6,7 @@ import { initSettings } from './settings.js';
 import { initExport } from './export.js';
 import { initDrawer } from './drawer.js';
 import { initTour } from './tour.js';
+import { toast } from './toast.js';
 
 hydrateStaticIcons();
 initTheme();
@@ -34,19 +35,47 @@ if ('serviceWorker' in navigator && isLocalDevelopment) {
         Promise.all(registrations.map(registration => registration.unregister()))
     ).catch(() => {});
 } else if ('serviceWorker' in navigator) {
-    // New workers call skipWaiting() and claim clients. Reload exactly once on
-    // controller change so a release cannot leave a person looking at the old
-    // cached HTML/CSS until they know to hard-refresh manually.
-    let reloadingForWorker = false;
+    // Keep updates waiting until the person chooses to apply them. Automatic
+    // skipWaiting() + reload makes every first visit visibly flash once.
+    let updateRequested = false;
+    let dismissUpdateToast = null;
+
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (reloadingForWorker) return;
-        reloadingForWorker = true;
-        window.location.reload();
+        // The first worker claims the initial page too, but that is not an
+        // update and must not reload the page. Only reload after the Update
+        // action has explicitly activated a waiting worker.
+        if (updateRequested) window.location.reload();
     });
+
+    const offerUpdate = (registration) => {
+        const waiting = registration.waiting;
+        if (!waiting || dismissUpdateToast) return;
+        dismissUpdateToast = toast('A new version is ready.', {
+            variant: 'info',
+            duration: 0,
+            action: {
+                label: 'Update',
+                onClick: () => {
+                    updateRequested = true;
+                    waiting.postMessage({ type: 'SKIP_WAITING' });
+                },
+            },
+        });
+    };
 
     window.addEventListener('load', async () => {
         try {
-            await navigator.serviceWorker.register('./service-worker.js');
+            const registration = await navigator.serviceWorker.register('./service-worker.js');
+            offerUpdate(registration);
+            registration.addEventListener('updatefound', () => {
+                const worker = registration.installing;
+                if (!worker) return;
+                worker.addEventListener('statechange', () => {
+                    if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                        offerUpdate(registration);
+                    }
+                });
+            });
         } catch {
             // Registration failed — site still works fine without SW.
         }

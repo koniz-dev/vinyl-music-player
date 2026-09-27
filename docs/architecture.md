@@ -138,8 +138,9 @@ The remaining accepted risk: dynamic `import()` has no Subresource Integrity, so
 
 ## PWA / offline
 
-- `service-worker.js` pre-caches the app shell on `install` and serves it stale-while-revalidate on `fetch`.
+- `service-worker.js` pre-caches the app shell on `install` and uses network-first with an offline-cache fallback on `fetch`.
 - After the first load, the site works offline (only your own audio/image files remain dynamic — they're already local Blobs).
+- New releases wait until the in-app **Update** action is chosen; only then does the worker activate and the page reload once. This avoids interrupting edits or flashing on first install.
 - Bump `CACHE_VERSION` on releases to invalidate clients.
 
 ## Why no build step
