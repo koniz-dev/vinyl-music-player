@@ -5,7 +5,7 @@
 
 ## Delivery rules (do not miss these)
 
-- [x] **PWA:** `v109` precache covers every local module; `npm test` asserts every precached local path exists, preserves ML-model caches across app-shell updates, and verifies the opt-in in-app **Update** flow. `?pwa-smoke=1` verifies cached app-shell fetches.
+- [x] **PWA:** `v110` precache covers every local module; `npm test` asserts every precached local path exists, preserves ML-model caches across app-shell updates, and verifies the opt-in in-app **Update** flow. `?pwa-smoke=1` verifies cached app-shell fetches.
 - [x] **In-app guidance:** section-local Help icons launch five focused walkthroughs (Basics, Artwork, Lyrics, Appearance, Export). Each spotlights one real control, says exactly what to click and why, and provides Next/Skip without a global launcher or a 28-step session.
 - [x] **App theme:** global System, Dark, and Light controls live in the top-left app bar, persist locally, and stay independent from video palette controls.
 - [x] **Privacy:** optional LRCLIB/Pollinations requests are confirmed in UI, disclose provider/fields in docs, and are allowlisted in CSP; model/font downloads are initiated only by their optional controls and never include audio.

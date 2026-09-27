@@ -64,6 +64,12 @@
 }
 
 .toast-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    min-width: 64px;
+    min-height: 36px;
     padding: 4px 10px;
     font-size: 12px;
     font-weight: 600;
@@ -72,7 +78,14 @@
     border: 1px solid transparent;
     border-radius: var(--r-sm);
     cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
     transition: background var(--dur);
+}
+
+.toast-action:disabled {
+    opacity: 0.55;
+    cursor: wait;
 }
 
 .toast-action:hover {

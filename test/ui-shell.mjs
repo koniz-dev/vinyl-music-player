@@ -35,6 +35,10 @@ assert.match(indexCss, /\.section-guide-btn \{\s*width: 40px/, 'mobile guide con
 assert.match(main, /offerUpdate/, 'a waiting service worker must offer an in-app update action');
 assert.match(main, /SKIP_WAITING/, 'the update action must explicitly activate the waiting worker');
 assert.match(main, /updateRequested/, 'the page must reload only after the update action is chosen');
+assert.match(main, /currentWaiting !== waiting/, 'the update action must reject a stale waiting worker');
+assert.match(main, /waiting\.state !== 'installed'/, 'only a ready waiting worker may be activated');
+assert.match(await readFile('./styles/toast.css', 'utf8'), /min-height: 36px/,
+    'toast actions must retain a usable touch target');
 assert.match(main, /isLocalDevelopment/, 'localhost must not retain a stale PWA shell during development');
 assert.match(main, /getRegistrations\(\)/, 'localhost must clear prior service worker registrations');
 assert.match(launcher, /waitForAppServer/, 'background launcher must wait for readiness');

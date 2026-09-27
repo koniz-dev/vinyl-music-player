@@ -39,6 +39,7 @@ if ('serviceWorker' in navigator && isLocalDevelopment) {
     // skipWaiting() + reload makes every first visit visibly flash once.
     let updateRequested = false;
     let dismissUpdateToast = null;
+    let offeredWorker = null;
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         // The first worker claims the initial page too, but that is not an
@@ -47,19 +48,39 @@ if ('serviceWorker' in navigator && isLocalDevelopment) {
         if (updateRequested) window.location.reload();
     });
 
+    const clearUpdateOffer = () => {
+        dismissUpdateToast?.();
+        dismissUpdateToast = null;
+        offeredWorker = null;
+    };
+
     const offerUpdate = (registration) => {
         const waiting = registration.waiting;
-        if (!waiting || dismissUpdateToast) return;
+        if (!waiting || waiting.state !== 'installed' || waiting === offeredWorker) return;
+        clearUpdateOffer();
+        offeredWorker = waiting;
         dismissUpdateToast = toast('A new version is ready.', {
             variant: 'info',
             duration: 0,
             action: {
                 label: 'Update',
                 onClick: () => {
+                    // A waiting worker can be replaced or become redundant
+                    // while its toast is visible. Never message a stale
+                    // worker: re-read the registration at the action point.
+                    const currentWaiting = registration.waiting;
+                    if (currentWaiting !== waiting || waiting.state !== 'installed') {
+                        clearUpdateOffer();
+                        offerUpdate(registration);
+                        return;
+                    }
                     updateRequested = true;
                     waiting.postMessage({ type: 'SKIP_WAITING' });
                 },
             },
+        });
+        waiting.addEventListener('statechange', () => {
+            if (waiting.state === 'redundant') clearUpdateOffer();
         });
     };
 
