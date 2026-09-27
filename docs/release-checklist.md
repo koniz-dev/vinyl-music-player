@@ -4,7 +4,7 @@ Run this against the deployed build or a local HTTP server after every cache-ver
 
 ## Offline PWA reload
 
-1. Load the app once while online and use the in-app **Reload** update prompt if shown.
+1. Load the app once while online and use the in-app **Update** prompt if shown.
 2. In Chrome DevTools, Application → Service Workers, confirm the active cache uses the current `CACHE_VERSION`.
 3. Enable **Offline** in DevTools Network and reload the page.
 4. Pass when the editor, all local controls, and the app shell render without a network error. External features that have not already cached their models are expected to remain unavailable offline.

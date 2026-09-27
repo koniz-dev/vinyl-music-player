@@ -33,7 +33,7 @@ gh pr create  # or use the GitHub UI
 
 ## DOM access
 
-DOM elements are cached at module top with `document.getElementById` / `querySelector`. Don't re-query in hot paths (e.g. inside `renderToCanvas` or `timeupdate` handlers).
+DOM elements are cached at module top with `document.getElementById` / `querySelector`. Don't re-query in hot paths (e.g. inside `drawFrame` or `timeupdate` handlers).
 
 ## Adding a new event
 
@@ -53,7 +53,13 @@ When changing the render pipeline:
 
 ## Testing
 
-There's no automated test suite. Verify changes manually:
+Run the automated checks before manual verification:
+
+```bash
+npm test
+```
+
+This covers JavaScript syntax, lyric parsers, translation-model cache removal, PWA precache/update safeguards, and the UI shell. Then verify the changed flow manually:
 
 1. Drop in an MP3.
 2. Add a song title.

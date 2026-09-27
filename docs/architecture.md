@@ -7,7 +7,7 @@ A static web app — HTML + CSS + ES modules, no backend, no build step. Two pan
 ```
 vinyl-music-player/
 ├── index.html              # Shell — loads js/main.js as a module
-├── service-worker.js       # Offline app-shell cache (stale-while-revalidate)
+├── service-worker.js       # Offline app-shell cache (network-first + fallback)
 ├── favicon/                # Favicons + web manifest
 ├── js/
 │   ├── main.js             # Entry — kicks off each subsystem
@@ -18,14 +18,21 @@ vinyl-music-player/
 │   ├── player.js           # Audio playback + vinyl UI + lyrics display
 │   ├── album-art.js        # Album art DOM updates (used by player.js)
 │   ├── settings.js         # Form, uploads, lyrics CRUD, ratio/format toggles, export UI
+│   ├── id3.js              # Local ID3 title, artist, and cover extraction
+│   ├── lrc.js              # LRC parser and serializer
+│   ├── lrclib.js           # Opt-in synced-lyrics lookup
 │   ├── autosync.js         # AI lyric timing — audio decode + Whisper worker + alignment
+│   ├── translate.js        # On-device lyric translation worker client
 │   ├── workers/
-│   │   └── whisper-worker.js # Whisper (transformers.js) transcription, off-main-thread
+│   │   ├── whisper-worker.js   # Whisper transcription, off-main-thread
+│   │   └── translate-worker.js # NLLB translation, off-main-thread
 │   ├── color-manager.js    # Color overrides + per-color presets + palette templates + accent sync
 │   ├── font-manager.js     # Player font picker + export @font-face embedding
 │   ├── export.js           # Canvas + MediaRecorder MP4/WebM exporter
 │   ├── theme.js            # Derives the accent color from the album art
+│   ├── ui-theme.js          # System/dark/light workspace theme preference
 │   ├── drawer.js           # Settings drawer open/close + collapsible sections
+│   ├── tour.js             # Contextual feature walkthroughs
 │   ├── toast.js            # Toast notifications
 │   ├── icons.js            # Inline SVG icon registry + static hydration
 │   └── vendor/
@@ -65,7 +72,7 @@ Event names live in a frozen `Events` object so misspellings fail loudly.
 | `UPDATE_ASPECT_RATIO` | `settings.js` | – (none yet) | ratio key, e.g. `'9:16'` |
 | `ACCENT_DERIVED` | `theme.js` | `color-manager.js` | hex string |
 | `ACCENT_OVERRIDE_CLEARED` | `color-manager.js` | `theme.js` | – |
-| `EXPORT_REQUESTED` | `settings.js` | `export.js` | `{audioFile, songTitle, artistName, albumArtFile}` |
+| `EXPORT_REQUESTED` | `settings.js` | `export.js` | `{audioFile, songTitle, artistName, albumArtFile, rangeStart, rangeEnd}` |
 | `EXPORT_CANCEL` | `settings.js` | `export.js` | – |
 | `EXPORT_CANCELLED` | `export.js` | `settings.js` | – |
 | `EXPORT_PROGRESS` | `export.js` | `settings.js` | `{progress, message}` |
@@ -89,6 +96,7 @@ export const state = {
     lyricsColor: '#ffb3d1',
     aspectRatio: '9:16',
     videoFormat: 'webm',
+    visualizerEnabled: false,
 };
 ```
 
@@ -112,7 +120,7 @@ formats with their `MediaRecorder` codec candidate lists), plus their defaults.
 
 The hybrid approach (cheap per-frame canvas composite + occasional DOM capture) keeps the recording at a steady 30 fps: the expensive html-to-image work never runs on the per-frame path.
 
-While exporting, the editor preview is driven from the same `exportAudio` clock (vinyl angle, lyrics, progress bar, time labels — see `syncLiveDomToExportAudio`), so what you watch is exactly what's being recorded, starting from 0° / 0:00. In the settings panel the export button itself doubles as the progress bar (fill width + label driven by `EXPORT_PROGRESS`; clicking it mid-export cancels).
+While exporting, the editor preview is driven from the same `exportAudio` clock (vinyl angle, lyrics, progress bar, time labels — see `syncLiveDomToExportAudio`), so what you watch is exactly what's being recorded, beginning at the selected export start time (or 0:00 for a full track). In the settings panel the export button itself doubles as the progress bar (fill width + label driven by `EXPORT_PROGRESS`; clicking it mid-export cancels).
 
 ## Auto-sync (AI lyric timing)
 
@@ -132,7 +140,7 @@ While exporting, the editor preview is driven from the same `exportAudio` clock 
 Two layers, both needed because GitHub Pages can't send response headers:
 
 - **Document**: a `<meta http-equiv="Content-Security-Policy">` in `index.html`. `script-src 'self'` (the page imports only local modules), font hosts for Google Fonts, LRCLIB, and Pollinations are deliberately named in the narrow `connect-src`/`img-src` lists; `blob:`/`data:` cover local album art, the audio element, and html-to-image captures. LRCLIB receives only title, artist, and duration after a confirmation; Pollinations receives only its confirmed prompt. Adding any new external resource means updating this tag and the privacy disclosure — violations fail silently in the console.
-- **Whisper worker**: workers take their CSP from the script *response* headers, not the document meta tag — so `service-worker.js` injects a `Content-Security-Policy` header when serving `js/workers/whisper-worker.js`. It restricts the worker to the pinned jsDelivr CDN + Hugging Face hosts (`'wasm-unsafe-eval'` for ONNX Runtime), so even a compromised library build couldn't exfiltrate the user's audio to an arbitrary host. The very first visit (before any SW controls the page) runs un-wrapped; every later load is locked down.
+- **Model workers**: workers take their CSP from the script *response* headers, not the document meta tag — so `service-worker.js` injects a `Content-Security-Policy` header when serving the Whisper and translation workers. It restricts them to the pinned jsDelivr CDN + Hugging Face hosts (`'wasm-unsafe-eval'` for ONNX Runtime), so even a compromised library build couldn't exfiltrate the user's audio to an arbitrary host. The very first visit (before any SW controls the page) runs un-wrapped; every later load is locked down.
 
 The remaining accepted risk: dynamic `import()` has no Subresource Integrity, so the pinned jsDelivr URL itself is trusted. Vendoring transformers.js + the ONNX wasm files would close that at the cost of ~15-20 MB in the repo.
 
