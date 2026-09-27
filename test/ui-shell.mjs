@@ -27,6 +27,11 @@ assert.ok(!indexCss.includes('tour-menu-options'), 'retired tour menu CSS must n
 assert.match(html, /tour-card" role="region"/, 'walkthrough must remain a non-blocking coachmark');
 assert.match(tour, /card\.focus/, 'walkthrough must announce its current step to keyboard users');
 assert.match(indexCss, /prefers-reduced-motion: reduce/, 'walkthrough motion must honor user preference');
+assert.match(indexCss, /height: 100dvh/, 'mobile layout must follow dynamic browser viewport height');
+assert.match(indexCss, /orientation: landscape/, 'short landscape phones must receive a dedicated layout');
+assert.match(vinylCss, /width: min\(260px, 88cqi, 45cqb\)/,
+    'mobile vinyl must fit narrow video frames instead of being clipped');
+assert.match(indexCss, /\.section-guide-btn \{\s*width: 40px/, 'mobile guide controls need a usable touch target');
 assert.match(main, /offerUpdate/, 'a waiting service worker must offer an in-app update action');
 assert.match(main, /SKIP_WAITING/, 'the update action must explicitly activate the waiting worker');
 assert.match(main, /updateRequested/, 'the page must reload only after the update action is chosen');

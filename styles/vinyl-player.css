@@ -361,8 +361,10 @@
 
 @media (max-width: 480px) {
     .vinyl-wrap {
-        width: 260px;
-        height: 260px;
+        /* Keep the generous mobile record, without overflowing a 320px
+           viewport's narrow video frame (which clips its contents). */
+        width: min(260px, 88cqi, 45cqb);
+        height: auto;
     }
 
     .vinyl-song-title {
