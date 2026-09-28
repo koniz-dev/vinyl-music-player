@@ -78,6 +78,7 @@
     /* Player text (title/artist/lyrics) — font-manager.js overrides via inline
        style on :root when the user picks a non-default font. */
     --font-player: var(--font-sans);
+    --font-player-scale: 1;
 }
 
 /* Workspace theme. The video frame resets its own neutral tokens below, so

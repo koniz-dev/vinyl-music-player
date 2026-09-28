@@ -439,6 +439,12 @@
                     <div class="font-list" id="font-list">
                         <!-- Populated by font-manager.js. Each option previews its own typeface. -->
                     </div>
+                    <div class="font-size-control">
+                        <label class="field-label" for="font-size">Text size <output id="font-size-value">100%</output></label>
+                        <input id="font-size" type="range" min="80" max="140" step="5" value="100"
+                            aria-describedby="font-size-help">
+                        <p class="field-help" id="font-size-help">Scales the title, artist, and lyrics in the preview and exported video.</p>
+                    </div>
                 </div>
 
                 <details class="advanced-panel appearance-enhancements">

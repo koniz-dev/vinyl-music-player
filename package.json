@@ -2,6 +2,7 @@
   "name": "vinyl-music-player",
   "version": "0.0.1",
   "description": "A beautiful vinyl music player with synchronized lyrics and WebM video export functionality",
+  "type": "module",
   "main": "index.html",
   "scripts": {
     "dev": "npx http-server -a 127.0.0.1 -p 3000 -o -c-1",
@@ -11,8 +12,9 @@
     "build": "echo 'No build process needed for static HTML'",
     "preview": "npx http-server -a 127.0.0.1 -p 3000 -c-1",
     "serve": "npx http-server -a 127.0.0.1 -p 8080 -c-1",
-    "test": "npm run test:syntax && npm run test:parsers && npm run test:translation && npm run test:pwa && npm run test:ui",
+    "test": "npm run test:syntax && npm run test:events && npm run test:parsers && npm run test:translation && npm run test:pwa && npm run test:ui",
     "test:syntax": "find js test scripts -type f \\( -name '*.js' -o -name '*.mjs' \\) -print0 | xargs -0 -n1 node --check",
+    "test:events": "node test/events.mjs",
     "test:parsers": "node test/parsers.mjs",
     "test:pwa": "node test/pwa.mjs",
     "test:translation": "node test/translation-worker.mjs",

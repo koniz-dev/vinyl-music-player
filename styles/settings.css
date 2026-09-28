@@ -751,6 +751,26 @@
     letter-spacing: 0.05em;
 }
 
+.font-size-control {
+    margin-top: var(--s-3);
+}
+
+.font-size-control .field-label {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-2);
+}
+
+.font-size-control output {
+    color: var(--accent);
+    font-family: var(--font-mono);
+}
+
+.font-size-control input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
 /* ─── Export ────────────────────────────────────────────────────── */
 
 /* Sticky dock pinned to the drawer's bottom edge: bleeds over the

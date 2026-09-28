@@ -14,8 +14,8 @@ assert.match(source, /startsWith\('vinyl-music-player-'\)/,
     'activation must delete only older app-shell caches, not ML model caches');
 assert.match(source, /event\.data\?\.type === 'SKIP_WAITING'/,
     'a waiting worker must activate only after an explicit update request');
-assert.match(source, /const CACHE_VERSION = 'v111'/,
-    'the update-flow release must invalidate the previous app shell cache');
+assert.match(source, /const CACHE_VERSION = 'v\d+';/,
+    'the app shell cache must use an explicit version');
 const installBlock = source.slice(
     source.indexOf("self.addEventListener('install'"),
     source.indexOf("self.addEventListener('message'")

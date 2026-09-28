@@ -17,7 +17,13 @@ vinyl-music-player/
 │   │   └── format.js       # mm:ss helpers
 │   ├── player.js           # Audio playback + vinyl UI + lyrics display
 │   ├── album-art.js        # Album art DOM updates (used by player.js)
-│   ├── settings.js         # Form, uploads, lyrics CRUD, ratio/format toggles, export UI
+│   ├── settings.js         # Form, uploads, lyrics CRUD, and export UI
+│   ├── output-settings.js  # Ratio/format controls + persistence and preview geometry
+│   ├── export-controls.js  # Export-button state, validation, download, and progress UI
+│   ├── media-controls.js   # Uploads, local metadata, artwork, and media form bindings
+│   ├── translation-controls.js # Translation model lifecycle and lyric translation UI
+│   ├── autosync-controls.js # Whisper auto-sync UI and lyric-result application
+│   ├── lyrics-import-controls.js # JSON/LRC import, export, and LRCLIB lookup UI
 │   ├── id3.js              # Local ID3 title, artist, and cover extraction
 │   ├── lrc.js              # LRC parser and serializer
 │   ├── lrclib.js           # Opt-in synced-lyrics lookup
@@ -29,6 +35,11 @@ vinyl-music-player/
 │   ├── color-manager.js    # Color overrides + per-color presets + palette templates + accent sync
 │   ├── font-manager.js     # Player font picker + export @font-face embedding
 │   ├── export.js           # Canvas + MediaRecorder MP4/WebM exporter
+│   ├── export-support.js   # Browser-support diagnostics modal
+│   ├── export-dom.js       # Temporary player-DOM state used while exporting
+│   ├── export-capture.js   # DOM/SVG-to-canvas capture primitives for export
+│   ├── export-renderer.js  # Canvas layer cache and per-frame compositing
+│   ├── export-session.js   # Per-run recorder, timer, audio, and DOM resources
 │   ├── theme.js            # Derives the accent color from the album art
 │   ├── ui-theme.js          # System/dark/light workspace theme preference
 │   ├── drawer.js           # Settings drawer open/close + collapsible sections
@@ -57,7 +68,9 @@ emit(Events.UPDATE_LYRICS, [...]);     // settings.js publishes
 on(Events.UPDATE_LYRICS, fn);          // player.js subscribes
 ```
 
-Event names live in a frozen `Events` object so misspellings fail loudly.
+Event names live in a frozen `Events` object, and `emit()` validates each event's
+payload before notifying subscribers. A malformed or unknown cross-module event
+therefore fails at its producer rather than corrupting a downstream UI state.
 
 | Event | Producer | Consumer | Payload |
 |---|---|---|---|
@@ -69,16 +82,16 @@ Event names live in a frozen `Events` object so misspellings fail loudly.
 | `CLEAR_ALBUM_ART` | `settings.js` | `player.js` | – |
 | `UPDATE_LYRICS` | `settings.js` | `player.js` | `{start, end, text}[]` |
 | `UPDATE_LYRICS_COLOR` | `color-manager.js` | `player.js` | hex string |
-| `UPDATE_ASPECT_RATIO` | `settings.js` | – (none yet) | ratio key, e.g. `'9:16'` |
+| `UPDATE_ASPECT_RATIO` | `output-settings.js` | – (none yet) | ratio key, e.g. `'9:16'` |
 | `ACCENT_DERIVED` | `theme.js` | `color-manager.js` | hex string |
 | `ACCENT_OVERRIDE_CLEARED` | `color-manager.js` | `theme.js` | – |
-| `EXPORT_REQUESTED` | `settings.js` | `export.js` | `{audioFile, songTitle, artistName, albumArtFile, rangeStart, rangeEnd}` |
-| `EXPORT_CANCEL` | `settings.js` | `export.js` | – |
-| `EXPORT_CANCELLED` | `export.js` | `settings.js` | – |
-| `EXPORT_PROGRESS` | `export.js` | `settings.js` | `{progress, message}` |
-| `EXPORT_COMPLETE` | `export.js` | `settings.js` | `{videoBlob, fileName}` |
-| `EXPORT_ERROR` | `export.js` | `settings.js` | `string` |
-| `DEBUG_BROWSER_SUPPORT` | `settings.js` | `export.js` | – |
+| `EXPORT_REQUESTED` | `export-controls.js` | `export.js` | `{audioFile, songTitle, artistName, albumArtFile, rangeStart, rangeEnd}` |
+| `EXPORT_CANCEL` | `export-controls.js` | `export.js` | – |
+| `EXPORT_CANCELLED` | `export.js` | `export-controls.js` | – |
+| `EXPORT_PROGRESS` | `export.js` | `export-controls.js` | `{progress, message}` |
+| `EXPORT_COMPLETE` | `export.js` | `export-controls.js` | `{videoBlob, fileName}` |
+| `EXPORT_ERROR` | `export.js` | `export-controls.js` | `string` |
+| `DEBUG_BROWSER_SUPPORT` | `export-controls.js` | `export.js` | – |
 
 ## Shared state
 
@@ -102,6 +115,12 @@ export const state = {
 
 Modules import it directly. There's no reactivity layer — consumers re-read on each event.
 
+Each mutable field has one writing boundary. `player.js` owns playback state,
+audio, lyrics, and lyric color; `output-settings.js` owns ratio/container;
+`settings.js` owns the persisted visualizer preference; and `export.js` owns
+the export lock. Other modules request these changes through events instead of
+writing the corresponding field themselves.
+
 The same module also exports the shared constants `RATIOS` (canvas dimensions per
 aspect ratio — native platform upload resolutions) and `FORMATS` (export container
 formats with their `MediaRecorder` codec candidate lists), plus their defaults.
@@ -120,7 +139,7 @@ formats with their `MediaRecorder` codec candidate lists), plus their defaults.
 
 The hybrid approach (cheap per-frame canvas composite + occasional DOM capture) keeps the recording at a steady 30 fps: the expensive html-to-image work never runs on the per-frame path.
 
-While exporting, the editor preview is driven from the same `exportAudio` clock (vinyl angle, lyrics, progress bar, time labels — see `syncLiveDomToExportAudio`), so what you watch is exactly what's being recorded, beginning at the selected export start time (or 0:00 for a full track). In the settings panel the export button itself doubles as the progress bar (fill width + label driven by `EXPORT_PROGRESS`; clicking it mid-export cancels).
+While exporting, `export-dom.js` drives the editor preview from the same `exportAudio` clock (vinyl angle, lyrics, progress bar, time labels), so what you watch is exactly what's being recorded, beginning at the selected export start time (or 0:00 for a full track). In the settings panel the export button itself doubles as the progress bar (fill width + label driven by `EXPORT_PROGRESS`; clicking it mid-export cancels).
 
 ## Auto-sync (AI lyric timing)
 

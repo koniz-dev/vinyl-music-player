@@ -1,5 +1,4 @@
 import { emit, on, Events } from './lib/events.js';
-import { state } from './lib/state.js';
 import { icon } from './icons.js';
 
 /* Each customizable element. Order = render order in drawer.
@@ -189,7 +188,6 @@ function applyOverride(def, hex) {
     const cssValue = def.valueToCssOverride ? def.valueToCssOverride(hex) : hex;
     document.documentElement.style.setProperty(def.cssVar, cssValue);
     if (def.key === 'lyrics') {
-        state.lyricsColor = hex;
         emit(Events.UPDATE_LYRICS_COLOR, hex);
     }
 }
@@ -201,7 +199,6 @@ function applyReset(def) {
     }
     document.documentElement.style.removeProperty(def.cssVar);
     if (def.key === 'lyrics') {
-        state.lyricsColor = def.defaultColor;
         emit(Events.UPDATE_LYRICS_COLOR, def.defaultColor);
     }
 }

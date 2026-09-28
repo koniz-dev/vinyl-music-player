@@ -5,7 +5,7 @@
 
 ## Delivery rules (do not miss these)
 
-- [x] **PWA:** `v111` precache covers every local module; `npm test` asserts every precached local path exists, preserves ML-model caches across app-shell updates, and verifies the opt-in in-app **Update** flow. `?pwa-smoke=1` verifies cached app-shell fetches.
+- [x] **PWA:** the versioned precache covers every local module; `npm test` asserts every precached local path exists, preserves ML-model caches across app-shell updates, and verifies the opt-in in-app **Update** flow. `?pwa-smoke=1` verifies cached app-shell fetches.
 - [x] **In-app guidance:** section-local Help icons launch five focused walkthroughs (Basics, Artwork, Lyrics, Appearance, Export). Each spotlights one real control, says exactly what to click and why, and provides Next/Skip without a global launcher or a 28-step session.
 - [x] **App theme:** global System, Dark, and Light controls live in the top-left app bar, persist locally, and stay independent from video palette controls.
 - [x] **Privacy:** optional LRCLIB/Pollinations requests are confirmed in UI, disclose provider/fields in docs, and are allowlisted in CSP; model/font downloads are initiated only by their optional controls and never include audio.
@@ -14,6 +14,26 @@
   - Manual release gates are scripted in `docs/release-checklist.md` (offline PWA, export, and translation first-run).
 
 ## Now — P0 (complete the happy path)
+
+- [x] **Architecture debt burn-down — contracts and regression gates** — event names and payloads are validated at the bus boundary, event contracts have a dedicated Node regression test, PWA cache-version assertions no longer require a test edit on every release, and the PWA smoke covers every extracted export module.
+  - Acceptance: invalid and unknown events fail at their producer; the lyric event accepts the editor's numeric timestamps (including timed words) while rejecting malformed data; all local static imports remain precached; syntax, event contracts, parser, worker, PWA, and UI-shell checks pass without warnings.
+- [x] **Architecture debt burn-down — media boundary** — media upload, artwork, local ID3 autofill, and metadata bindings now live in `js/media-controls.js` behind explicit DOM and callback dependencies.
+  - Acceptance: upload, generated artwork, metadata autofill, clear controls, and playback events retain their existing contract; the module is precached and regression checks pass.
+- [x] **Architecture debt burn-down — export DOM boundary** — the temporary player preview state used during capture is now owned by `js/export-dom.js`; the recorder orchestration no longer knows individual player controls.
+  - Acceptance: the live preview still mirrors the export audio clock and restores its prior state after recording; the module is precached, covered by the PWA smoke list, and browser export smoke passes.
+- [x] **Architecture debt burn-down — export capture boundary** — DOM/SVG rasterization and circular masking now live in `js/export-capture.js`, leaving the exporter to choose layers and orchestrate recording.
+  - Acceptance: canvas capture retains font, timeout, SVG-shadow, and circle-mask behavior; all extracted modules are precached and covered by regression checks.
+- [x] **Architecture debt burn-down — export renderer boundary** — canvas sizing, layer caches, layout geometry, karaoke overlay, visualizer and per-frame compositing now execute in `js/export-renderer.js`.
+  - Acceptance: recorder consumes the renderer canvas, cache refresh remains off the hot path, legacy renderer code is absent from `export.js`, and browser MP4 smoke completes after the extraction.
+- [x] **Architecture debt burn-down — export session boundary** — all mutable recorder, timer, audio, DOM bridge, and renderer resources are allocated by `js/export-session.js` for one export run.
+  - Acceptance: a new run receives a fresh session; cancellation and completion tear down only that session's resources; the module is precached and regression-covered.
+
+- [x] **Architecture refactor, phase 1 — output settings boundary** — moved aspect-ratio and video-format selection, browser capability checks, persistence, and preview geometry into `js/output-settings.js`. `settings.js` retains only the export-button label callback; output changes still update shared state and emit the existing `UPDATE_ASPECT_RATIO` event.
+  - Acceptance: persisted ratio/container choices, unavailable-codec disabling, export-time locking, preview geometry, and export label remain unchanged; new module is precached and covered by `npm test`.
+- [x] **Architecture refactor, phase 2 — isolate export controls** — moved export-button state, range validation, progress UI, cancellation trigger, and completed-file download to `js/export-controls.js`. `settings.js` remains the composition root for lyric and media editors.
+  - Acceptance: public initializer receives its DOM and auto-sync dependencies explicitly; existing events, validation, and UI interactions retain behavior.
+- [x] **Architecture refactor, phase 3 — isolate export support UI** — moved browser-capability diagnostics and the support modal to `js/export-support.js`, leaving `export.js` focused on the recording lifecycle and render pipeline; removed the legacy implementation.
+  - Acceptance: `DEBUG_BROWSER_SUPPORT` still opens the same diagnostic flow; export's 30 fps hot path is untouched.
 
 - [x] **ID3 autofill** — locally reads title (TIT2), artist (TPE1), and front cover (APIC) without overwriting user-entered fields. Implemented in `js/id3.js`; no dependency or network request.
 - [x] **Export codec preflight** — unavailable formats are disabled and the actual recorder MIME controls the download extension.

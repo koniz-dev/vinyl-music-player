@@ -26,11 +26,15 @@ export function loadSmokeTone() {
     const title = document.getElementById('song-title');
     const rangeEnd = document.getElementById('export-end');
     if (!input || !title || !rangeEnd || typeof DataTransfer === 'undefined') return;
+    const requestedSeconds = Number(new URLSearchParams(location.search).get('smoke-seconds'));
+    const seconds = Number.isInteger(requestedSeconds) && requestedSeconds >= 5 && requestedSeconds <= 30
+        ? requestedSeconds
+        : 5;
     const files = new DataTransfer();
-    files.items.add(makeToneWav());
+    files.items.add(makeToneWav(seconds));
     input.files = files.files;
     title.value = 'smoke-tone';
-    rangeEnd.value = '00:05';
+    rangeEnd.value = `00:${String(seconds).padStart(2, '0')}`;
     input.dispatchEvent(new Event('change', { bubbles: true }));
     title.dispatchEvent(new Event('input', { bubbles: true }));
 
@@ -47,5 +51,8 @@ export function loadSmokeTone() {
     on(Events.EXPORT_ERROR, (message) => {
         status.dataset.status = 'error';
         status.dataset.message = String(message);
+    });
+    on(Events.EXPORT_CANCELLED, () => {
+        status.dataset.status = 'cancelled';
     });
 }

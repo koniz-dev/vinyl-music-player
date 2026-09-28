@@ -13,9 +13,22 @@ const [html, commonCss, indexCss, vinylCss, main, uiTheme, tour, launcher, stopp
     readFile('./scripts/stop-local.mjs', 'utf8'),
 ]);
 
-const [settings, dialog] = await Promise.all([
+const [settings, dialog, outputSettings, exportControls, exporter, exportSupport, exportDom, exportCapture, exportRenderer, exportSession, colorManager, mediaControls, autoSyncControls, translationControls, lyricsImportControls] = await Promise.all([
     readFile('./js/settings.js', 'utf8'),
     readFile('./js/dialog.js', 'utf8'),
+    readFile('./js/output-settings.js', 'utf8'),
+    readFile('./js/export-controls.js', 'utf8'),
+    readFile('./js/export.js', 'utf8'),
+    readFile('./js/export-support.js', 'utf8'),
+    readFile('./js/export-dom.js', 'utf8'),
+    readFile('./js/export-capture.js', 'utf8'),
+    readFile('./js/export-renderer.js', 'utf8'),
+    readFile('./js/export-session.js', 'utf8'),
+    readFile('./js/color-manager.js', 'utf8'),
+    readFile('./js/media-controls.js', 'utf8'),
+    readFile('./js/autosync-controls.js', 'utf8'),
+    readFile('./js/translation-controls.js', 'utf8'),
+    readFile('./js/lyrics-import-controls.js', 'utf8'),
 ]);
 
 assert.ok(!html.includes('guide-modal') && !html.includes('data-guide-target'), 'the retired guide panel must not ship');
@@ -50,6 +63,47 @@ assert.ok(!/window\.(confirm|prompt|alert)\s*\(/.test(settings),
     'settings actions must use the in-app dialog instead of browser prompts');
 assert.match(dialog, /confirmDialog/, 'the reusable in-app confirmation dialog must remain available');
 assert.match(html, /id="app-dialog"/, 'confirmation and selection actions must render in the app shell');
+assert.match(settings, /initOutputSettings/, 'settings must delegate output controls to their boundary module');
+assert.match(settings, /initExportControls/, 'settings must delegate export controls to their boundary module');
+assert.match(settings, /initMediaControls/, 'settings must delegate media controls to their boundary module');
+assert.ok(!settings.includes('function handleAudioFile'), 'settings must not retain duplicate media handlers');
+assert.match(outputSettings, /Events\.UPDATE_ASPECT_RATIO/, 'output settings must preserve the aspect-ratio event contract');
+assert.match(exportControls, /Events\.EXPORT_REQUESTED/, 'export controls must own the export request boundary');
+assert.match(exportControls, /Events\.EXPORT_PROGRESS/, 'export controls must receive export progress');
+assert.match(exporter, /initExportSupportModal/, 'export must initialize its support UI boundary');
+assert.ok(!exporter.includes('function debugBrowserSupport'), 'export must not retain a duplicate browser-support implementation');
+assert.match(exportSupport, /DEBUG_BROWSER_SUPPORT|browser-support-modal/, 'browser support UI must remain independently implemented');
+assert.match(exportDom, /snapshotExportDom|restoreExportDom/, 'export DOM bridge must own temporary preview state');
+assert.ok(!exporter.includes('function snapshotLiveDom'), 'exporter must not retain DOM bridge implementation');
+assert.match(exportCapture, /captureDomToCanvas|captureSvgToCanvas/, 'export capture primitives must have an independent boundary');
+assert.ok(!exporter.includes('function captureViaH2I'), 'exporter must not retain capture implementation');
+assert.match(exportRenderer, /createExportRenderer|drawFrame/, 'canvas compositing must have an independent renderer boundary');
+assert.match(exporter, /createExportRenderer/, 'exporter must compose the renderer into each export run');
+assert.ok(!exporter.includes('function computeLayerRects'), 'exporter must not retain renderer geometry implementation');
+assert.ok(!exporter.includes('async function setupExportLayers'), 'exporter must not retain layer-cache implementation');
+assert.match(exportSession, /createExportSession|recordedChunks/, 'one export run must own its mutable resources');
+assert.match(exporter, /const session = createExportSession\(\);[\s\S]*active = session;/,
+    'exporter must create and retain a distinct resource session per run');
+assert.match(exporter, /active !== session/, 'stale export callbacks must not affect a newer session');
+assert.match(exporter, /function renderLoop\(session\)/, 'render loop must be scoped to one export session');
+assert.match(exporter, /requestAnimationFrame\(\(\) => renderLoop\(session\)\)/,
+    'a stale animation frame must not schedule work for a newer session');
+assert.ok(!colorManager.includes('state.lyricsColor ='), 'lyrics color state must have one writer in player.js');
+assert.match(html, /id="font-size"[^>]*type="range"/, 'appearance controls must expose a text-size slider');
+assert.match(await readFile('./js/font-manager.js', 'utf8'), /playerFontScale|--font-player-scale/,
+    'font manager must persist and apply text size');
+assert.match(vinylCss, /--font-player-scale/, 'player typography must honor the selected text size');
+assert.match(vinylCss, /calc\(22px \* var\(--font-player-scale\)\)/,
+    'mobile title typography must honor the selected text size');
+assert.match(mediaControls, /readId3Metadata/, 'media controls must own local metadata autofill');
+assert.match(settings, /initAutoSyncControls/, 'settings must delegate Whisper UI to its controller');
+assert.match(settings, /initTranslationControls/, 'settings must delegate translation UI to its controller');
+assert.match(autoSyncControls, /runAutoSync/, 'auto-sync controls must own the Whisper workflow');
+assert.match(translationControls, /translateLyrics/, 'translation controls must own translation workflow');
+assert.match(settings, /initLyricsImportControls/, 'settings must delegate lyric import UI to its controller');
+assert.match(lyricsImportControls, /findSyncedLyrics/, 'lyric import controls must own LRCLIB lookup');
+assert.match(await readFile('./test/smoke-tone.js', 'utf8'), /smoke-seconds|EXPORT_CANCELLED/,
+    'browser smoke fixture must support a longer cancel/restart lifecycle check');
 assert.match(launcher, /waitForAppServer/, 'background launcher must wait for readiness');
 assert.match(launcher, /APP_MARKER/, 'background launcher must verify the app, not only a port');
 assert.match(stopper, /Refused to stop/, 'stop command must refuse an unowned process');

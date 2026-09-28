@@ -28,12 +28,17 @@ const FONT_DEFS = [
 ];
 
 const STORAGE_KEY = 'playerFont';
+const SIZE_STORAGE_KEY = 'playerFontScale';
+const DEFAULT_SCALE = 100;
 // Only embed the subsets the player actually renders — dropping cyrillic/greek
 // keeps the per-second base-capture SVG payload small.
 const EMBED_SUBSETS = new Set(['latin', 'latin-ext', 'vietnamese']);
 
 let currentKey = loadPersistedFont();
+let currentScale = loadPersistedScale();
 let listEl = null;
+let sizeInput = null;
+let sizeOutput = null;
 // Map<fontKey, Promise<string|null>> — embed CSS is built once per family.
 const embedCssCache = new Map();
 
@@ -52,6 +57,31 @@ function persist() {
     try {
         localStorage.setItem(STORAGE_KEY, currentKey);
     } catch {}
+}
+
+function loadPersistedScale() {
+    try {
+        const value = Number(localStorage.getItem(SIZE_STORAGE_KEY));
+        return Number.isInteger(value) && value >= 80 && value <= 140 ? value : DEFAULT_SCALE;
+    } catch {
+        return DEFAULT_SCALE;
+    }
+}
+
+function applyScale() {
+    const scale = currentScale / 100;
+    if (currentScale === DEFAULT_SCALE) document.documentElement.style.removeProperty('--font-player-scale');
+    else document.documentElement.style.setProperty('--font-player-scale', String(scale));
+    if (sizeInput) sizeInput.value = String(currentScale);
+    if (sizeOutput) sizeOutput.value = `${currentScale}%`;
+}
+
+function setScale(value) {
+    const scale = Number(value);
+    if (!Number.isInteger(scale) || scale < 80 || scale > 140) return;
+    currentScale = scale;
+    try { localStorage.setItem(SIZE_STORAGE_KEY, String(scale)); } catch {}
+    applyScale();
 }
 
 // ───────────────────── Apply / select ─────────────────────
@@ -172,11 +202,15 @@ function buildOption(def) {
 
 export function initFontManager() {
     listEl = document.getElementById('font-list');
+    sizeInput = document.getElementById('font-size');
+    sizeOutput = document.getElementById('font-size-value');
     if (!listEl) return;
 
     listEl.replaceChildren(...FONT_DEFS.map(buildOption));
 
     const def = FONT_DEFS.find(f => f.key === currentKey);
     if (def && def.key !== DEFAULT_KEY) applyFont(def);
+    applyScale();
+    sizeInput?.addEventListener('input', () => setScale(sizeInput.value));
     renderActive();
 }

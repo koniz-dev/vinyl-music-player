@@ -14,7 +14,7 @@ npm start        # same, without opening browser
 npm run serve    # :8080 variant
 ```
 
-- There is **no build step** (`npm run build` is a no-op) and **no test suite** (`npm test` is a no-op). Changes are verified manually: load an MP3, add a title + 2–3 lyric lines, export, and check that audio/lyrics/visuals sync in the resulting WebM.
+- There is **no build step** (`npm run build` is a no-op). Run `npm test` for syntax, parser, worker, PWA, and UI-shell regressions; also manually load an MP3, add a title + 2–3 lyric lines, export, and check that audio/lyrics/visuals sync in the resulting WebM.
 - ES modules require an HTTP origin — never open `index.html` via `file://`.
 - Deploy is automatic: GitHub Pages workflow runs on push to `main`, but **only** when shipped files change (`index.html`, `service-worker.js`, `js/**`, `styles/**`, `favicon/**`). Edits to `docs/` or `README.md` do not trigger a deploy.
 
@@ -26,10 +26,21 @@ Single-page app with two panels (settings + vinyl player) that communicate throu
 - **`js/lib/events.js`** — the event bus. Event names live in a frozen `Events` enum. Cross-module state changes go through `emit(Events.X, payload)` / `on(Events.X, fn)`. The full producer/consumer/payload table is in `docs/architecture.md`.
 - **`js/lib/state.js`** — single shared mutable state object (playback flags, lyrics, colors, aspect ratio, video format) plus the constants `RATIOS` (export resolutions) and `FORMATS` (MP4/WebM codec candidate lists for MediaRecorder). No reactivity layer; consumers re-read on each event.
 - **`js/settings.js`** — form, file uploads, lyrics CRUD, export UI (producer side of most events).
+- **`js/output-settings.js`** — output ratio and container controls, browser capability checks, persistence, and preview geometry.
+- **`js/export-controls.js`** — export-button state, range validation, progress UI, cancellation trigger, and completed-file download.
+- **`js/media-controls.js`** — media uploads, local ID3 metadata, artwork generation, and media form bindings.
+- **`js/translation-controls.js`** — on-device translation model lifecycle and lyric translation UI.
+- **`js/autosync-controls.js`** — Whisper auto-sync UI and lyric-result application.
+- **`js/lyrics-import-controls.js`** — JSON/LRC import, export, and LRCLIB lookup UI.
+- **`js/export-support.js`** — browser-capability diagnostics and its modal UI.
+- **`js/export-dom.js`** — snapshots, drives, and restores the temporary player DOM state used by the exporter.
+- **`js/export-capture.js`** — DOM/SVG rasterization and masking primitives used by the exporter.
+- **`js/export-renderer.js`** — owns the canvas layer cache and per-frame compositing work.
+- **`js/export-session.js`** — owns mutable resources for one active export run.
 - **`js/player.js`** — audio playback, vinyl UI, lyrics display (consumer side).
 - **`js/autosync.js`** + **`js/workers/whisper-worker.js`** — AI lyric timing (the "Auto-sync with AI" panel: paste plain lyrics → timed lines). Decodes the upload to 16 kHz mono, runs Whisper tiny in a module worker (transformers.js pinned from jsDelivr, weights from the HF Hub — both cross-origin, cached by transformers.js itself, never by our SW), then aligns transcript words to the user's lines (Needleman-Wunsch). Helper of settings.js like color-manager — no bus events. Keep the transformers.js version pinned; verify a v3.x API before bumping.
 - **`js/export.js`** — the most complex and fragile module. Hybrid render pipeline: captures the live `.frame` DOM into static layers via `js/vendor/html-to-image.js` (base layer refreshed ~1×/s; vinyl/sheen/tonearm as separate bitmaps), then composites them onto an off-screen canvas per frame with `requestAnimationFrame`. Vinyl rotation is derived from audio `currentTime` (deterministic). Recorder is locked at 30 fps — keep per-frame work cheap; the expensive html-to-image capture must never run on the per-frame path. Many canvas drawing calls mirror CSS rules, so visual regressions are easy — compare an exported reference video before/after when touching it.
-- **`service-worker.js`** — offline PWA cache (stale-while-revalidate).
+- **`service-worker.js`** — offline PWA cache (network-first with an offline-cache fallback).
 
 ## Conventions that bite if missed
 

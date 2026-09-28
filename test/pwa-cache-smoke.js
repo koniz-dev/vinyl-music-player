@@ -6,7 +6,25 @@ export async function runPwaCacheSmoke() {
     output.id = 'pwa-cache-smoke-status';
     output.hidden = true;
     document.body.append(output);
-    const paths = ['index.html', 'js/main.js', 'js/settings.js', 'js/export.js', 'js/translate.js'];
+    const paths = [
+        'index.html',
+        'js/main.js',
+        'js/settings.js',
+        'js/output-settings.js',
+        'js/export-controls.js',
+        'js/export.js',
+        'js/export-dom.js',
+        'js/export-capture.js',
+        'js/export-renderer.js',
+        'js/export-session.js',
+        'js/export-media.js',
+        'js/export-support.js',
+        'js/media-controls.js',
+        'js/translation-controls.js',
+        'js/autosync-controls.js',
+        'js/lyrics-import-controls.js',
+        'js/translate.js',
+    ];
     try {
         if (!navigator.serviceWorker?.controller) throw new Error('No active service-worker controller. Reload once after install.');
         const results = await Promise.all(paths.map(async (path) => {
