@@ -757,7 +757,7 @@
 
 .font-size-stepper {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 30px 54px 14px 30px;
+    grid-template-columns: minmax(0, 1fr) 30px 54px 30px 24px;
     align-items: center;
     gap: var(--s-1);
     margin-top: var(--s-2);
