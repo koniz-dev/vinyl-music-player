@@ -441,13 +441,27 @@
                     </div>
                     <div class="font-size-control">
                         <span class="field-label">Text size</span>
-                        <label for="font-size-title">Title <output id="font-size-title-value">100%</output></label>
-                        <input id="font-size-title" type="range" min="80" max="140" step="5" value="100">
-                        <label for="font-size-artist">Artist <output id="font-size-artist-value">100%</output></label>
-                        <input id="font-size-artist" type="range" min="80" max="140" step="5" value="100">
-                        <label for="font-size-lyrics">Lyrics <output id="font-size-lyrics-value">100%</output></label>
-                        <input id="font-size-lyrics" type="range" min="80" max="140" step="5" value="100"
-                            aria-describedby="font-size-help">
+                        <div class="font-size-stepper">
+                            <label for="font-size-title">Title</label>
+                            <button type="button" class="font-size-step" data-font-size-target="title" data-font-size-delta="-5" aria-label="Decrease title text size">−</button>
+                            <input id="font-size-title" type="number" min="80" max="140" step="5" value="100" aria-label="Title text size">
+                            <span aria-hidden="true">%</span>
+                            <button type="button" class="font-size-step" data-font-size-target="title" data-font-size-delta="5" aria-label="Increase title text size">+</button>
+                        </div>
+                        <div class="font-size-stepper">
+                            <label for="font-size-artist">Artist</label>
+                            <button type="button" class="font-size-step" data-font-size-target="artist" data-font-size-delta="-5" aria-label="Decrease artist text size">−</button>
+                            <input id="font-size-artist" type="number" min="80" max="140" step="5" value="100" aria-label="Artist text size">
+                            <span aria-hidden="true">%</span>
+                            <button type="button" class="font-size-step" data-font-size-target="artist" data-font-size-delta="5" aria-label="Increase artist text size">+</button>
+                        </div>
+                        <div class="font-size-stepper">
+                            <label for="font-size-lyrics">Lyrics</label>
+                            <button type="button" class="font-size-step" data-font-size-target="lyrics" data-font-size-delta="-5" aria-label="Decrease lyrics text size">−</button>
+                            <input id="font-size-lyrics" type="number" min="80" max="140" step="5" value="100" aria-describedby="font-size-help" aria-label="Lyrics text size">
+                            <span aria-hidden="true">%</span>
+                            <button type="button" class="font-size-step" data-font-size-target="lyrics" data-font-size-delta="5" aria-label="Increase lyrics text size">+</button>
+                        </div>
                         <p class="field-help" id="font-size-help">Each setting applies to the preview and exported video.</p>
                     </div>
                 </div>

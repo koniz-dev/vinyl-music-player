@@ -90,9 +90,11 @@ assert.match(exporter, /requestAnimationFrame\(\(\) => renderLoop\(session\)\)/,
     'a stale animation frame must not schedule work for a newer session');
 assert.ok(!colorManager.includes('state.lyricsColor ='), 'lyrics color state must have one writer in player.js');
 for (const target of ['title', 'artist', 'lyrics']) {
-    assert.match(html, new RegExp(`id="font-size-${target}"[^>]*type="range"`),
-        `appearance controls must expose a ${target} text-size slider`);
+    assert.match(html, new RegExp(`id="font-size-${target}"[^>]*type="number"`),
+        `appearance controls must expose a ${target} direct text-size input`);
 }
+assert.match(html, /data-font-size-target="title"[\s\S]*data-font-size-delta="-5"/,
+    'appearance controls must provide precise text-size decrement buttons');
 assert.match(await readFile('./js/font-manager.js', 'utf8'), /playerFontScales|--font-player-\$\{target\}-scale/,
     'font manager must persist and apply separate text sizes');
 assert.match(vinylCss, /--font-player-title-scale|--font-player-artist-scale|--font-player-lyrics-scale/,

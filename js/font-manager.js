@@ -40,7 +40,6 @@ let currentKey = loadPersistedFont();
 let currentScales = loadPersistedScales();
 let listEl = null;
 const sizeInputs = new Map();
-const sizeOutputs = new Map();
 // Map<fontKey, Promise<string|null>> — embed CSS is built once per family.
 const embedCssCache = new Map();
 
@@ -62,7 +61,7 @@ function persist() {
 }
 
 function isValidScale(value) {
-    return Number.isInteger(value) && value >= 80 && value <= 140;
+    return Number.isInteger(value) && value >= 80 && value <= 140 && (value - 80) % 5 === 0;
 }
 
 function loadPersistedScales() {
@@ -84,9 +83,7 @@ function applyScales() {
         if (scale === DEFAULT_SCALE) document.documentElement.style.removeProperty(property);
         else document.documentElement.style.setProperty(property, String(scale / 100));
         const input = sizeInputs.get(target);
-        const output = sizeOutputs.get(target);
         if (input) input.value = String(scale);
-        if (output) output.value = `${scale}%`;
     }
 }
 
@@ -218,7 +215,6 @@ export function initFontManager() {
     listEl = document.getElementById('font-list');
     for (const target of SCALE_TARGETS) {
         sizeInputs.set(target, document.getElementById(`font-size-${target}`));
-        sizeOutputs.set(target, document.getElementById(`font-size-${target}-value`));
     }
     if (!listEl) return;
 
@@ -228,7 +224,17 @@ export function initFontManager() {
     if (def && def.key !== DEFAULT_KEY) applyFont(def);
     applyScales();
     for (const target of SCALE_TARGETS) {
-        sizeInputs.get(target)?.addEventListener('input', () => setScale(target, sizeInputs.get(target).value));
+        sizeInputs.get(target)?.addEventListener('change', () => {
+            setScale(target, sizeInputs.get(target).value);
+            applyScales();
+        });
     }
+    document.querySelectorAll('[data-font-size-target]').forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.dataset.fontSizeTarget;
+            const delta = Number(button.dataset.fontSizeDelta);
+            setScale(target, currentScales[target] + delta);
+        });
+    });
     renderActive();
 }

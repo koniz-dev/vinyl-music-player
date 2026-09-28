@@ -755,25 +755,51 @@
     margin-top: var(--s-3);
 }
 
-.font-size-control > .field-label,
-.font-size-control > label {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--s-2);
-}
-
-.font-size-control > label:not(:first-of-type) {
+.font-size-stepper {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 30px 54px 14px 30px;
+    align-items: center;
+    gap: var(--s-1);
     margin-top: var(--s-2);
 }
 
-.font-size-control output {
-    color: var(--accent);
-    font-family: var(--font-mono);
+.font-size-stepper label {
+    color: var(--fg-1);
+    font-size: 12px;
 }
 
-.font-size-control input[type="range"] {
-    width: 100%;
-    accent-color: var(--accent);
+.font-size-step {
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    color: var(--fg-0);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+}
+
+.font-size-step:hover { border-color: var(--accent); color: var(--accent); }
+.font-size-step:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.font-size-stepper input[type="number"] {
+    width: 54px;
+    min-height: 30px;
+    padding: 3px 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-1);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align: center;
+}
+
+.font-size-stepper > span {
+    color: var(--fg-2);
+    font-family: var(--font-mono);
 }
 
 /* ─── Export ────────────────────────────────────────────────────── */
