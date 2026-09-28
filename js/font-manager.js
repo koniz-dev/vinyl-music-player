@@ -28,17 +28,19 @@ const FONT_DEFS = [
 ];
 
 const STORAGE_KEY = 'playerFont';
-const SIZE_STORAGE_KEY = 'playerFontScale';
+const SIZE_STORAGE_KEY = 'playerFontScales';
+const LEGACY_SIZE_STORAGE_KEY = 'playerFontScale';
 const DEFAULT_SCALE = 100;
+const SCALE_TARGETS = ['title', 'artist', 'lyrics'];
 // Only embed the subsets the player actually renders — dropping cyrillic/greek
 // keeps the per-second base-capture SVG payload small.
 const EMBED_SUBSETS = new Set(['latin', 'latin-ext', 'vietnamese']);
 
 let currentKey = loadPersistedFont();
-let currentScale = loadPersistedScale();
+let currentScales = loadPersistedScales();
 let listEl = null;
-let sizeInput = null;
-let sizeOutput = null;
+const sizeInputs = new Map();
+const sizeOutputs = new Map();
 // Map<fontKey, Promise<string|null>> — embed CSS is built once per family.
 const embedCssCache = new Map();
 
@@ -59,29 +61,41 @@ function persist() {
     } catch {}
 }
 
-function loadPersistedScale() {
+function isValidScale(value) {
+    return Number.isInteger(value) && value >= 80 && value <= 140;
+}
+
+function loadPersistedScales() {
     try {
-        const value = Number(localStorage.getItem(SIZE_STORAGE_KEY));
-        return Number.isInteger(value) && value >= 80 && value <= 140 ? value : DEFAULT_SCALE;
+        const stored = JSON.parse(localStorage.getItem(SIZE_STORAGE_KEY));
+        if (stored && SCALE_TARGETS.every(target => isValidScale(stored[target]))) return stored;
+        const legacyScale = Number(localStorage.getItem(LEGACY_SIZE_STORAGE_KEY));
+        const scale = isValidScale(legacyScale) ? legacyScale : DEFAULT_SCALE;
+        return Object.fromEntries(SCALE_TARGETS.map(target => [target, scale]));
     } catch {
-        return DEFAULT_SCALE;
+        return Object.fromEntries(SCALE_TARGETS.map(target => [target, DEFAULT_SCALE]));
     }
 }
 
-function applyScale() {
-    const scale = currentScale / 100;
-    if (currentScale === DEFAULT_SCALE) document.documentElement.style.removeProperty('--font-player-scale');
-    else document.documentElement.style.setProperty('--font-player-scale', String(scale));
-    if (sizeInput) sizeInput.value = String(currentScale);
-    if (sizeOutput) sizeOutput.value = `${currentScale}%`;
+function applyScales() {
+    for (const target of SCALE_TARGETS) {
+        const scale = currentScales[target];
+        const property = `--font-player-${target}-scale`;
+        if (scale === DEFAULT_SCALE) document.documentElement.style.removeProperty(property);
+        else document.documentElement.style.setProperty(property, String(scale / 100));
+        const input = sizeInputs.get(target);
+        const output = sizeOutputs.get(target);
+        if (input) input.value = String(scale);
+        if (output) output.value = `${scale}%`;
+    }
 }
 
-function setScale(value) {
+function setScale(target, value) {
     const scale = Number(value);
-    if (!Number.isInteger(scale) || scale < 80 || scale > 140) return;
-    currentScale = scale;
-    try { localStorage.setItem(SIZE_STORAGE_KEY, String(scale)); } catch {}
-    applyScale();
+    if (!SCALE_TARGETS.includes(target) || !isValidScale(scale)) return;
+    currentScales = { ...currentScales, [target]: scale };
+    try { localStorage.setItem(SIZE_STORAGE_KEY, JSON.stringify(currentScales)); } catch {}
+    applyScales();
 }
 
 // ───────────────────── Apply / select ─────────────────────
@@ -202,15 +216,19 @@ function buildOption(def) {
 
 export function initFontManager() {
     listEl = document.getElementById('font-list');
-    sizeInput = document.getElementById('font-size');
-    sizeOutput = document.getElementById('font-size-value');
+    for (const target of SCALE_TARGETS) {
+        sizeInputs.set(target, document.getElementById(`font-size-${target}`));
+        sizeOutputs.set(target, document.getElementById(`font-size-${target}-value`));
+    }
     if (!listEl) return;
 
     listEl.replaceChildren(...FONT_DEFS.map(buildOption));
 
     const def = FONT_DEFS.find(f => f.key === currentKey);
     if (def && def.key !== DEFAULT_KEY) applyFont(def);
-    applyScale();
-    sizeInput?.addEventListener('input', () => setScale(sizeInput.value));
+    applyScales();
+    for (const target of SCALE_TARGETS) {
+        sizeInputs.get(target)?.addEventListener('input', () => setScale(target, sizeInputs.get(target).value));
+    }
     renderActive();
 }

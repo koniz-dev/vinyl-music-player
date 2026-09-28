@@ -89,11 +89,15 @@ assert.match(exporter, /function renderLoop\(session\)/, 'render loop must be sc
 assert.match(exporter, /requestAnimationFrame\(\(\) => renderLoop\(session\)\)/,
     'a stale animation frame must not schedule work for a newer session');
 assert.ok(!colorManager.includes('state.lyricsColor ='), 'lyrics color state must have one writer in player.js');
-assert.match(html, /id="font-size"[^>]*type="range"/, 'appearance controls must expose a text-size slider');
-assert.match(await readFile('./js/font-manager.js', 'utf8'), /playerFontScale|--font-player-scale/,
-    'font manager must persist and apply text size');
-assert.match(vinylCss, /--font-player-scale/, 'player typography must honor the selected text size');
-assert.match(vinylCss, /calc\(22px \* var\(--font-player-scale\)\)/,
+for (const target of ['title', 'artist', 'lyrics']) {
+    assert.match(html, new RegExp(`id="font-size-${target}"[^>]*type="range"`),
+        `appearance controls must expose a ${target} text-size slider`);
+}
+assert.match(await readFile('./js/font-manager.js', 'utf8'), /playerFontScales|--font-player-\$\{target\}-scale/,
+    'font manager must persist and apply separate text sizes');
+assert.match(vinylCss, /--font-player-title-scale|--font-player-artist-scale|--font-player-lyrics-scale/,
+    'player typography must honor the selected text sizes');
+assert.match(vinylCss, /calc\(22px \* var\(--font-player-title-scale\)\)/,
     'mobile title typography must honor the selected text size');
 assert.match(mediaControls, /readId3Metadata/, 'media controls must own local metadata autofill');
 assert.match(settings, /initAutoSyncControls/, 'settings must delegate Whisper UI to its controller');

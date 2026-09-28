@@ -755,10 +755,15 @@
     margin-top: var(--s-3);
 }
 
-.font-size-control .field-label {
+.font-size-control > .field-label,
+.font-size-control > label {
     display: flex;
     justify-content: space-between;
     gap: var(--s-2);
+}
+
+.font-size-control > label:not(:first-of-type) {
+    margin-top: var(--s-2);
 }
 
 .font-size-control output {

@@ -440,10 +440,15 @@
                         <!-- Populated by font-manager.js. Each option previews its own typeface. -->
                     </div>
                     <div class="font-size-control">
-                        <label class="field-label" for="font-size">Text size <output id="font-size-value">100%</output></label>
-                        <input id="font-size" type="range" min="80" max="140" step="5" value="100"
+                        <span class="field-label">Text size</span>
+                        <label for="font-size-title">Title <output id="font-size-title-value">100%</output></label>
+                        <input id="font-size-title" type="range" min="80" max="140" step="5" value="100">
+                        <label for="font-size-artist">Artist <output id="font-size-artist-value">100%</output></label>
+                        <input id="font-size-artist" type="range" min="80" max="140" step="5" value="100">
+                        <label for="font-size-lyrics">Lyrics <output id="font-size-lyrics-value">100%</output></label>
+                        <input id="font-size-lyrics" type="range" min="80" max="140" step="5" value="100"
                             aria-describedby="font-size-help">
-                        <p class="field-help" id="font-size-help">Scales the title, artist, and lyrics in the preview and exported video.</p>
+                        <p class="field-help" id="font-size-help">Each setting applies to the preview and exported video.</p>
                     </div>
                 </div>
 
