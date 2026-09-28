@@ -173,7 +173,7 @@
 
 .vinyl-song-title {
     font-family: var(--font-player);
-    font-size: calc(clamp(16px, 5cqmin, 22px) * var(--font-player-title-scale));
+    font-size: var(--font-player-title-size);
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--color-title);
@@ -184,7 +184,7 @@
 .vinyl-artist-name {
     margin-top: var(--s-1);
     font-family: var(--font-player);
-    font-size: calc(clamp(11px, 3cqmin, 14px) * var(--font-player-artist-scale));
+    font-size: var(--font-player-artist-size);
     color: var(--color-artist);
     letter-spacing: 0.02em;
 }
@@ -198,7 +198,7 @@
 .vinyl-lyrics-text {
     margin-top: var(--s-3);
     font-family: var(--font-player);
-    font-size: calc(clamp(13px, 3.5cqmin, 16px) * var(--font-player-lyrics-scale));
+    font-size: var(--font-player-lyrics-size);
     color: var(--color-lyrics);
     font-weight: 500;
     line-height: 1.4;
@@ -367,11 +367,4 @@
         height: auto;
     }
 
-    .vinyl-song-title {
-        font-size: calc(22px * var(--font-player-title-scale));
-    }
-
-    .vinyl-lyrics-text {
-        font-size: calc(16px * var(--font-player-lyrics-scale));
-    }
 }

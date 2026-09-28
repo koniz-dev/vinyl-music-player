@@ -28,16 +28,18 @@ const FONT_DEFS = [
 ];
 
 const STORAGE_KEY = 'playerFont';
-const SIZE_STORAGE_KEY = 'playerFontScales';
+const SIZE_STORAGE_KEY = 'playerFontSizes';
+const SCALE_STORAGE_KEY = 'playerFontScales';
 const LEGACY_SIZE_STORAGE_KEY = 'playerFontScale';
-const DEFAULT_SCALE = 100;
 const SCALE_TARGETS = ['title', 'artist', 'lyrics'];
+const DEFAULT_SIZES = { title: 22, artist: 14, lyrics: 16 };
+const SIZE_LIMITS = { title: [12, 64], artist: [10, 48], lyrics: [10, 56] };
 // Only embed the subsets the player actually renders — dropping cyrillic/greek
 // keeps the per-second base-capture SVG payload small.
 const EMBED_SUBSETS = new Set(['latin', 'latin-ext', 'vietnamese']);
 
 let currentKey = loadPersistedFont();
-let currentScales = loadPersistedScales();
+let currentSizes = loadPersistedSizes();
 let listEl = null;
 const sizeInputs = new Map();
 // Map<fontKey, Promise<string|null>> — embed CSS is built once per family.
@@ -60,39 +62,47 @@ function persist() {
     } catch {}
 }
 
-function isValidScale(value) {
-    return Number.isInteger(value) && value >= 80 && value <= 140 && (value - 80) % 5 === 0;
+function isValidSize(target, value) {
+    const [minimum, maximum] = SIZE_LIMITS[target] || [];
+    return Number.isInteger(value) && value >= minimum && value <= maximum;
 }
 
-function loadPersistedScales() {
+function loadPersistedSizes() {
     try {
         const stored = JSON.parse(localStorage.getItem(SIZE_STORAGE_KEY));
-        if (stored && SCALE_TARGETS.every(target => isValidScale(stored[target]))) return stored;
+        if (stored && SCALE_TARGETS.every(target => isValidSize(target, stored[target]))) return stored;
+        const scales = JSON.parse(localStorage.getItem(SCALE_STORAGE_KEY));
+        if (scales && SCALE_TARGETS.every(target => Number.isInteger(scales[target]))) {
+            return Object.fromEntries(SCALE_TARGETS.map(target => [target,
+                Math.round(DEFAULT_SIZES[target] * scales[target] / 100)]));
+        }
         const legacyScale = Number(localStorage.getItem(LEGACY_SIZE_STORAGE_KEY));
-        const scale = isValidScale(legacyScale) ? legacyScale : DEFAULT_SCALE;
-        return Object.fromEntries(SCALE_TARGETS.map(target => [target, scale]));
+        if (Number.isInteger(legacyScale) && legacyScale >= 80 && legacyScale <= 140) {
+            return Object.fromEntries(SCALE_TARGETS.map(target => [target,
+                Math.round(DEFAULT_SIZES[target] * legacyScale / 100)]));
+        }
+        return { ...DEFAULT_SIZES };
     } catch {
-        return Object.fromEntries(SCALE_TARGETS.map(target => [target, DEFAULT_SCALE]));
+        return { ...DEFAULT_SIZES };
     }
 }
 
-function applyScales() {
+function applySizes() {
     for (const target of SCALE_TARGETS) {
-        const scale = currentScales[target];
-        const property = `--font-player-${target}-scale`;
-        if (scale === DEFAULT_SCALE) document.documentElement.style.removeProperty(property);
-        else document.documentElement.style.setProperty(property, String(scale / 100));
+        const size = currentSizes[target];
+        const property = `--font-player-${target}-size`;
+        document.documentElement.style.setProperty(property, `${size}px`);
         const input = sizeInputs.get(target);
-        if (input) input.value = String(scale);
+        if (input) input.value = String(size);
     }
 }
 
-function setScale(target, value) {
-    const scale = Number(value);
-    if (!SCALE_TARGETS.includes(target) || !isValidScale(scale)) return;
-    currentScales = { ...currentScales, [target]: scale };
-    try { localStorage.setItem(SIZE_STORAGE_KEY, JSON.stringify(currentScales)); } catch {}
-    applyScales();
+function setSize(target, value) {
+    const size = Number(value);
+    if (!SCALE_TARGETS.includes(target) || !isValidSize(target, size)) return;
+    currentSizes = { ...currentSizes, [target]: size };
+    try { localStorage.setItem(SIZE_STORAGE_KEY, JSON.stringify(currentSizes)); } catch {}
+    applySizes();
 }
 
 // ───────────────────── Apply / select ─────────────────────
@@ -222,18 +232,18 @@ export function initFontManager() {
 
     const def = FONT_DEFS.find(f => f.key === currentKey);
     if (def && def.key !== DEFAULT_KEY) applyFont(def);
-    applyScales();
+    applySizes();
     for (const target of SCALE_TARGETS) {
         sizeInputs.get(target)?.addEventListener('change', () => {
-            setScale(target, sizeInputs.get(target).value);
-            applyScales();
+            setSize(target, sizeInputs.get(target).value);
+            applySizes();
         });
     }
     document.querySelectorAll('[data-font-size-target]').forEach(button => {
         button.addEventListener('click', () => {
             const target = button.dataset.fontSizeTarget;
             const delta = Number(button.dataset.fontSizeDelta);
-            setScale(target, currentScales[target] + delta);
+            setSize(target, currentSizes[target] + delta);
         });
     });
     renderActive();

@@ -93,14 +93,14 @@ for (const target of ['title', 'artist', 'lyrics']) {
     assert.match(html, new RegExp(`id="font-size-${target}"[^>]*type="number"`),
         `appearance controls must expose a ${target} direct text-size input`);
 }
-assert.match(html, /data-font-size-target="title"[\s\S]*data-font-size-delta="-5"/,
+assert.match(html, /data-font-size-target="title"[\s\S]*data-font-size-delta="-1"/,
     'appearance controls must provide precise text-size decrement buttons');
-assert.match(await readFile('./js/font-manager.js', 'utf8'), /playerFontScales|--font-player-\$\{target\}-scale/,
-    'font manager must persist and apply separate text sizes');
-assert.match(vinylCss, /--font-player-title-scale|--font-player-artist-scale|--font-player-lyrics-scale/,
+assert.match(await readFile('./js/font-manager.js', 'utf8'), /playerFontSizes|--font-player-\$\{target\}-size/,
+    'font manager must persist and apply separate pixel sizes');
+assert.match(vinylCss, /--font-player-title-size|--font-player-artist-size|--font-player-lyrics-size/,
     'player typography must honor the selected text sizes');
-assert.match(vinylCss, /calc\(22px \* var\(--font-player-title-scale\)\)/,
-    'mobile title typography must honor the selected text size');
+assert.match(vinylCss, /font-size: var\(--font-player-title-size\)/,
+    'title typography must honor the selected pixel size');
 assert.match(mediaControls, /readId3Metadata/, 'media controls must own local metadata autofill');
 assert.match(settings, /initAutoSyncControls/, 'settings must delegate Whisper UI to its controller');
 assert.match(settings, /initTranslationControls/, 'settings must delegate translation UI to its controller');
